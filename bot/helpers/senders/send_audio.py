@@ -5,7 +5,7 @@ import traceback
 from aiogram import Bot
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramForbiddenError, TelegramRetryAfter, TelegramNetworkError
-from aiogram.types import URLInputFile
+from aiogram.types import URLInputFile, Message
 from aiohttp import ClientOSError
 from redis.exceptions import ConnectionError
 
@@ -24,11 +24,13 @@ async def delayed_send_audio(
     reply_markup=None,
     reply_to_message_id=None,
     parse_mode=ParseMode.HTML,
-):
+) -> Message:
     await asyncio.sleep(timeout)
 
+    answered_message = None
+
     try:
-        await bot.send_audio(
+        answered_message = await bot.send_audio(
             chat_id=chat_id,
             audio=URLInputFile(result, filename=filename, timeout=300),
             caption=caption,
@@ -43,101 +45,36 @@ async def delayed_send_audio(
             update_user(chat_id, {'is_blocked': True})
         )
     except TelegramRetryAfter as e:
-        asyncio.create_task(
-            delayed_send_audio(
-                bot,
-                chat_id,
-                result,
-                caption,
-                filename,
-                duration,
-                e.retry_after + 30,
-                reply_markup,
-                reply_to_message_id,
-                parse_mode,
-            )
+        answered_message = await delayed_send_audio(
+            bot,
+            chat_id,
+            result,
+            caption,
+            filename,
+            duration,
+            e.retry_after + 30,
+            reply_markup,
+            reply_to_message_id,
+            parse_mode,
         )
     except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramNetworkError):
-        asyncio.create_task(
-            delayed_send_audio(
-                bot,
-                chat_id,
-                result,
-                caption,
-                filename,
-                duration,
-                60,
-                reply_markup,
-                reply_to_message_id,
-                parse_mode,
-            )
-        )
-    except Exception:
-        error_trace = traceback.format_exc()
-        logging.exception(f'Error in delayed_send_audio: {error_trace}')
-
-
-async def send_audio(
-    bot: Bot,
-    chat_id: str,
-    result: str,
-    caption: str,
-    filename: str,
-    duration: int,
-    reply_markup=None,
-    reply_to_message_id=None,
-    parse_mode=ParseMode.HTML,
-):
-    try:
-        await bot.send_audio(
-            chat_id=chat_id,
-            audio=URLInputFile(result, filename=filename, timeout=300),
-            caption=caption,
-            duration=duration,
-            reply_markup=reply_markup,
-            reply_to_message_id=reply_to_message_id,
-            allow_sending_without_reply=True,
-            parse_mode=parse_mode,
-        )
-    except TelegramForbiddenError:
-        asyncio.create_task(
-            update_user(chat_id, {'is_blocked': True})
-        )
-    except TelegramRetryAfter as e:
-        asyncio.create_task(
-            delayed_send_audio(
-                bot,
-                chat_id,
-                result,
-                caption,
-                filename,
-                duration,
-                e.retry_after + 30,
-                reply_markup,
-                reply_to_message_id,
-                parse_mode,
-            )
-        )
-    except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramNetworkError):
-        asyncio.create_task(
-            delayed_send_audio(
-                bot,
-                chat_id,
-                result,
-                caption,
-                filename,
-                duration,
-                60,
-                reply_markup,
-                reply_to_message_id,
-                parse_mode,
-            )
+        answered_message = await delayed_send_audio(
+            bot,
+            chat_id,
+            result,
+            caption,
+            filename,
+            duration,
+            60,
+            reply_markup,
+            reply_to_message_id,
+            parse_mode,
         )
     except Exception as e:
         error_trace = traceback.format_exc()
-        logging.error(f'Error in send_audio: {error_trace}')
+        logging.exception(f'Error in delayed_send_audio: {error_trace}')
 
-        await bot.send_message(
+        answered_message = await bot.send_message(
             chat_id=chat_id,
             reply_markup=reply_markup,
             text=result,
@@ -151,3 +88,81 @@ async def send_audio(
             info=str(e),
             hashtags=['audio']
         )
+
+    return answered_message
+
+
+async def send_audio(
+    bot: Bot,
+    chat_id: str,
+    result: str,
+    caption: str,
+    filename: str,
+    duration: int,
+    reply_markup=None,
+    reply_to_message_id=None,
+    parse_mode=ParseMode.HTML,
+) -> Message:
+    answered_message = None
+
+    try:
+        answered_message = await bot.send_audio(
+            chat_id=chat_id,
+            audio=URLInputFile(result, filename=filename, timeout=300),
+            caption=caption,
+            duration=duration,
+            reply_markup=reply_markup,
+            reply_to_message_id=reply_to_message_id,
+            allow_sending_without_reply=True,
+            parse_mode=parse_mode,
+        )
+    except TelegramForbiddenError:
+        asyncio.create_task(
+            update_user(chat_id, {'is_blocked': True})
+        )
+    except TelegramRetryAfter as e:
+        answered_message = await delayed_send_audio(
+            bot,
+            chat_id,
+            result,
+            caption,
+            filename,
+            duration,
+            e.retry_after + 30,
+            reply_markup,
+            reply_to_message_id,
+            parse_mode,
+        )
+    except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramNetworkError):
+        answered_message = await delayed_send_audio(
+            bot,
+            chat_id,
+            result,
+            caption,
+            filename,
+            duration,
+            60,
+            reply_markup,
+            reply_to_message_id,
+            parse_mode,
+        )
+    except Exception as e:
+        error_trace = traceback.format_exc()
+        logging.exception(f'Error in send_audio: {error_trace}')
+
+        answered_message = await bot.send_message(
+            chat_id=chat_id,
+            reply_markup=reply_markup,
+            text=result,
+            reply_to_message_id=reply_to_message_id,
+            allow_sending_without_reply=True,
+        )
+
+        await send_error_info(
+            bot=bot,
+            user_id=chat_id,
+            info=str(e),
+            hashtags=['audio']
+        )
+
+    return answered_message

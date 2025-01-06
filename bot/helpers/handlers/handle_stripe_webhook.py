@@ -103,12 +103,13 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
             if request_type == 'invoice.payment_succeeded':
                 is_trial = float(clear_amount) <= 0.01
                 transaction = firebase.db.transaction()
+                subscription.income_amount = float(clear_amount)
                 await create_subscription(
                     transaction,
                     bot,
                     subscription.id,
                     subscription.user_id,
-                    float(clear_amount),
+                    subscription.income_amount,
                     request_id,
                     subscription.id,
                     request_object.get('subscription', ''),
@@ -119,7 +120,7 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     type=TransactionType.INCOME,
                     product_id=subscription.product_id,
                     amount=subscription.amount,
-                    clear_amount=float(clear_amount),
+                    clear_amount=subscription.income_amount,
                     currency=subscription.currency,
                     quantity=1,
                     details={
@@ -211,30 +212,15 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                         user_id=user.id,
                     )
 
-                if is_trial:
-                    await send_message_to_admins(
-                        bot=bot,
-                        message=f'#payment #trial #subscription #success\n\n'
-                                f'🤑 <b>Успешно оформлен пробный период подписки у пользователя: {subscription.user_id}</b>\n\n'
-                                f'ℹ️ ID: {subscription.id}\n'
-                                f'💱 Метод оплаты: {subscription.payment_method}\n'
-                                f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                                f'💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}\n'
-                                f'💸 Чистая сумма: {float(clear_amount)}{Currency.SYMBOLS[subscription.currency]}\n\n'
-                                f'Продолжаем в том же духе 💪',
+                await send_message_to_admins(
+                    bot=bot,
+                    message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                        status=SubscriptionStatus.ACTIVE,
+                        subscription=subscription,
+                        product=product,
+                        is_trial=is_trial,
                     )
-                else:
-                    await send_message_to_admins(
-                        bot=bot,
-                        message=f'#payment #subscription #success\n\n'
-                                f'🤑 <b>Успешно оформлена подписка у пользователя: {subscription.user_id}</b>\n\n'
-                                f'ℹ️ ID: {subscription.id}\n'
-                                f'💱 Метод оплаты: {subscription.payment_method}\n'
-                                f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                                f'💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}\n'
-                                f'💸 Чистая сумма: {float(clear_amount)}{Currency.SYMBOLS[subscription.currency]}\n\n'
-                                f'Продолжаем в том же духе 💪',
-                    )
+                )
             elif request_type == 'invoice.payment_failed':
                 subscription.status = SubscriptionStatus.DECLINED
                 await update_subscription(
@@ -246,25 +232,21 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
 
                 await send_message_to_admins(
                     bot=bot,
-                    message=f'#payment #subscription #declined\n\n'
-                            f'❌ <b>Отмена оплаты подписки у пользователя: {subscription.user_id}</b>\n\n'
-                            f'ℹ️ ID: {subscription.id}\n'
-                            f'💱 Метод оплаты: {subscription.payment_method}\n'
-                            f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                            f'💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}\n\n'
-                            f'Грустно, но что поделать 🤷',
+                    message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                        status=SubscriptionStatus.DECLINED,
+                        subscription=subscription,
+                        product=product,
+                    ),
                 )
             else:
+                logging.exception(f'Error in handle_stripe_webhook: {request_type}')
                 await send_message_to_admins(
                     bot=bot,
-                    message=f'#payment #subscription #error\n\n'
-                            f'🚫 <b>Неизвестный статус при оплате подписки у пользователя: {subscription.user_id}</b>\n\n'
-                            f'ℹ️ ID: {subscription.id}\n'
-                            f'🛠 Статус: {request_type}\n'
-                            f'💱 Метод оплаты: {subscription.payment_method}\n'
-                            f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                            f'💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}\n\n'
-                            f'@roman_danilov, посмотришь? 🤨',
+                    message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                        status=SubscriptionStatus.ERROR,
+                        subscription=subscription,
+                        product=product,
+                    ),
                 )
         else:
             old_subscription = await get_subscription_by_provider_auto_payment_charge_id(order_id)
@@ -277,6 +259,7 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                 if request_type == 'invoice.payment_succeeded':
                     if old_subscription.status == SubscriptionStatus.TRIAL:
                         new_income_amount = old_subscription.income_amount + float(clear_amount)
+                        old_subscription.income_amount = new_income_amount
                         await update_subscription(old_subscription.id, {
                             'status': SubscriptionStatus.ACTIVE,
                             'income_amount': new_income_amount,
@@ -299,14 +282,13 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
 
                         await send_message_to_admins(
                             bot=bot,
-                            message=f'#payment #trial #renew #subscription #success\n\n'
-                                    f'🤑 <b>Успешно продлена подписка после пробного периода у пользователя: {old_subscription.user_id}</b>\n\n'
-                                    f'ℹ️ ID: {old_subscription.id}\n'
-                                    f'💱 Метод оплаты: {old_subscription.payment_method}\n'
-                                    f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                                    f'💰 Сумма: {old_subscription.amount}{Currency.SYMBOLS[old_subscription.currency]}\n'
-                                    f'💸 Чистая сумма: {new_income_amount}{Currency.SYMBOLS[old_subscription.currency]}\n\n'
-                                    f'Продолжаем в том же духе 💪',
+                            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                                status=SubscriptionStatus.ACTIVE,
+                                subscription=old_subscription,
+                                product=product,
+                                is_trial=True,
+                                is_renew=True,
+                            )
                         )
                     else:
                         transaction = firebase.db.transaction()
@@ -328,7 +310,7 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                             bot,
                             new_subscription.id,
                             new_subscription.user_id,
-                            float(clear_amount),
+                            new_subscription.income_amount,
                             request_id,
                             order_id,
                             old_subscription.stripe_id,
@@ -338,7 +320,7 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                             type=TransactionType.INCOME,
                             product_id=new_subscription.product_id,
                             amount=new_subscription.amount,
-                            clear_amount=float(clear_amount),
+                            clear_amount=new_subscription.income_amount,
                             currency=new_subscription.currency,
                             quantity=1,
                             details={
@@ -365,14 +347,13 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
 
                         await send_message_to_admins(
                             bot=bot,
-                            message=f'#payment #renew #subscription #success\n\n'
-                                    f'🤑 <b>Успешно продлена подписка у пользователя: {new_subscription.user_id}</b>\n\n'
-                                    f'ℹ️ ID: {new_subscription.id}\n'
-                                    f'💱 Метод оплаты: {new_subscription.payment_method}\n'
-                                    f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                                    f'💰 Сумма: {new_subscription.amount}{Currency.SYMBOLS[new_subscription.currency]}\n'
-                                    f'💸 Чистая сумма: {float(clear_amount)}{Currency.SYMBOLS[new_subscription.currency]}\n\n'
-                                    f'Продолжаем в том же духе 💪',
+                            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                                status=SubscriptionStatus.ACTIVE,
+                                subscription=new_subscription,
+                                product=product,
+                                is_trial=False,
+                                is_renew=True,
+                            )
                         )
                 elif request_type == 'invoice.payment_failed':
                     current_date = datetime.now(timezone.utc)
@@ -411,37 +392,27 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
 
                     await send_message_to_admins(
                         bot=bot,
-                        message=f'#payment #renew #subscription #declined\n\n'
-                                f'❌ <b>Не смогли продлить подписку у пользователя: {old_subscription.user_id}</b>\n\n'
-                                f'ℹ️ ID: {old_subscription.id}\n'
-                                f'💱 Метод оплаты: {old_subscription.payment_method}\n'
-                                f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                                f'💰 Сумма: {old_subscription.amount}{Currency.SYMBOLS[old_subscription.currency]}\n\n'
-                                f'Грустно, но что поделать 🤷',
+                        message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                            status=SubscriptionStatus.DECLINED,
+                            subscription=old_subscription,
+                            product=product,
+                            is_trial=old_subscription.status == SubscriptionStatus.TRIAL,
+                            is_renew=True,
+                        )
                     )
                 else:
+                    logging.exception(f'Error in handle_stripe_webhook: {request_type}')
                     await send_message_to_admins(
                         bot=bot,
-                        message=f'#payment #renew #subscription #error\n\n'
-                                f'🚫 <b>Неизвестный статус при продлении подписки у пользователя: {old_subscription.user_id}</b>\n\n'
-                                f'ℹ️ ID: {old_subscription.id}\n'
-                                f'🛠 Статус: {request_type}\n'
-                                f'💱 Метод оплаты: {old_subscription.payment_method}\n'
-                                f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                                f'💰 Сумма: {old_subscription.amount}{Currency.SYMBOLS[old_subscription.currency]}\n\n'
-                                f'@roman_danilov, посмотришь? 🤨',
+                        message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                            status=SubscriptionStatus.ERROR,
+                            subscription=old_subscription,
+                            product=product,
+                            is_renew=True,
+                        )
                     )
     except Exception as e:
         logging.exception(f'Error in stripe_webhook in subscription section: {e}')
-        await send_message_to_admins(
-            bot=bot,
-            message=f'#payment #subscription #error\n\n'
-                    f'🚫 Неизвестная ошибка в блоке оплаты у подписки:\n\n'
-                    f'💱 Метод оплаты: {PaymentMethod.STRIPE}\n'
-                    f'ℹ️ Информация:\n {e}\n\n'
-                    f'@roman_danilov, посмотришь? 🤨',
-            parse_mode=None,
-        )
 
     try:
         packages = await get_packages_by_provider_payment_charge_id(order_id)
@@ -458,11 +429,12 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
 
             if request_type == 'payment_intent.succeeded':
                 transaction = firebase.db.transaction()
+                package.income_amount = float(clear_amount)
                 await create_package(
                     transaction,
                     package.id,
                     package.user_id,
-                    float(clear_amount),
+                    package.income_amount,
                     order_id,
                 )
 
@@ -471,7 +443,7 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     type=TransactionType.INCOME,
                     product_id=package.product_id,
                     amount=package.amount,
-                    clear_amount=float(clear_amount),
+                    clear_amount=package.income_amount,
                     currency=package.currency,
                     quantity=package.quantity,
                     details={
@@ -565,15 +537,11 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
 
                 await send_message_to_admins(
                     bot=bot,
-                    message=f'#payment #package #success\n\n'
-                            f'🤑 <b>Успешно прошла оплата пакета у пользователя: {package.user_id}</b>\n\n'
-                            f'ℹ️ ID: {package.id}\n'
-                            f'💱 Метод оплаты: {package.payment_method}\n'
-                            f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                            f'🔢 Количество: {package.quantity}\n'
-                            f'💰 Сумма: {package.amount}{Currency.SYMBOLS[package.currency]}\n'
-                            f'💸 Чистая сумма: {float(clear_amount)}{Currency.SYMBOLS[package.currency]}\n\n'
-                            f'Продолжаем в том же духе 💪',
+                    message=get_localization(LanguageCode.RU).admin_payment_package_changed_status(
+                        status=PackageStatus.SUCCESS,
+                        package=package,
+                        product=product,
+                    )
                 )
             elif request_type == 'payment_intent.payment_failed' or request_type == 'payment_intent.canceled':
                 package.status = PackageStatus.DECLINED
@@ -586,27 +554,21 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
 
                 await send_message_to_admins(
                     bot=bot,
-                    message=f'#payment #package #declined\n\n'
-                            f'❌ <b>Отмена оплаты пакета у пользователя: {package.user_id}</b>\n\n'
-                            f'ℹ️ ID: {package.id}\n'
-                            f'💱 Метод оплаты: {package.payment_method}\n'
-                            f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                            f'🔢 Количество: {package.quantity}\n'
-                            f'💰 Сумма: {package.amount}{Currency.SYMBOLS[package.currency]}\n\n'
-                            f'Грустно, но что поделать 🤷',
+                    message=get_localization(LanguageCode.RU).admin_payment_package_changed_status(
+                        status=PackageStatus.DECLINED,
+                        package=package,
+                        product=product,
+                    )
                 )
             else:
+                logging.exception(f'Error in handle_stripe_webhook: {request_type}')
                 await send_message_to_admins(
                     bot=bot,
-                    message=f'#payment #package #error\n\n'
-                            f'🚫 <b>Неизвестный статус при оплате пакета у пользователя: {package.user_id}</b>\n\n'
-                            f'ℹ️ ID: {package.id}\n'
-                            f'🛠 Статус: {request_type}\n'
-                            f'💱 Метод оплаты: {package.payment_method}\n'
-                            f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                            f'🔢 Количество: {package.quantity}\n'
-                            f'💰 Сумма: {package.amount}{Currency.SYMBOLS[package.currency]}\n\n'
-                            f'@roman_danilov, посмотришь? 🤨',
+                    message=get_localization(LanguageCode.RU).admin_payment_package_changed_status(
+                        status=PackageStatus.ERROR,
+                        package=package,
+                        product=product,
+                    )
                 )
         elif len(packages) > 1:
             user = await get_user(packages[0].user_id)
@@ -738,12 +700,14 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
 
                 await send_message_to_admins(
                     bot=bot,
-                    message=f'#payment #packages #success\n\n'
-                            f'🤑 <b>Успешно прошла оплата пакетов у пользователя: {user.id}</b>\n\n'
-                            f'💱 Метод оплаты: {PaymentMethod.STRIPE}\n'
-                            f'💰 Сумма: {float(amount)}{Currency.SYMBOLS[packages[0].currency]}\n'
-                            f'💸 Чистая сумма: {float(clear_amount)}{Currency.SYMBOLS[packages[0].currency]}\n\n'
-                            f'Продолжаем в том же духе 💪',
+                    message=get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
+                        status=PackageStatus.SUCCESS,
+                        user_id=user.id,
+                        payment_method=PaymentMethod.STRIPE,
+                        amount=float(amount),
+                        income_amount=float(clear_amount),
+                        currency=packages[0].currency,
+                    )
                 )
             elif request_type == 'payment_intent.payment_failed' or request_type == 'payment_intent.canceled':
                 for package in packages:
@@ -757,30 +721,28 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
 
                 await send_message_to_admins(
                     bot=bot,
-                    message=f'#payment #packages #declined\n\n'
-                            f'❌ <b>Отмена оплаты пакетов у пользователя: {user.id}</b>\n\n'
-                            f'💱 Метод оплаты: {PaymentMethod.STRIPE}\n'
-                            f'💰 Сумма: {float(amount)}{Currency.SYMBOLS[packages[0].currency]}\n\n'
-                            f'Грустно, но что поделать 🤷',
+                    message=get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
+                        status=PackageStatus.DECLINED,
+                        user_id=user.id,
+                        payment_method=PaymentMethod.STRIPE,
+                        amount=float(amount),
+                        income_amount=0,
+                        currency=packages[0].currency,
+                    )
                 )
             else:
+                logging.exception(f'Error in handle_stripe_webhook: {request_type}')
+
                 await send_message_to_admins(
                     bot=bot,
-                    message=f'#payment #packages #error\n\n'
-                            f'🚫 <b>Неизвестный статус при оплате пакетов у пользователя: {user.id}</b>\n\n'
-                            f'🛠 Статус: {request_type}\n'
-                            f'💱 Метод оплаты: {PaymentMethod.STRIPE}\n'
-                            f'💰 Сумма: {float(amount)}{Currency.SYMBOLS[packages[0].currency]}\n\n'
-                            f'@roman_danilov, посмотришь? 🤨',
+                    message=get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
+                        status=PackageStatus.ERROR,
+                        user_id=user.id,
+                        payment_method=PaymentMethod.STRIPE,
+                        amount=float(amount),
+                        income_amount=0,
+                        currency=packages[0].currency,
+                    )
                 )
     except Exception as e:
         logging.exception(f'Error in stripe_webhook in package section: {e}')
-        await send_message_to_admins(
-            bot=bot,
-            message=f'#payment #package #packages #error\n\n'
-                    f'🚫 Неизвестная ошибка в блоке оплаты у пакета(-ов):\n\n'
-                    f'💱 Метод оплаты: {PaymentMethod.STRIPE}\n'
-                    f'ℹ️ Информация:\n {e}\n\n'
-                    f'@roman_danilov, посмотришь? 🤨',
-            parse_mode=None,
-        )

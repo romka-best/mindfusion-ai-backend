@@ -1,9 +1,11 @@
 import random
+from datetime import datetime, timezone
 from typing import Union
 
 from bot.database.models.feedback import FeedbackStatus
 from bot.database.models.game import GameType
 from bot.database.models.generation import GenerationReaction
+from bot.database.models.package import Package, PackageStatus
 from bot.database.models.product import Product, ProductType, ProductCategory
 from bot.database.models.prompt import Prompt
 from bot.database.operations.product.getters import get_product
@@ -13,10 +15,11 @@ from bot.helpers.getters.get_time_until_limit_update import get_time_until_limit
 from bot.helpers.getters.get_user_discount import get_user_discount
 from bot.locales.texts import Texts
 from bot.database.models.common import (
-    Currency,
-    Quota,
     Model,
     ModelType,
+    Quota,
+    Currency,
+    PaymentMethod,
     VideoSummaryFocus,
     VideoSummaryFormat,
     VideoSummaryAmount,
@@ -24,6 +27,7 @@ from bot.database.models.common import (
     SendType,
 )
 from bot.database.models.subscription import (
+    Subscription,
     SubscriptionPeriod,
     SubscriptionStatus,
 )
@@ -45,7 +49,7 @@ class Russian(Texts):
         return f"""
 🎁 <b>Ваш бонусный баланс</b>
 
-💰 Текущий баланс: {float(balance)} 🪙
+💰 Текущий баланс: {int(balance)} 🪙
 
 Чтобы пополнить бонусный баланс, вы можете:
 ━ 1️⃣ <b>Пригласить друзей:</b>
@@ -1988,7 +1992,7 @@ class Russian(Texts):
 🔍 Перечислите желаемые жанры через запятую в вашем следующем сообщении, и я приступлю к созданию уникальной песни!
 """
     SUNO_START_AGAIN = "Начать сначала 🔄"
-    SUNO_TOO_MANY_WORDS = "<b>Ой-ой!</b> 🚧\n\nНа каком-то из этапов вы отправили слишком большой текст 📝\n\nПопробуйте ещё раз, но с текстом поменьше, пожалуйста!"
+    SUNO_TOO_MANY_WORDS_ERROR = "<b>Ой-ой!</b> 🚧\n\nНа каком-то из этапов вы отправили слишком большой текст 📝\n\nПопробуйте ещё раз, но с текстом поменьше, пожалуйста!"
     SUNO_VALUE_ERROR = "Это не похоже на промпт 🧐\n\nВведите, пожалуйста, другое значение"
     SUNO_SKIP = "Пропустить ⏩️"
 
@@ -3119,4 +3123,308 @@ class Russian(Texts):
 <b>Средний чек:</b> {round(count_income_money['AVERAGE_PRICE'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['AVERAGE_PRICE'], count_income_money_before['AVERAGE_PRICE'])}
 <b>Всего:</b> {round(count_income_money['ALL'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['ALL'], count_income_money_before['ALL'])}
 <b>Вал:</b> {round(count_income_money['VAL'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['VAL'], count_income_money_before['VAL'])}
+"""
+
+    @staticmethod
+    def admin_payment_subscription_changed_status(
+        status: SubscriptionStatus,
+        subscription: Subscription,
+        product: Product,
+        is_trial=False,
+        is_renew=False,
+    ):
+        if status == SubscriptionStatus.ACTIVE:
+            if is_trial and is_renew:
+                return f"""
+#payment #trial #renew #subscription #success
+
+🤑 <b>Успешно продлена подписка после пробного периода у пользователя: {subscription.user_id}</b>
+
+ℹ️ ID: {subscription.id}
+💱 Метод оплаты: {subscription.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}
+💸 Чистая сумма: {subscription.income_amount}{Currency.SYMBOLS[subscription.currency]}
+
+Продолжаем в том же духе 💪
+"""
+            elif not is_trial and is_renew:
+                return f"""
+#payment #renew #subscription #success
+
+🤑 <b>Успешно продлена подписка у пользователя: {subscription.user_id}</b>
+
+ℹ️ ID: {subscription.id}
+💱 Метод оплаты: {subscription.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}
+💸 Чистая сумма: {subscription.income_amount}{Currency.SYMBOLS[subscription.currency]}
+
+Продолжаем в том же духе 💪
+"""
+            elif is_trial and not is_renew:
+                return f"""
+#payment #trial #subscription #success
+
+🤑 <b>Успешно оформлен пробный период подписки у пользователя: {subscription.user_id}</b>
+
+ℹ️ ID: {subscription.id}
+💱 Метод оплаты: {subscription.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}
+💸 Чистая сумма: {subscription.income_amount}{Currency.SYMBOLS[subscription.currency]}
+
+Продолжаем в том же духе 💪
+"""
+            elif not is_trial and not is_renew:
+                return f"""
+#payment #subscription #success
+
+🤑 <b>Успешно оформлена подписка у пользователя: {subscription.user_id}</b>
+
+ℹ️ ID: {subscription.id}
+💱 Метод оплаты: {subscription.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}
+💸 Чистая сумма: {subscription.income_amount}{Currency.SYMBOLS[subscription.currency]}
+
+Продолжаем в том же духе 💪
+"""
+        elif status == SubscriptionStatus.DECLINED:
+            if is_trial and is_renew:
+                return f"""
+#payment #trial #renew #subscription #declined
+
+❌ <b>Не смогли продлить подписку после пробного периода у пользователя: {subscription.user_id}</b>
+
+ℹ️ ID: {subscription.id}
+💱 Метод оплаты: {subscription.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}
+
+Грустно, но что поделать 🤷
+"""
+            elif not is_trial and is_renew:
+                return f"""
+#payment #renew #subscription #declined
+
+❌ <b>Не смогли продлить подписку у пользователя: {subscription.user_id}</b>
+
+ℹ️ ID: {subscription.id}
+💱 Метод оплаты: {subscription.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}
+
+Грустно, но что поделать 🤷
+"""
+            elif is_trial and not is_renew:
+                return f"""
+#payment #trial #subscription #declined
+
+❌ <b>Отмена оплаты пробного периода подписки у пользователя: {subscription.user_id}</b>
+
+ℹ️ ID: {subscription.id}
+💱 Метод оплаты: {subscription.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}
+
+Грустно, но что поделать 🤷
+"""
+            elif not is_trial and not is_renew:
+                return f"""
+#payment #subscription #declined
+
+❌ <b>Отмена оплаты подписки у пользователя: {subscription.user_id}</b>
+
+ℹ️ ID: {subscription.id}
+💱 Метод оплаты: {subscription.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}
+
+Грустно, но что поделать 🤷
+"""
+        elif status == SubscriptionStatus.CANCELED:
+            if is_trial:
+                current_date = datetime.now(timezone.utc)
+
+                return f"""
+#payment #trial #subscription #canceled
+
+❌ <b>Отмена продления пробного периода подписки у пользователя: {subscription.user_id}</b>
+
+ℹ️ ID: {subscription.id}
+💱 Метод оплаты: {subscription.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}
+💸 Чистая сумма: {subscription.income_amount}{Currency.SYMBOLS[subscription.currency]}
+🗓 Период подписки: {subscription.start_date.strftime("%d.%m.%Y")}-{current_date.strftime("%d.%m.%Y")}
+
+Грустно, но что поделать 🤷
+"""
+            else:
+                return f"""
+#payment #subscription #canceled
+
+❌ <b>Отмена продления подписки у пользователя: {subscription.user_id}</b>
+
+ℹ️ ID: {subscription.id}
+💱 Метод оплаты: {subscription.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}
+💸 Чистая сумма: {subscription.income_amount}{Currency.SYMBOLS[subscription.currency]}
+🗓 Период подписки: {subscription.start_date.strftime("%d.%m.%Y")}-{subscription.end_date.strftime("%d.%m.%Y")}
+
+Грустно, но что поделать 🤷
+"""
+        elif status == SubscriptionStatus.RESUBSCRIBED:
+            if is_trial:
+                return f"""
+#payment #trial #subscription #resubscribe
+
+🤑 <b>Возобновление пробного периода подписки у пользователя: {subscription.user_id}</b>
+
+ℹ️ ID: {subscription.id}
+💱 Метод оплаты: {subscription.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}
+💸 Чистая сумма: {subscription.income_amount}{Currency.SYMBOLS[subscription.currency]}
+🗓 Период подписки: {subscription.start_date.strftime("%d.%m.%Y")}-{subscription.end_date.strftime("%d.%m.%Y")}
+
+Вернулся к нам, продолжаем в том же духе 💪
+"""
+            else:
+                return f"""
+#payment #subscription #resubscribe
+
+🤑 <b>Возобновление продления подписки у пользователя: {subscription.user_id}</b>
+
+ℹ️ ID: {subscription.id}
+💱 Метод оплаты: {subscription.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}
+💸 Чистая сумма: {subscription.income_amount}{Currency.SYMBOLS[subscription.currency]}
+🗓 Период подписки: {subscription.start_date.strftime("%d.%m.%Y")}-{subscription.end_date.strftime("%d.%m.%Y")}
+
+Вернулся к нам, продолжаем в том же духе 💪
+"""
+        elif status == SubscriptionStatus.ERROR:
+            if is_renew:
+                return f"""
+#payment #renew #subscription #error
+
+🚫 <b>Неизвестный статус при продлении подписки у пользователя: {subscription.user_id}</b>
+
+ℹ️ ID: {subscription.id}
+💱 Метод оплаты: {subscription.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}
+
+@roman_danilov, посмотришь? 🤨
+"""
+            else:
+                return f"""
+#payment #subscription #error
+
+🚫 <b>Неизвестный статус при оплате подписки у пользователя: {subscription.user_id}</b>
+
+ℹ️ ID: {subscription.id}
+💱 Метод оплаты: {subscription.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}
+
+@roman_danilov, посмотришь? 🤨
+"""
+
+    @staticmethod
+    def admin_payment_package_changed_status(
+        status: PackageStatus,
+        package: Package,
+        product: Product,
+    ):
+        if status == PackageStatus.SUCCESS:
+            return f"""
+#payment #package #success
+
+🤑 <b>Успешно прошла оплата пакета у пользователя: {package.user_id}</b>
+
+ℹ️ ID: {package.id}
+💱 Метод оплаты: {package.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+🔢 Количество: {package.quantity}
+💰 Сумма: {package.amount}{Currency.SYMBOLS[package.currency]}
+💸 Чистая сумма: {package.income_amount}{Currency.SYMBOLS[package.currency]}
+
+Продолжаем в том же духе 💪
+"""
+        elif status == PackageStatus.DECLINED:
+            return f"""
+#payment #package #declined
+
+❌ <b>Отмена оплаты пакета у пользователя: {package.user_id}</b>
+
+ℹ️ ID: {package.id}
+💱 Метод оплаты: {package.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+🔢 Количество: {package.quantity}
+💰 Сумма: {package.amount}{Currency.SYMBOLS[package.currency]}
+
+Грустно, но что поделать 🤷
+"""
+        elif status == PackageStatus.ERROR:
+            return f"""
+#payment #package #error
+
+🚫 <b>Неизвестный статус при оплате пакета у пользователя: {package.user_id}</b>
+
+ℹ️ ID: {package.id}
+💱 Метод оплаты: {package.payment_method}
+💳 Тип: {product.names.get(LanguageCode.RU)}
+🔢 Количество: {package.quantity}
+💰 Сумма: {package.amount}{Currency.SYMBOLS[package.currency]}
+
+@roman_danilov, посмотришь? 🤨'
+"""
+
+    @staticmethod
+    def admin_payment_packages_changed_status(
+        status: PackageStatus,
+        user_id: str,
+        payment_method: PaymentMethod,
+        amount: float,
+        income_amount: float,
+        currency: Currency,
+    ):
+        if status == PackageStatus.SUCCESS:
+            return f"""
+f'#payment #packages #success
+
+🤑 <b>Успешно прошла оплата пакетов у пользователя: {user_id}</b>
+
+💱 Метод оплаты: {payment_method}
+💰 Сумма: {amount}{Currency.SYMBOLS[currency]}
+💸 Чистая сумма: {income_amount}{Currency.SYMBOLS[currency]}
+
+Продолжаем в том же духе 💪
+"""
+        elif status == PackageStatus.DECLINED:
+            return f"""
+#payment #packages #declined
+
+❌ <b>Отмена оплаты пакетов у пользователя: {user_id}</b>
+
+💱 Метод оплаты: {payment_method}
+💰 Сумма: {amount}{Currency.SYMBOLS[currency]}
+
+Грустно, но что поделать 🤷
+"""
+        elif status == PackageStatus.ERROR:
+            return f"""
+#payment #packages #error
+
+🚫 <b>Неизвестный статус при оплате пакетов у пользователя: {user_id}</b>
+
+💱 Метод оплаты: {payment_method}
+💰 Сумма: {amount}{Currency.SYMBOLS[currency]}
+
+@roman_danilov, посмотришь? 🤨
 """

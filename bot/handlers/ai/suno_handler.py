@@ -153,6 +153,13 @@ async def suno_prompt_sent(message: Message, state: FSMContext):
         )
         return
 
+    if len(prompt) > 200:
+        await message.reply(
+            text=get_localization(user_language_code).SUNO_TOO_MANY_WORDS_ERROR,
+            allow_sending_without_reply=True,
+        )
+        return
+
     processing_sticker = await message.answer_sticker(
         sticker=config.MESSAGE_STICKERS.get(MessageSticker.MUSIC_GENERATION),
     )
@@ -239,7 +246,7 @@ async def suno_prompt_sent(message: Message, state: FSMContext):
                     await message.answer(
                         text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
                     )
-                elif 'Bad Request' in str(e) or 'The API is not implemented' in str(e):
+                elif 'Prompt too long' in str(e):
                     await message.answer(
                         text=get_localization(user_language_code).SUNO_TOO_MANY_WORDS_ERROR,
                     )
@@ -414,6 +421,16 @@ async def suno_genres_sent(message: Message, state: FSMContext):
                 if user_language_code != LanguageCode.EN:
                     genres = await translate_text(genres, user_language_code, LanguageCode.EN)
 
+                if len(genres) > 120:
+                    await message.reply(
+                        text=get_localization(user_language_code).SUNO_TOO_MANY_WORDS_ERROR,
+                        allow_sending_without_reply=True,
+                    )
+
+                    await processing_sticker.delete()
+                    await processing_message.delete()
+                    return
+
                 request = await write_request(
                     user_id=user.id,
                     processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
@@ -466,11 +483,11 @@ async def suno_genres_sent(message: Message, state: FSMContext):
                 else:
                     raise NotImplementedError('No Task Id Found in Suno Generation')
             except Exception as e:
-                if 'Too Many Requests' in str(e):
+                if 'Too Many Requests' in str(e) or 'You have exceeded the rate limit' in str(e):
                     await message.answer(
                         text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
                     )
-                elif 'Bad Request' in str(e):
+                elif 'Tags too long' in str(e):
                     await message.answer(
                         text=get_localization(user_language_code).SUNO_TOO_MANY_WORDS_ERROR,
                     )

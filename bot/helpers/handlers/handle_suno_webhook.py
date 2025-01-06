@@ -116,34 +116,41 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
 
             reply_markup = build_reaction_keyboard(current_generation.id)
             if user.settings[Model.SUNO][UserSettings.SEND_TYPE] == SendType.VIDEO and video_url:
-                await send_video(
+                answered_message = await send_video(
                     bot=bot,
                     chat_id=user.telegram_chat_id,
                     result=video_url,
-                    caption=f'{hlink(get_localization(user_language_code).SETTINGS_SEND_TYPE_AUDIO, audio_url)}\n{lyric}',
+                    caption=hlink(get_localization(user_language_code).SETTINGS_SEND_TYPE_AUDIO, audio_url),
                     filename=title,
                     duration=duration,
                     reply_markup=reply_markup,
                 )
             elif user.settings[Model.SUNO][UserSettings.SEND_TYPE] == SendType.AUDIO and video_url:
-                await send_audio(
+                answered_message = await send_audio(
                     bot=bot,
                     chat_id=user.telegram_chat_id,
                     result=audio_url,
-                    caption=f'{hlink(get_localization(user_language_code).SETTINGS_SEND_TYPE_VIDEO, video_url)}\n{lyric}',
+                    caption=hlink(get_localization(user_language_code).SETTINGS_SEND_TYPE_VIDEO, video_url),
                     filename=title,
                     duration=duration,
                     reply_markup=reply_markup,
                 )
             else:
-                await send_audio(
+                answered_message = await send_audio(
                     bot=bot,
                     chat_id=user.telegram_chat_id,
                     result=audio_url,
-                    caption=f'{hlink(get_localization(user_language_code).SETTINGS_SEND_TYPE_AUDIO, audio_url)}\n{lyric}',
+                    caption=hlink(get_localization(user_language_code).SETTINGS_SEND_TYPE_AUDIO, audio_url),
                     filename=title,
                     duration=duration,
                     reply_markup=reply_markup,
+                )
+
+            if answered_message:
+                await bot.send_message(
+                    chat_id=user.telegram_chat_id,
+                    text=lyric,
+                    reply_to_message_id=answered_message.message_id,
                 )
 
     if request.status != RequestStatus.FINISHED:
@@ -170,8 +177,7 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
                 text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
             )
 
-        quantity_to_delete = total_result
-        user = get_user_with_updated_quota(user, Quota.SUNO, quantity_to_delete)
+        user = get_user_with_updated_quota(user, Quota.SUNO, total_result)
 
         product = await get_product_by_quota(Quota.SUNO)
         update_tasks = [
@@ -182,7 +188,7 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
                 amount=PRICE_SUNO,
                 clear_amount=PRICE_SUNO,
                 currency=Currency.USD,
-                quantity=quantity_to_delete,
+                quantity=total_result,
                 details={
                     'mode': request.details.get('mode'),
                     'is_suggestion': request.details.get('is_suggestion', False),

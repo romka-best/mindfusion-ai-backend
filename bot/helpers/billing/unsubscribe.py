@@ -4,11 +4,12 @@ import stripe
 from aiogram import Bot
 from google.cloud import firestore
 
-from bot.database.models.common import Currency, PaymentMethod
+from bot.database.models.common import PaymentMethod
 from bot.database.models.subscription import Subscription, SubscriptionStatus
 from bot.database.operations.product.getters import get_product
 from bot.database.operations.subscription.updaters import update_subscription_in_transaction
 from bot.helpers.senders.send_message_to_admins import send_message_to_admins
+from bot.locales.main import get_localization
 from bot.locales.types import LanguageCode
 
 
@@ -42,26 +43,20 @@ async def unsubscribe(transaction, old_subscription: Subscription, bot: Bot):
     if old_subscription.status == SubscriptionStatus.TRIAL:
         await send_message_to_admins(
             bot=bot,
-            message=f'#payment #trial #subscription #canceled\n\n'
-                    f'❌ <b>Отмена продления пробного периода подписки у пользователя: {old_subscription.user_id}</b>\n\n'
-                    f'ℹ️ ID: {old_subscription.id}\n'
-                    f'💱 Метод оплаты: {old_subscription.payment_method}\n'
-                    f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                    f'💰 Сумма: {old_subscription.amount}{Currency.SYMBOLS[old_subscription.currency]}\n'
-                    f'💸 Чистая сумма: {float(old_subscription.income_amount)}{Currency.SYMBOLS[old_subscription.currency]}\n'
-                    f'🗓 Период подписки: {old_subscription.start_date.strftime("%d.%m.%Y")}-{current_date.strftime("%d.%m.%Y")}\n\n'
-                    f'Грустно, но что поделать 🤷',
+            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                status=SubscriptionStatus.CANCELED,
+                subscription=old_subscription,
+                product=product,
+                is_trial=True,
+            )
         )
     else:
         await send_message_to_admins(
             bot=bot,
-            message=f'#payment #subscription #canceled\n\n'
-                    f'❌ <b>Отмена продления подписки у пользователя: {old_subscription.user_id}</b>\n\n'
-                    f'ℹ️ ID: {old_subscription.id}\n'
-                    f'💱 Метод оплаты: {old_subscription.payment_method}\n'
-                    f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                    f'💰 Сумма: {old_subscription.amount}{Currency.SYMBOLS[old_subscription.currency]}\n'
-                    f'💸 Чистая сумма: {float(old_subscription.income_amount)}{Currency.SYMBOLS[old_subscription.currency]}\n'
-                    f'🗓 Период подписки: {old_subscription.start_date.strftime("%d.%m.%Y")}-{old_subscription.end_date.strftime("%d.%m.%Y")}\n\n'
-                    f'Грустно, но что поделать 🤷',
+            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                status=SubscriptionStatus.CANCELED,
+                subscription=old_subscription,
+                product=product,
+                is_trial=False,
+            )
         )
