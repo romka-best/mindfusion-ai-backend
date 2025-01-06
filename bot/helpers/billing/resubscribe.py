@@ -4,11 +4,12 @@ import stripe
 from aiogram import Bot
 from google.cloud import firestore
 
-from bot.database.models.common import Currency, PaymentMethod
+from bot.database.models.common import PaymentMethod
 from bot.database.models.subscription import Subscription, SubscriptionStatus, SubscriptionPeriod
 from bot.database.operations.product.getters import get_product
 from bot.database.operations.subscription.updaters import update_subscription_in_transaction
 from bot.helpers.senders.send_message_to_admins import send_message_to_admins
+from bot.locales.main import get_localization
 from bot.locales.types import LanguageCode
 
 
@@ -46,26 +47,20 @@ async def resubscribe(transaction, old_subscription: Subscription, bot: Bot):
     if is_trial:
         await send_message_to_admins(
             bot=bot,
-            message=f'#payment #trial #subscription #resubscribe\n\n'
-                    f'🤑 <b>Возобновление пробного периода подписки у пользователя: {old_subscription.user_id}</b>\n\n'
-                    f'ℹ️ ID: {old_subscription.id}\n'
-                    f'💱 Метод оплаты: {old_subscription.payment_method}\n'
-                    f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                    f'💰 Сумма: {old_subscription.amount}{Currency.SYMBOLS[old_subscription.currency]}\n'
-                    f'💸 Чистая сумма: {float(old_subscription.income_amount)}{Currency.SYMBOLS[old_subscription.currency]}\n'
-                    f'🗓 Период подписки: {old_subscription.start_date.strftime("%d.%m.%Y")}-{old_subscription.end_date.strftime("%d.%m.%Y")}\n\n'
-                    f'Вернулся к нам, продолжаем в том же духе 💪',
+            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                status=SubscriptionStatus.RESUBSCRIBED,
+                subscription=old_subscription,
+                product=product,
+                is_trial=True,
+            )
         )
     else:
         await send_message_to_admins(
             bot=bot,
-            message=f'#payment #subscription #resubscribe\n\n'
-                    f'🤑 <b>Возобновление продления подписки у пользователя: {old_subscription.user_id}</b>\n\n'
-                    f'ℹ️ ID: {old_subscription.id}\n'
-                    f'💱 Метод оплаты: {old_subscription.payment_method}\n'
-                    f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                    f'💰 Сумма: {old_subscription.amount}{Currency.SYMBOLS[old_subscription.currency]}\n'
-                    f'💸 Чистая сумма: {float(old_subscription.income_amount)}{Currency.SYMBOLS[old_subscription.currency]}\n'
-                    f'🗓 Период подписки: {old_subscription.start_date.strftime("%d.%m.%Y")}-{old_subscription.end_date.strftime("%d.%m.%Y")}\n\n'
-                    f'Вернулся к нам, продолжаем в том же духе 💪',
+            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                status=SubscriptionStatus.RESUBSCRIBED,
+                subscription=old_subscription,
+                product=product,
+                is_trial=False,
+            )
         )

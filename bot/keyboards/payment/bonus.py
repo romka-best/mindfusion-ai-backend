@@ -186,7 +186,7 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
                 ),
             ]
         )
-    elif page == 0:
+    elif page == 1:
         buttons.append([
             InlineKeyboardButton(
                 text=get_localization(language_code).MODELS_SUMMARY,

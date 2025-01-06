@@ -919,7 +919,7 @@ async def handle_payment_method_cart_selection(callback_query: CallbackQuery, st
         packages_with_waiting_status = await get_packages_by_user_id_and_status(user_id, PackageStatus.WAITING)
         for package_with_waiting_status in packages_with_waiting_status:
             await update_package(package_with_waiting_status.id, {
-                'status': PackageStatus.CANCELED,
+                'status': PackageStatus.DECLINED,
             })
 
         user_subscription = await get_subscription(user.subscription_id)
@@ -1056,56 +1056,27 @@ async def handle_pre_checkout(pre_checkout_query: PreCheckoutQuery):
     if payment_type == PaymentType.SUBSCRIPTION:
         try:
             await pre_checkout_query.answer(ok=True)
-        except Exception as e:
-            logging.exception(f'Error in pre_checkout: {e}')
+        except Exception:
+            error_trace = traceback.format_exc()
+            logging.exception(f'Error in pre_checkout: {error_trace}')
 
             await pre_checkout_query.answer(ok=False)
-
-            await send_message_to_admins(
-                bot=pre_checkout_query.bot,
-                message=f'#payment #subscription #error\n\n'
-                        f'🚫 Неизвестная ошибка в блоке оплаты у подписки:\n\n'
-                        f'💱 Метод оплаты: {PaymentMethod.TELEGRAM_STARS}\n'
-                        f'ℹ️ Информация:\n {e}\n\n'
-                        f'@roman_danilov, посмотришь? 🤨',
-                parse_mode=None,
-            )
     elif payment_type == PaymentType.PACKAGE:
         try:
             await pre_checkout_query.answer(ok=True)
-        except Exception as e:
+        except Exception:
             error_trace = traceback.format_exc()
-            logging.exception(f'Error in payment_handler: {error_trace}')
+            logging.exception(f'Error in pre_checkout: {error_trace}')
 
             await pre_checkout_query.answer(ok=False)
-
-            await send_message_to_admins(
-                bot=pre_checkout_query.bot,
-                message=f'#payment #package #error\n\n'
-                        f'🚫 Неизвестная ошибка в блоке оплаты у пакета:\n\n'
-                        f'💱 Метод оплаты: {PaymentMethod.TELEGRAM_STARS}\n'
-                        f'ℹ️ Информация:\n {e}\n\n'
-                        f'@roman_danilov, посмотришь? 🤨',
-                parse_mode=None,
-            )
     elif payment_type == PaymentType.CART:
         try:
             await pre_checkout_query.answer(ok=True)
-        except Exception as e:
+        except Exception:
             error_trace = traceback.format_exc()
-            logging.error(f'Error in payment_handler: {error_trace}')
+            logging.error(f'Error in pre_checkout: {error_trace}')
 
             await pre_checkout_query.answer(ok=False)
-
-            await send_message_to_admins(
-                bot=pre_checkout_query.bot,
-                message=f'#payment #packages #error\n\n'
-                        f'🚫 Неизвестная ошибка в блоке оплаты у пакетов:\n\n'
-                        f'💱 Метод оплаты: {PaymentMethod.YOOKASSA}\n'
-                        f'ℹ️ Информация:\n {e}\n\n'
-                        f'@roman_danilov, посмотришь? 🤨',
-                parse_mode=None,
-            )
     else:
         await pre_checkout_query.answer(ok=False)
 
@@ -1171,28 +1142,16 @@ async def handle_successful_payment(message: Message, state: FSMContext):
             text=get_localization(user_language_code).SUBSCRIPTION_SUCCESS,
         )
 
-        if payment.is_first_recurring:
-            await send_message_to_admins(
-                bot=message.bot,
-                message=f'#payment #subscription #success\n\n'
-                        f'🤑 <b>Успешно оформлена подписка у пользователя: {subscription.user_id}</b>\n\n'
-                        f'ℹ️ ID: {subscription.id}\n'
-                        f'💱 Метод оплаты: {subscription.payment_method}\n'
-                        f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                        f'💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}\n\n'
-                        f'Продолжаем в том же духе 💪',
+        await send_message_to_admins(
+            bot=message.bot,
+            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                status=SubscriptionStatus.ACTIVE,
+                subscription=subscription,
+                product=product,
+                is_trial=False,
+                is_renew=payment.is_first_recurring,
             )
-        else:
-            await send_message_to_admins(
-                bot=message.bot,
-                message=f'#payment #renew #subscription #success\n\n'
-                        f'🤑 <b>Успешно продлена подписка у пользователя: {subscription.user_id}</b>\n\n'
-                        f'ℹ️ ID: {subscription.id}\n'
-                        f'💱 Метод оплаты: {subscription.payment_method}\n'
-                        f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                        f'💰 Сумма: {subscription.amount}{Currency.SYMBOLS[subscription.currency]}\n\n'
-                        f'Продолжаем в том же духе 💪',
-            )
+        )
     elif payment_type == PaymentType.PACKAGE:
         _, package_id = payment.invoice_payload.split(':')
         package = await get_package(package_id)
@@ -1238,14 +1197,11 @@ async def handle_successful_payment(message: Message, state: FSMContext):
         )
         await send_message_to_admins(
             bot=message.bot,
-            message=f'#payment #package #success\n\n'
-                    f'🤑 <b>Успешно прошла оплата пакета у пользователя: {package.user_id}</b>\n\n'
-                    f'ℹ️ ID: {package.id}\n'
-                    f'💱 Метод оплаты: {package.payment_method}\n'
-                    f'💳 Тип: {product.names.get(LanguageCode.RU)}\n'
-                    f'🔢 Количество: {package.quantity}\n'
-                    f'💰 Сумма: {package.amount}{Currency.SYMBOLS[package.currency]}\n\n'
-                    f'Продолжаем в том же духе 💪',
+            message=get_localization(LanguageCode.RU).admin_payment_package_changed_status(
+                status=PackageStatus.SUCCESS,
+                package=package,
+                product=product,
+            )
         )
     elif payment_type == PaymentType.CART:
         user_id = payment.invoice_payload.split(':')[1]
@@ -1298,11 +1254,14 @@ async def handle_successful_payment(message: Message, state: FSMContext):
         )
         await send_message_to_admins(
             bot=message.bot,
-            message=f'#payment #packages #success\n\n'
-                    f'🤑 <b>Успешно прошла оплата пакетов у пользователя: {user.id}</b>\n\n'
-                    f'💱 Метод оплаты: {PaymentMethod.TELEGRAM_STARS}\n'
-                    f'💰 Сумма: {payment.total_amount}{Currency.SYMBOLS[packages[0].currency]}\n\n'
-                    f'Продолжаем в том же духе 💪',
+            message=get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
+                status=PackageStatus.SUCCESS,
+                user_id=user.id,
+                payment_method=PaymentMethod.TELEGRAM_STARS,
+                amount=float(payment.total_amount),
+                income_amount=float(payment.total_amount),
+                currency=packages[0].currency,
+            )
         )
 
     text = await get_switched_to_ai_model(

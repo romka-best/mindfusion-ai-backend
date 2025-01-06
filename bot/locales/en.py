@@ -41,7 +41,7 @@ class English(Texts):
         return f"""
 🎁 <b>Your bonus balance</b>
 
-💰 Current balance: {float(balance)}
+💰 Current balance: {int(balance)} 🪙
 
 To top up your bonus balance, you can:
 ━ 1️⃣ <b>Invite friends:</b>
@@ -1987,7 +1987,7 @@ To ensure your song in custom mode matches your preferences, please specify the 
 🔍 List the desired genres separated by commas in your next message, and let's start creating your unique song!
 """
     SUNO_START_AGAIN = "Start again 🔄"
-    SUNO_TOO_MANY_WORDS = "<b>Oh, oh!</b>🚧\n\nAt some steps, you sent too much text 📝\n\nTry again, but with a smaller text, please!"
+    SUNO_TOO_MANY_WORDS_ERROR = "<b>Oh, oh!</b>🚧\n\nAt some steps, you sent too much text 📝\n\nTry again, but with a smaller text, please!"
     SUNO_VALUE_ERROR = "It doesn't look like a prompt 🧐\n\nPlease enter a different value"
     SUNO_SKIP = "Skip ⏩️"
 

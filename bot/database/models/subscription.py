@@ -24,6 +24,7 @@ class SubscriptionStatus(StrEnum):
     FINISHED = 'FINISHED'
     DECLINED = 'DECLINED'
     CANCELED = 'CANCELED'
+    RESUBSCRIBED = 'RESUBSCRIBED'
     ERROR = 'ERROR'
 
 

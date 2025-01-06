@@ -10,7 +10,7 @@ from google.cloud.firestore_v1 import Increment
 
 from bot.config import config, MessageEffect
 from bot.database.main import firebase
-from bot.database.models.common import PaymentMethod
+from bot.database.models.common import Currency, PaymentMethod
 from bot.database.models.game import GameType, GameStatus
 from bot.database.models.package import PackageStatus
 from bot.database.models.product import Product, ProductType, ProductCategory
@@ -349,8 +349,8 @@ async def quantity_of_bonus_package_sent(message: Message, state: FSMContext):
         price = float(Product.get_discount_price(
             ProductType.PACKAGE,
             package_product_quantity,
-            product.prices.get(user.currency),
-            user.currency,
+            product.prices.get(Currency.XTR),
+            Currency.XTR,
             0,
         ))
         if price > user.balance:

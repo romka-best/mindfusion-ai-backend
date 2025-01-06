@@ -41,7 +41,7 @@ class Spanish(Texts):
         return f"""
 🎁 <b>Tu saldo de bonificación</b>
 
-💰 Saldo actual: {float(balance)} 🪙
+💰 Saldo actual: {int(balance)} 🪙
 
 Para aumentar tu saldo de bonificación, puedes:
 ━ 1️⃣ <b>Invitar a amigos:</b>
@@ -1984,7 +1984,7 @@ Para que tu canción en modo avanzado se ajuste completamente a tus preferencias
 🔍 Enumera los géneros deseados separados por comas en tu próximo mensaje, y comenzaré a crear una canción única para ti.
 """
     SUNO_START_AGAIN = "Comenzar de nuevo 🔄"
-    SUNO_TOO_MANY_WORDS = "<b>¡Uy!</b> 🚧\n\nEn alguna de las etapas enviaste un texto demasiado largo 📝\n\nPor favor, intenta de nuevo con un texto más corto."
+    SUNO_TOO_MANY_WORDS_ERROR = "<b>¡Uy!</b> 🚧\n\nEn alguna de las etapas enviaste un texto demasiado largo 📝\n\nPor favor, intenta de nuevo con un texto más corto."
     SUNO_VALUE_ERROR = "Eso no parece ser un prompt válido 🧐\n\nPor favor, introduce otro valor."
     SUNO_SKIP = "Saltar ⏩️"
 

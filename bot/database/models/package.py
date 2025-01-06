@@ -7,7 +7,6 @@ from bot.database.models.common import Currency, PaymentMethod
 class PackageStatus(StrEnum):
     SUCCESS = 'SUCCESS'
     WAITING = 'WAITING'
-    CANCELED = 'CANCELED'
     DECLINED = 'DECLINED'
     ERROR = 'ERROR'
 

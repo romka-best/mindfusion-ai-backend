@@ -4,13 +4,15 @@ from bot.database.models.common import (
     Model,
     ModelType,
     Currency,
+    PaymentMethod,
     VideoSummaryFocus,
     VideoSummaryFormat,
     VideoSummaryAmount,
 )
+from bot.database.models.package import Package, PackageStatus
 from bot.database.models.product import Product, ProductCategory
 from bot.database.models.prompt import Prompt
-from bot.database.models.subscription import SubscriptionStatus
+from bot.database.models.subscription import Subscription, SubscriptionStatus
 from bot.locales.types import LanguageCode
 
 
@@ -872,5 +874,34 @@ class Texts(Protocol):
         package_products: dict[str, str],
         count_income_money: dict,
         count_income_money_before: dict,
+    ):
+        raise NotImplementedError
+
+    @staticmethod
+    def admin_payment_subscription_changed_status(
+        status: SubscriptionStatus,
+        subscription: Subscription,
+        product: Product,
+        is_trial=False,
+        is_renew=False,
+    ):
+        raise NotImplementedError
+
+    @staticmethod
+    def admin_payment_package_changed_status(
+        status: PackageStatus,
+        package: Package,
+        product: Product,
+    ):
+        raise NotImplementedError
+
+    @staticmethod
+    def admin_payment_packages_changed_status(
+        status: PackageStatus,
+        user_id: str,
+        payment_method: PaymentMethod,
+        amount: float,
+        income_amount: float,
+        currency: Currency,
     ):
         raise NotImplementedError
