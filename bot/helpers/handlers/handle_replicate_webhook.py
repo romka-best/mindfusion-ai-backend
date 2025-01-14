@@ -21,15 +21,16 @@ from bot.database.operations.request.updaters import update_request
 from bot.database.operations.transaction.writers import write_transaction
 from bot.database.operations.user.getters import get_user
 from bot.handlers.ai.face_swap_handler import PRICE_FACE_SWAP, handle_face_swap
-from bot.handlers.ai.flux_handler import PRICE_FLUX
+from bot.handlers.ai.flux_handler import PRICE_FLUX_1_DEV, PRICE_FLUX_1_PRO
 from bot.handlers.ai.music_gen_handler import PRICE_MUSIC_GEN, handle_music_gen
 from bot.handlers.ai.photoshop_ai_handler import (
+    PRICE_PHOTOSHOP_AI_UPSCALE,
     PRICE_PHOTOSHOP_AI_RESTORATION,
     PRICE_PHOTOSHOP_AI_COLORIZATION,
     PRICE_PHOTOSHOP_AI_REMOVAL_BACKGROUND,
     handle_photoshop_ai,
 )
-from bot.handlers.ai.stable_diffusion_handler import PRICE_STABLE_DIFFUSION
+from bot.handlers.ai.stable_diffusion_handler import PRICE_STABLE_DIFFUSION_XL, PRICE_STABLE_DIFFUSION_3
 from bot.helpers.senders.send_audio import send_audio
 from bot.helpers.senders.send_document import send_document
 from bot.helpers.senders.send_error_info import send_error_info
@@ -100,10 +101,36 @@ async def handle_replicate_webhook(bot: Bot, dp: Dispatcher, prediction: dict):
             'seconds': generation.seconds,
         })
 
-    if product.details.get('quota') == Quota.STABLE_DIFFUSION:
-        asyncio.create_task(handle_replicate_stable_diffusion(bot, dp, user, user_language_code, request, generation))
-    elif product.details.get('quota') == Quota.FLUX:
-        asyncio.create_task(handle_replicate_flux(bot, dp, user, user_language_code, request, generation))
+    if (
+        product.details.get('quota') == Quota.STABLE_DIFFUSION_XL or
+        product.details.get('quota') == Quota.STABLE_DIFFUSION_3
+    ):
+        asyncio.create_task(
+            handle_replicate_stable_diffusion(
+                bot,
+                dp,
+                user,
+                user_language_code,
+                product.details.get('quota'),
+                request,
+                generation,
+            )
+        )
+    elif (
+        product.details.get('quota') == Quota.FLUX_1_DEV or
+        product.details.get('quota') == Quota.FLUX_1_PRO
+    ):
+        asyncio.create_task(
+            handle_replicate_flux(
+                bot,
+                dp,
+                user,
+                user_language_code,
+                product.details.get('quota'),
+                request,
+                generation,
+            )
+        )
     elif product.details.get('quota') == Quota.FACE_SWAP:
         asyncio.create_task(handle_replicate_face_swap(bot, dp, user, user_language_code, request, generation))
     elif product.details.get('quota') == Quota.PHOTOSHOP_AI:
@@ -144,7 +171,6 @@ async def handle_replicate_photoshop_ai(
             chat_id=user.telegram_chat_id,
             text=get_localization(user_language_code).ERROR,
             reply_markup=reply_markup,
-            parse_mode=None,
         )
 
     if request.status != RequestStatus.FINISHED:
@@ -154,7 +180,9 @@ async def handle_replicate_photoshop_ai(
         })
 
         action_name = request.details.get('type')
-        if action_name == PhotoshopAIAction.RESTORATION:
+        if action_name == PhotoshopAIAction.UPSCALE:
+            total_price = round(PRICE_PHOTOSHOP_AI_UPSCALE * generation.seconds, 6)
+        elif action_name == PhotoshopAIAction.RESTORATION:
             total_price = round(PRICE_PHOTOSHOP_AI_RESTORATION * generation.seconds, 6)
         elif action_name == PhotoshopAIAction.COLORIZATION:
             total_price = round(PRICE_PHOTOSHOP_AI_COLORIZATION * generation.seconds, 6)
@@ -364,7 +392,6 @@ async def handle_replicate_music_gen(
             chat_id=user.telegram_chat_id,
             text=get_localization(user_language_code).ERROR,
             reply_markup=reply_markup,
-            parse_mode=None,
         )
 
     if request.status != RequestStatus.FINISHED:
@@ -424,15 +451,16 @@ async def handle_replicate_stable_diffusion(
     dp: Dispatcher,
     user: User,
     user_language_code: LanguageCode,
+    user_quota: Quota,
     request: Request,
     generation: Generation,
 ):
     prompt = generation.details.get('prompt')
 
     if generation.result:
-        footer_text = f'\n\n🖼 {user.daily_limits[Quota.STABLE_DIFFUSION] + user.additional_usage_quota[Quota.STABLE_DIFFUSION]}' \
+        footer_text = f'\n\n🖼 {user.daily_limits[user_quota] + user.additional_usage_quota[user_quota]}' \
             if user.settings[Model.STABLE_DIFFUSION][UserSettings.SHOW_USAGE_QUOTA] and \
-               user.daily_limits[Quota.STABLE_DIFFUSION] != float('inf') else ''
+               user.daily_limits[user_quota] != float('inf') else ''
         caption = f'{get_localization(user_language_code).GENERATION_IMAGE_SUCCESS}{footer_text}'
 
         reply_markup = build_reaction_keyboard(generation.id)
@@ -451,7 +479,6 @@ async def handle_replicate_stable_diffusion(
             chat_id=user.telegram_chat_id,
             text=get_localization(user_language_code).ERROR,
             reply_markup=reply_markup,
-            parse_mode=None,
         )
 
     if request.status != RequestStatus.FINISHED:
@@ -460,7 +487,7 @@ async def handle_replicate_stable_diffusion(
             'status': request.status
         })
 
-        total_price = PRICE_STABLE_DIFFUSION
+        total_price = PRICE_STABLE_DIFFUSION_XL if user_quota == Quota.STABLE_DIFFUSION_XL else PRICE_STABLE_DIFFUSION_3
         update_tasks = [
             write_transaction(
                 user_id=user.id,
@@ -478,7 +505,7 @@ async def handle_replicate_stable_diffusion(
             ),
             update_user_usage_quota(
                 user,
-                Quota.STABLE_DIFFUSION,
+                user_quota,
                 1 if generation.result else 0,
             ),
         ]
@@ -507,15 +534,16 @@ async def handle_replicate_flux(
     dp: Dispatcher,
     user: User,
     user_language_code: LanguageCode,
+    user_quota: Quota,
     request: Request,
     generation: Generation,
 ):
     prompt = generation.details.get('prompt')
 
     if generation.result:
-        footer_text = f'\n\n🖼 {user.daily_limits[Quota.FLUX] + user.additional_usage_quota[Quota.FLUX]}' \
+        footer_text = f'\n\n🖼 {user.daily_limits[user_quota] + user.additional_usage_quota[user_quota]}' \
             if user.settings[Model.FLUX][UserSettings.SHOW_USAGE_QUOTA] and \
-               user.daily_limits[Quota.FLUX] != float('inf') else ''
+               user.daily_limits[user_quota] != float('inf') else ''
         caption = f'{get_localization(user_language_code).GENERATION_IMAGE_SUCCESS}{footer_text}'
 
         reply_markup = build_reaction_keyboard(generation.id)
@@ -534,7 +562,6 @@ async def handle_replicate_flux(
             chat_id=user.telegram_chat_id,
             text=get_localization(user_language_code).ERROR,
             reply_markup=reply_markup,
-            parse_mode=None,
         )
 
     if request.status != RequestStatus.FINISHED:
@@ -543,7 +570,7 @@ async def handle_replicate_flux(
             'status': request.status
         })
 
-        total_price = PRICE_FLUX
+        total_price = PRICE_FLUX_1_DEV if user_quota == Quota.FLUX_1_DEV else PRICE_FLUX_1_PRO
         update_tasks = [
             write_transaction(
                 user_id=user.id,
@@ -561,7 +588,7 @@ async def handle_replicate_flux(
             ),
             update_user_usage_quota(
                 user,
-                Quota.FLUX,
+                user_quota,
                 1 if generation.result else 0,
             ),
         ]

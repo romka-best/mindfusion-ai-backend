@@ -190,7 +190,8 @@ async def handle_catalog_digital_employees_selection(callback_query: CallbackQue
 
             await callback_query.message.reply_photo(
                 photo=URLInputFile(role_photo_link, filename=role.photo, timeout=300),
-                caption=role.translated_descriptions.get(user_language_code, LanguageCode.EN),
+                caption=role.translated_descriptions.get(user_language_code) or
+                        role.translated_descriptions.get(LanguageCode.EN),
                 allow_sending_without_reply=True,
             )
 

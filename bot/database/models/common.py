@@ -26,6 +26,7 @@ class Model:
     STABLE_DIFFUSION = 'stable-diffusion'
     FLUX = 'flux'
     LUMA_PHOTON = 'luma-photon'
+    RECRAFT = 'recraft'
     FACE_SWAP = 'face-swap'
     PHOTOSHOP_AI = 'photoshop-ai'
     MUSIC_GEN = 'music-gen'
@@ -33,6 +34,7 @@ class Model:
     KLING = 'kling'
     RUNWAY = 'runway'
     LUMA_RAY = 'luma-ray'
+    PIKA = 'pika'
 
 
 class ModelType(StrEnum):
@@ -60,9 +62,12 @@ class Quota:
     GEMINI_VIDEO = 'gemini_video'
     DALL_E = 'dall_e'
     MIDJOURNEY = 'midjourney'
-    STABLE_DIFFUSION = 'stable_diffusion'
-    FLUX = 'flux'
+    STABLE_DIFFUSION_XL = 'stable_diffusion_xl'
+    STABLE_DIFFUSION_3 = 'stable_diffusion_3'
+    FLUX_1_DEV = 'flux_1_dev'
+    FLUX_1_PRO = 'flux_1_pro'
     LUMA_PHOTON = 'luma_photon'
+    RECRAFT = 'recraft'
     FACE_SWAP = 'face_swap'
     PHOTOSHOP_AI = 'photoshop_ai'
     MUSIC_GEN = 'music_gen'
@@ -70,6 +75,8 @@ class Quota:
     KLING = 'kling'
     RUNWAY = 'runway'
     LUMA_RAY = 'luma_ray'
+    PIKA = 'pika'
+    WORK_WITH_FILES = 'work_with_files'
     FAST_MESSAGES = 'fast_messages'
     VOICE_MESSAGES = 'voice_messages'
     ACCESS_TO_CATALOG = 'access_to_catalog'
@@ -167,11 +174,13 @@ class MidjourneyAction:
 
 
 class StableDiffusionVersion:
-    LATEST = 'LATEST'
+    XL = 'xl'
+    V3 = '3.5'
 
 
 class FluxVersion:
-    LATEST = 'LATEST'
+    V1_Dev = 'flux-1-dev'
+    V1_Pro = 'flux-1-pro'
 
 
 class FluxSafetyTolerance:
@@ -184,6 +193,10 @@ class LumaPhotonVersion:
     V1 = 'photon-1'
 
 
+class RecraftVersion:
+    V3 = 'recraftv3'
+
+
 class FaceSwapVersion:
     LATEST = 'LATEST'
 
@@ -193,6 +206,7 @@ class PhotoshopAIVersion:
 
 
 class PhotoshopAIAction:
+    UPSCALE = 'upscale'
     RESTORATION = 'restoration'
     COLORIZATION = 'colorization'
     REMOVAL_BACKGROUND = 'removal_background'
@@ -203,8 +217,7 @@ class MusicGenVersion:
 
 
 class SunoVersion:
-    V3 = 'chirp-v3-0'
-    V3_5 = 'chirp-v3-5'
+    V3 = 'chirp-v3-5'
     V4 = 'chirp-v4'
 
 
@@ -243,6 +256,10 @@ class RunwayResolution:
 
 class LumaRayVersion:
     LATEST = 'LATEST'
+
+
+class PikaVersion:
+    V2 = '2.0'
 
 
 class AspectRatio:

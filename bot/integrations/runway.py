@@ -6,7 +6,7 @@ from bot.config import config
 from bot.database.models.common import RunwayVersion, RunwayResolution, RunwayDuration
 
 client = AsyncRunwayML(
-    api_key=config.RUNWAYML_API_TOKEN.get_secret_value(),
+    api_key=config.RUNWAYML_API_KEY.get_secret_value(),
 )
 
 

@@ -224,7 +224,7 @@ async def update_user_subscription(bot: Bot, user: User, batch: AsyncWriteBatch,
                 return user
             elif current_subscription.payment_method == PaymentMethod.STRIPE or current_subscription.payment_method == PaymentMethod.TELEGRAM_STARS:
                 days_difference = (current_date - current_subscription.end_date).days
-                if days_difference > 3:
+                if days_difference > 1:
                     current_subscription.status = SubscriptionStatus.FINISHED if current_subscription.status != SubscriptionStatus.CANCELED else current_subscription.status
 
                     activated_subscriptions = await get_activated_subscriptions_by_user_id(user.id, current_date)

@@ -53,6 +53,8 @@ from bot.handlers.ai.model_handler import model_router
 from bot.handlers.ai.music_gen_handler import music_gen_router
 from bot.handlers.ai.perplexity_handler import perplexity_router
 from bot.handlers.ai.photoshop_ai_handler import photoshop_ai_router
+from bot.handlers.ai.pika_handler import pika_router
+from bot.handlers.ai.recraft_handler import recraft_router
 from bot.handlers.ai.runway_handler import runway_router
 from bot.handlers.ai.stable_diffusion_handler import stable_diffusion_router
 from bot.handlers.ai.suno_handler import suno_router
@@ -83,6 +85,7 @@ from bot.helpers.handlers.handle_kling_webhook import handle_kling_webhook
 from bot.helpers.handlers.handle_luma_webhook import handle_luma_webhook
 from bot.helpers.handlers.handle_midjourney_webhook import handle_midjourney_webhook
 from bot.helpers.handlers.handle_network_error import handle_network_error
+from bot.helpers.handlers.handle_pika_webhook import handle_pika_webhook
 from bot.helpers.handlers.handle_replicate_webhook import handle_replicate_webhook
 from bot.helpers.handlers.handle_stripe_webhook import handle_stripe_webhook
 from bot.helpers.handlers.handle_suno_webhook import handle_suno_webhook
@@ -104,6 +107,7 @@ WEBHOOK_MIDJOURNEY_PATH = config.WEBHOOK_MIDJOURNEY_PATH
 WEBHOOK_SUNO_PATH = config.WEBHOOK_SUNO_PATH
 WEBHOOK_KLING_PATH = config.WEBHOOK_KLING_PATH
 WEBHOOK_LUMA_PATH = config.WEBHOOK_LUMA_PATH
+WEBHOOK_PIKA_PATH = config.WEBHOOK_PIKA_PATH
 
 WEBHOOK_BOT_URL = config.WEBHOOK_URL + WEBHOOK_BOT_PATH
 WEBHOOK_REPLICATE_URL = config.WEBHOOK_URL + config.WEBHOOK_REPLICATE_PATH
@@ -172,6 +176,7 @@ async def lifespan(_: FastAPI):
         midjourney_router,
         stable_diffusion_router,
         flux_router,
+        recraft_router,
         face_swap_router,
         photoshop_ai_router,
         music_gen_router,
@@ -179,6 +184,7 @@ async def lifespan(_: FastAPI):
         kling_router,
         runway_router,
         luma_router,
+        pika_router,
         document_router,
         photo_router,
         video_router,
@@ -192,8 +198,6 @@ async def lifespan(_: FastAPI):
     dp.message.middleware(AuthMessageMiddleware())
     dp.callback_query.middleware(AuthCallbackQueryMiddleware())
 
-    await set_description(bot)
-    await set_commands(bot)
     await firebase.init()
     yield
     await bot.session.close()
@@ -354,9 +358,19 @@ async def luma_webhook(body: dict, background_tasks: BackgroundTasks):
     background_tasks.add_task(handle_luma_webhook, bot, dp, body)
 
 
+@app.post(WEBHOOK_PIKA_PATH)
+async def pika_webhook(body: dict):
+    is_ok = await handle_pika_webhook(bot, dp, body)
+    if not is_ok:
+        return JSONResponse(content={}, status_code=500)
+
+
 @app.get('/migrate')
 async def migrate_webhook(background_tasks: BackgroundTasks):
     background_tasks.add_task(migrate, bot)
+
+    background_tasks.add_task(set_description, bot)
+    background_tasks.add_task(set_commands, bot)
 
     return {'code': 200}
 

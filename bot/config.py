@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     WEBHOOK_SUNO_PATH: str
     WEBHOOK_KLING_PATH: str
     WEBHOOK_LUMA_PATH: str
+    WEBHOOK_PIKA_PATH: str
 
     REDIS_URL: str
 
@@ -65,12 +66,12 @@ class Settings(BaseSettings):
     BOT_TOKEN: SecretStr
 
     MESSAGE_EFFECTS: dict[MessageEffect, str] = field(default_factory=lambda: {
-        MessageEffect.FIRE: '5104841245755180586',  # 🔥
-        MessageEffect.LIKE: '5107584321108051014',  # 👍
-        MessageEffect.DISLIKE: '5104858069142078462',  # 👎
-        MessageEffect.HEART: '5159385139981059251',  # ❤️
-        MessageEffect.CONGRATS: '5046509860389126442',  # 🎉
-        MessageEffect.POOP: '5046589136895476101',  # 💩
+        MessageEffect.FIRE: '5104841245755180586', # 🔥
+        MessageEffect.LIKE: '5107584321108051014', # 👍
+        MessageEffect.DISLIKE: '5104858069142078462', # 👎
+        MessageEffect.HEART: '5159385139981059251', # ❤️
+        MessageEffect.CONGRATS: '5046509860389126442', # 🎉
+        MessageEffect.POOP: '5046589136895476101', # 💩
     })
     MESSAGE_STICKERS: dict[MessageSticker, str] = field(default_factory=lambda: {
         MessageSticker.LOGO: 'CAACAgIAAxkBAAENOatnRjb80J2N4a8yNcN7pKuIutcOwgACE2cAAuj3MUqczl2UrDJzHjYE',
@@ -106,17 +107,20 @@ class Settings(BaseSettings):
     GROK_API_KEY: SecretStr
     PERPLEXITY_API_KEY: SecretStr
 
-    EIGHTIFY_API_TOKEN: SecretStr
+    EIGHTIFY_API_KEY: SecretStr
 
-    REPLICATE_API_TOKEN: SecretStr
+    REPLICATE_API_KEY: SecretStr
 
-    MIDJOURNEY_API_TOKEN: SecretStr
+    MIDJOURNEY_API_KEY: SecretStr
+    RECRAFT_API_KEY: SecretStr
+    FACE_SWAP_API_KEY: SecretStr
 
-    SUNO_API_TOKEN: SecretStr
+    SUNO_API_KEY: SecretStr
 
     KLING_API_KEY: SecretStr
-    RUNWAYML_API_TOKEN: SecretStr
+    RUNWAYML_API_KEY: SecretStr
     LUMA_API_KEY: SecretStr
+    PIKA_API_KEY: SecretStr
 
     model_config = SettingsConfigDict(
         env_file=str(BASE_DIR / f'.env.{os.getenv("ENVIRONMENT", "testing")}'),

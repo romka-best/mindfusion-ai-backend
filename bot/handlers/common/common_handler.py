@@ -4,11 +4,11 @@ from aiogram import Router
 from aiogram.filters import Command, CommandStart, ChatMemberUpdatedFilter, KICKED, MEMBER
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, ChatMemberUpdated
+from google.cloud.firestore_v1 import Increment
 
 from bot.config import config, MessageEffect, MessageSticker
 from bot.database.main import firebase
 from bot.database.models.common import (
-    Model,
     Quota,
     UTM,
     ChatGPTVersion,
@@ -24,18 +24,17 @@ from bot.database.operations.user.initialize_user_for_the_first_time import init
 from bot.database.operations.user.updaters import update_user
 from bot.handlers.ai.chat_gpt_handler import handle_chatgpt
 from bot.handlers.ai.claude_handler import handle_claude
-from bot.handlers.ai.face_swap_handler import handle_face_swap
 from bot.handlers.ai.gemini_handler import handle_gemini
 from bot.handlers.ai.grok_handler import handle_grok
 from bot.handlers.ai.model_handler import handle_model
-from bot.handlers.ai.music_gen_handler import handle_music_gen
-from bot.handlers.ai.photoshop_ai_handler import handle_photoshop_ai
-from bot.handlers.ai.suno_handler import handle_suno
 from bot.handlers.common.catalog_handler import handle_catalog_prompts
 from bot.handlers.payment.bonus_handler import handle_bonus
 from bot.handlers.payment.payment_handler import handle_subscribe, handle_package
+from bot.helpers.checkers.check_user_last_activity import set_notification_stage
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
+from bot.helpers.handlers.handle_model_info import handle_model_info
+from bot.helpers.setters.set_commands import set_commands_for_user
 from bot.helpers.updaters.update_daily_limits import update_user_daily_limits
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import (
@@ -44,7 +43,8 @@ from bot.keyboards.common.common import (
     build_error_keyboard,
     build_time_limit_exceeded_chosen_keyboard,
 )
-from bot.locales.main import get_localization, get_user_language
+from bot.keyboards.payment.bonus import build_bonus_suggestion_keyboard
+from bot.locales.main import get_localization, get_user_language, set_user_language
 
 common_router = Router()
 
@@ -79,27 +79,28 @@ async def start(message: Message, state: FSMContext):
                     if referred_by_user:
                         count_of_referred_users = await get_count_of_users_by_referral(referred_by_user.id)
                         if count_of_referred_users > 40:
-                            text = get_localization(referred_by_user_language_code).BONUS_REFERRAL_LIMIT_ERROR
                             tasks.append(message.bot.send_message(
                                 chat_id=referred_by_user.telegram_chat_id,
-                                text=text,
+                                text=get_localization(referred_by_user_language_code).BONUS_REFERRAL_LIMIT_ERROR,
+                                reply_markup=build_bonus_suggestion_keyboard(referred_by_user_language_code),
                                 message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.CONGRATS),
                                 disable_notification=True,
                             ))
                         else:
-                            added_to_balance = 25.00
-                            referred_by_user.balance += added_to_balance
                             await update_user(referred_by_user.id, {
-                                'balance': referred_by_user.balance,
+                                'balance': Increment(25),
                             })
 
-                            text = get_localization(referred_by_user_language_code).BONUS_REFERRAL_SUCCESS
                             tasks.append(message.bot.send_message(
                                 chat_id=referred_by_user.telegram_chat_id,
-                                text=text,
+                                text=get_localization(referred_by_user_language_code).BONUS_REFERRAL_SUCCESS,
+                                reply_markup=build_bonus_suggestion_keyboard(referred_by_user_language_code),
                                 message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.CONGRATS),
                                 disable_notification=True,
                             ))
+                elif sub_param_key == 'c':
+                    campaign_id = sub_param_value
+                    # TODO
                 elif sub_param_key == 'model' and sub_param_value in [
                     'chatgpt4omnimini',
                     'chatgpt4omni',
@@ -120,6 +121,7 @@ async def start(message: Message, state: FSMContext):
                     'stablediffusion',
                     'flux',
                     'lumaphoton',
+                    'recraft',
                     'faceswap',
                     'photoshopai',
                     'suno',
@@ -127,6 +129,7 @@ async def start(message: Message, state: FSMContext):
                     'kling',
                     'runway',
                     'lumaray',
+                    'pika',
                 ]:
                     if sub_param_value == 'chatgpt4omnimini':
                         default_quota = Quota.CHAT_GPT4_OMNI_MINI
@@ -160,12 +163,18 @@ async def start(message: Message, state: FSMContext):
                         default_quota = Quota.DALL_E
                     elif sub_param_value == 'midjourney':
                         default_quota = Quota.MIDJOURNEY
-                    elif sub_param_value == 'stablediffusion':
-                        default_quota = Quota.STABLE_DIFFUSION
-                    elif sub_param_value == 'flux':
-                        default_quota = Quota.FLUX
+                    elif sub_param_value == 'stablediffusionxl':
+                        default_quota = Quota.STABLE_DIFFUSION_XL
+                    elif sub_param_value == 'stablediffusion3':
+                        default_quota = Quota.STABLE_DIFFUSION_3
+                    elif sub_param_value == 'flux1dev':
+                        default_quota = Quota.FLUX_1_DEV
+                    elif sub_param_value == 'flux1pro':
+                        default_quota = Quota.FLUX_1_PRO
                     elif sub_param_value == 'lumaphoton':
                         default_quota = Quota.LUMA_PHOTON
+                    elif sub_param_value == 'recraft':
+                        default_quota = Quota.RECRAFT
                     elif sub_param_value == 'faceswap':
                         default_quota = Quota.FACE_SWAP
                     elif sub_param_value == 'photoshopai':
@@ -180,11 +189,13 @@ async def start(message: Message, state: FSMContext):
                         default_quota = Quota.RUNWAY
                     elif sub_param_value == 'lumaray':
                         default_quota = Quota.LUMA_RAY
+                    elif sub_param_value == 'pika':
+                        default_quota = Quota.PIKA
                 elif sub_param_key in utm:
                     user_utm[sub_param_key] = sub_param_value.lower()
 
-        language_code = message.from_user.language_code
-        await state.storage.redis.set(f'user:{user_id}:language', language_code)
+        language_code = await set_user_language(user_id, message.from_user.language_code, state.storage)
+        await set_commands_for_user(message.bot, user_id, language_code)
 
         chat_title = get_localization(language_code).CHAT_DEFAULT_TITLE
         transaction = firebase.db.transaction()
@@ -244,42 +255,13 @@ async def start(message: Message, state: FSMContext):
     await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
     await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
 
-    if user.current_model == Model.EIGHTIFY:
-        await message.answer(
-            text=get_localization(user_language_code).EIGHTIFY_INFO,
-        )
-    elif user.current_model == Model.GEMINI_VIDEO:
-        await message.answer(
-            text=get_localization(user_language_code).GEMINI_VIDEO_INFO,
-        )
-    elif user.current_model == Model.FACE_SWAP:
-        await handle_face_swap(
-            bot=message.bot,
-            chat_id=user.telegram_chat_id,
-            state=state,
-            user_id=user.id,
-        )
-    elif user.current_model == Model.PHOTOSHOP_AI:
-        await handle_photoshop_ai(
-            bot=message.bot,
-            chat_id=user.telegram_chat_id,
-            state=state,
-            user_id=user.id,
-        )
-    elif user.current_model == Model.MUSIC_GEN:
-        await handle_music_gen(
-            bot=message.bot,
-            chat_id=user.telegram_chat_id,
-            state=state,
-            user_id=user.id,
-        )
-    elif user.current_model == Model.SUNO:
-        await handle_suno(
-            bot=message.bot,
-            chat_id=user.telegram_chat_id,
-            state=state,
-            user_id=user.id,
-        )
+    await handle_model_info(
+        bot=message.bot,
+        chat_id=user.telegram_chat_id,
+        state=state,
+        model=user.current_model,
+        language_code=user_language_code,
+    )
 
     if len(tasks) > 0:
         await asyncio.gather(*tasks)
@@ -296,12 +278,7 @@ async def start_selection(callback_query: CallbackQuery, state: FSMContext):
 
     if action == 'quick_guide':
         await callback_query.message.edit_text(
-            text=get_localization(user_language_code).START_QUICK_GUIDE,
-            reply_markup=build_start_chosen_keyboard(user_language_code),
-        )
-    elif action == 'additional_features':
-        await callback_query.message.edit_text(
-            text=get_localization(user_language_code).START_ADDITIONAL_FEATURES,
+            text=get_localization(user_language_code).START_QUICK_GUIDE_INFO,
             reply_markup=build_start_chosen_keyboard(user_language_code),
         )
     else:
@@ -451,21 +428,6 @@ async def reaction_selection(callback_query: CallbackQuery):
         )
 
 
-@common_router.callback_query(lambda c: c.data.startswith('limit_exceeded:'))
-async def limit_exceeded_selection(callback_query: CallbackQuery, state: FSMContext):
-    await callback_query.answer()
-
-    action = callback_query.data.split(':')[1]
-    if action == 'change_ai_model':
-        await handle_model(callback_query.message, state, str(callback_query.from_user.id))
-    elif action == 'open_bonus_info':
-        await handle_bonus(callback_query.message, str(callback_query.from_user.id), state)
-    elif action == 'open_buy_subscriptions_info':
-        await handle_subscribe(callback_query.message, str(callback_query.from_user.id), state)
-    elif action == 'open_buy_packages_info':
-        await handle_package(callback_query.message, str(callback_query.from_user.id), state)
-
-
 @common_router.callback_query(lambda c: c.data.startswith('buy_motivation:'))
 async def buy_motivation_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
@@ -501,13 +463,26 @@ async def time_limit_exceeded_selection(callback_query: CallbackQuery, state: FS
 async def notify_about_quota_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
+    user_id = str(callback_query.from_user.id)
+
     action = callback_query.data.split(':')[1]
     if action == 'examples':
         await handle_catalog_prompts(
             callback_query.message,
-            str(callback_query.from_user.id),
+            user_id,
             state,
             False,
+        )
+    elif action == 'turn_off':
+        user_language_code = await get_user_language(user_id, state.storage)
+
+        await set_notification_stage(
+            user_id,
+            10,
+            state.storage,
+        )
+        await callback_query.message.reply(
+            text=get_localization(user_language_code).NOTIFY_ABOUT_QUOTA_TURN_OFF_SUCCESS,
         )
 
 
@@ -517,7 +492,7 @@ async def suggestions_selection(callback_query: CallbackQuery, state: FSMContext
 
     action = callback_query.data.split(':')[1]
     if action == 'change_ai_model':
-        await handle_model(callback_query.message, state, str(callback_query.from_user.id))
+        await handle_model(callback_query.message, str(callback_query.from_user.id), state)
 
 
 @common_router.callback_query(lambda c: c.data.endswith(':close'))

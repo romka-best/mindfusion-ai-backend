@@ -23,14 +23,25 @@ class Texts(Protocol):
     ACTION_CANCEL: str
     ACTION_APPROVE: str
     ACTION_DENY: str
+    ACTION_TO_OTHER_MODELS: str
+    ACTION_TO_OTHER_TYPE_MODELS: str
 
     # Bonus
     @staticmethod
-    def bonus_info(user_id: str, balance: float, referred_count: int, feedback_count: int, play_count: int) -> str:
+    def bonus_info(balance: int) -> str:
         raise NotImplementedError
 
+    @staticmethod
+    def bonus_info_earn(user_id: str, referred_count: int, feedback_count: int, play_count: int):
+        raise NotImplementedError
+
+    @staticmethod
+    def bonus_info_spend(balance: int):
+        raise NotImplementedError
+
+    BONUS_EARN: str
+    BONUS_SPEND: str
     BONUS_ACTIVATED_SUCCESSFUL: str
-    BONUS_CHOOSE_PACKAGE: str
     BONUS_INVITE_FRIEND: str
     BONUS_REFERRAL_SUCCESS: str
     BONUS_REFERRAL_LIMIT_ERROR: str
@@ -106,7 +117,6 @@ class Texts(Protocol):
 
     CHAT_DEFAULT_TITLE: str
     CHAT_MANAGE: str
-    CHAT_SHOW: str
     CHAT_CREATE: str
     CHAT_CREATE_SUCCESS: str
     CHAT_TYPE_TITLE: str
@@ -195,7 +205,9 @@ class Texts(Protocol):
     FEEDBACK_DENIED: str
 
     # Flux
-    FLUX = '🫐 Flux 1.1 Pro'
+    FLUX = '🫐 Flux'
+    FLUX_1_DEV = '🌲 Flux 1.0 Dev'
+    FLUX_1_PRO = '🏔 Flux 1.1 Pro'
     FLUX_STRICT_SAFETY_TOLERANCE: str
     FLUX_MIDDLE_SAFETY_TOLERANCE: str
     FLUX_PERMISSIVE_SAFETY_TOLERANCE: str
@@ -244,15 +256,30 @@ class Texts(Protocol):
     INFO_MUSIC_MODELS: str
     INFO_VIDEO_MODELS: str
     INFO_CHAT_GPT: str
+    INFO_CHAT_GPT_4_OMNI_MINI: str
+    INFO_CHAT_GPT_4_OMNI: str
+    INFO_CHAT_GPT_O_1_MINI: str
+    INFO_CHAT_GPT_O_1: str
     INFO_CLAUDE: str
+    INFO_CLAUDE_3_HAIKU: str
+    INFO_CLAUDE_3_SONNET: str
+    INFO_CLAUDE_3_OPUS: str
     INFO_GEMINI: str
+    INFO_GEMINI_2_FLASH: str
+    INFO_GEMINI_1_PRO: str
+    INFO_GEMINI_1_ULTRA: str
     INFO_GROK: str
     INFO_PERPLEXITY: str
     INFO_DALL_E: str
     INFO_MIDJOURNEY: str
     INFO_STABLE_DIFFUSION: str
+    INFO_STABLE_DIFFUSION_XL: str
+    INFO_STABLE_DIFFUSION_3: str
     INFO_FLUX: str
+    INFO_FLUX_1_DEV: str
+    INFO_FLUX_1_PRO: str
     INFO_LUMA_PHOTON: str
+    INFO_RECRAFT: str
     INFO_FACE_SWAP: str
     INFO_PHOTOSHOP_AI: str
     INFO_MUSIC_GEN: str
@@ -260,6 +287,7 @@ class Texts(Protocol):
     INFO_KLING: str
     INFO_RUNWAY: str
     INFO_LUMA_RAY: str
+    INFO_PIKA: str
 
     # Kling
     KLING = '🎬 Kling'
@@ -289,9 +317,14 @@ class Texts(Protocol):
     MODEL_CHOOSE_CHAT_GPT: str
     MODEL_CHOOSE_CLAUDE: str
     MODEL_CHOOSE_GEMINI: str
+    MODEL_CHOOSE_STABLE_DIFFUSION: str
+    MODEL_CHOOSE_FLUX: str
     MODEL_CONTINUE_GENERATING: str
     MODEL_ALREADY_MAKE_REQUEST: str
     MODEL_READY_FOR_NEW_REQUEST: str
+    MODEL_SHOW_QUOTA: str
+    MODEL_SWITCHED_TO_AI_MANAGE: str
+    MODEL_SWITCHED_TO_AI_MANAGE_INFO: str
     MODEL_SWITCHED_TO_AI_SETTINGS: str
     MODEL_SWITCHED_TO_AI_INFO: str
     MODEL_SWITCHED_TO_AI_EXAMPLES: str
@@ -329,6 +362,10 @@ class Texts(Protocol):
     def model_reached_usage_limit():
         raise NotImplementedError
 
+    @staticmethod
+    def model_restricted(model: str):
+        raise NotImplementedError
+
     MODELS_TEXT: str
     MODELS_SUMMARY: str
     MODELS_IMAGE: str
@@ -341,6 +378,7 @@ class Texts(Protocol):
     MUSIC_GEN_TYPE_SECONDS: str
     MUSIC_GEN_MIN_ERROR: str
     MUSIC_GEN_MAX_ERROR: str
+    MUSIC_GEN_SECONDS_10: str
     MUSIC_GEN_SECONDS_30: str
     MUSIC_GEN_SECONDS_60: str
     MUSIC_GEN_SECONDS_180: str
@@ -357,6 +395,9 @@ class Texts(Protocol):
         subscription_limits: dict,
     ) -> str:
         raise NotImplementedError
+
+    NOTIFY_ABOUT_QUOTA_TURN_OFF: str
+    NOTIFY_ABOUT_QUOTA_TURN_OFF_SUCCESS: str
 
     # Open
     OPEN_SETTINGS: str
@@ -416,6 +457,8 @@ class Texts(Protocol):
     # Photoshop AI
     PHOTOSHOP_AI = '🪄 Photoshop AI'
     PHOTOSHOP_AI_INFO: str
+    PHOTOSHOP_AI_UPSCALE: str
+    PHOTOSHOP_AI_UPSCALE_INFO: str
     PHOTOSHOP_AI_RESTORATION: str
     PHOTOSHOP_AI_RESTORATION_INFO: str
     PHOTOSHOP_AI_COLORIZATION: str
@@ -423,9 +466,8 @@ class Texts(Protocol):
     PHOTOSHOP_AI_REMOVE_BACKGROUND: str
     PHOTOSHOP_AI_REMOVE_BACKGROUND_INFO: str
 
-    @staticmethod
-    def photoshop_ai_actions() -> list[str]:
-        raise NotImplementedError
+    # Pika
+    PIKA = '🐇 Pika'
 
     # Profile
     @staticmethod
@@ -433,7 +475,6 @@ class Texts(Protocol):
         subscription_name: str,
         subscription_status: SubscriptionStatus,
         current_model: str,
-        current_currency: Currency,
         renewal_date,
     ) -> str:
         raise NotImplementedError
@@ -441,8 +482,8 @@ class Texts(Protocol):
     @staticmethod
     def profile_quota(
         subscription_limits: dict,
-        daily_limits,
-        additional_usage_quota,
+        daily_limits: dict,
+        additional_usage_quota: dict,
     ) -> str:
         raise NotImplementedError
 
@@ -473,6 +514,9 @@ class Texts(Protocol):
     # Runway
     RUNWAY = '🎥 Runway'
 
+    # Recraft
+    RECRAFT = '🐼 Recraft'
+
     # Remove Restriction
     REMOVE_RESTRICTION: str
     REMOVE_RESTRICTION_INFO: str
@@ -484,8 +528,6 @@ class Texts(Protocol):
 
     SETTINGS_CHOOSE_MODEL_TYPE: str
     SETTINGS_CHOOSE_MODEL: str
-    SETTINGS_TO_OTHER_MODELS: str
-    SETTINGS_TO_OTHER_TYPE_MODELS: str
     SETTINGS_VOICE_MESSAGES: str
     SETTINGS_VERSION: str
     SETTINGS_FOCUS: str
@@ -529,14 +571,14 @@ class Texts(Protocol):
         raise NotImplementedError
 
     # Stable Diffusion
-    STABLE_DIFFUSION = '🎆 Stable Diffusion 3.5'
+    STABLE_DIFFUSION = '🎆 Stable Diffusion'
+    STABLE_DIFFUSION_XL = '🦄 Stable Diffusion XL'
+    STABLE_DIFFUSION_3 = '🧑‍🚀 Stable Diffusion 3.5'
 
     # Start
     START_INFO: str
     START_QUICK_GUIDE: str
-    START_ADDITIONAL_FEATURES: str
     START_QUICK_GUIDE_INFO: str
-    START_ADDITIONAL_FEATURES_INFO: str
 
     # Subscription
     SUBSCRIPTION: str

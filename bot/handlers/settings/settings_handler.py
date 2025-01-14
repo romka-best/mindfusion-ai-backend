@@ -44,7 +44,6 @@ from bot.helpers.getters.get_model_type import get_model_type
 from bot.integrations.kling import Kling
 from bot.integrations.openAI import get_cost_for_image
 from bot.integrations.runway import get_cost_for_video
-from bot.keyboards.common.common import build_buy_motivation_keyboard
 from bot.keyboards.settings.chats import (
     build_chats_keyboard,
     build_create_chat_keyboard,
@@ -69,7 +68,7 @@ settings_router = Router()
 
 
 @settings_router.message(Command('settings'))
-async def settings_choose_model(message: Message, state: FSMContext):
+async def settings(message: Message, state: FSMContext):
     await state.clear()
 
     await handle_settings(message, str(message.from_user.id), state, True)
@@ -719,7 +718,6 @@ async def handle_voice_messages_setting_selection(callback_query: CallbackQuery,
 
 
 async def handle_chats(message: Message, user_id: str, state: FSMContext, model: Optional[Model] = None):
-    user = await get_user(user_id)
     user_language_code = await get_user_language(user_id, state.storage)
 
     all_chats = await get_chats_by_user_id(user_id)
@@ -796,10 +794,8 @@ async def handle_chat_selection(callback_query: CallbackQuery, state: FSMContext
             )
         else:
             text = get_localization(user_language_code).CHAT_SWITCH_FORBIDDEN_ERROR
-            reply_markup = build_buy_motivation_keyboard(user_language_code)
             await callback_query.message.answer(
                 text=text,
-                reply_markup=reply_markup,
             )
     elif action == 'reset':
         reply_keyboard = build_reset_chat_keyboard(user_language_code)
@@ -812,18 +808,13 @@ async def handle_chat_selection(callback_query: CallbackQuery, state: FSMContext
 
         if len(all_chats) > 1:
             current_chat = await get_chat_by_user_id(user_id)
-            reply_markup = build_delete_chat_keyboard(user_language_code, current_chat.id, all_chats)
-
             await callback_query.message.answer(
                 text=get_localization(user_language_code).CHAT_DELETE,
-                reply_markup=reply_markup,
+                reply_markup=build_delete_chat_keyboard(user_language_code, current_chat.id, all_chats),
             )
         else:
-            text = get_localization(user_language_code).CHAT_DELETE_FORBIDDEN_ERROR
-            reply_markup = build_buy_motivation_keyboard(user_language_code)
             await callback_query.message.answer(
-                text=text,
-                reply_markup=reply_markup,
+                text=get_localization(user_language_code).CHAT_DELETE_FORBIDDEN_ERROR,
             )
 
 

@@ -26,23 +26,23 @@ commands_en = [
     ),
     BotCommand(
         command='text',
-        description='🔤 Generate Text with: ChatGPT, Claude, Gemini, Grok, Perplexity',
+        description='🔤 Generate Text',
     ),
     BotCommand(
         command='summary',
-        description='📝 Generate Summary in: YouTube, Video',
+        description='📝 Generate Summary',
     ),
     BotCommand(
         command='image',
-        description='🖼 Generate Images with: DALL-E, Midjourney, Stable Diffusion, Flux, Luma Photon, FaceSwap, Photoshop AI',
+        description='🖼 Generate Images',
     ),
     BotCommand(
         command='music',
-        description='🎵 Generate Music with: MusicGen, Suno',
+        description='🎵 Generate Music',
     ),
     BotCommand(
         command='video',
-        description='📹 Generate Videos with: Kling, Runway, Luma Ray',
+        description='📹 Generate Videos',
     ),
     BotCommand(
         command='info',
@@ -54,19 +54,15 @@ commands_en = [
     ),
     BotCommand(
         command='settings',
-        description='🔧 Customize AI model for yourself',
+        description='🔧 Customize AI model',
     ),
     BotCommand(
         command='language',
         description='🌍 Select language',
     ),
     BotCommand(
-        command='bonus',
-        description='🎁 Bonus balance',
-    ),
-    BotCommand(
         command='help',
-        description='🛟 Detailed information about commands',
+        description='🛟 Help and Commands',
     ),
 ]
 
@@ -85,51 +81,47 @@ commands_ru = [
     ),
     BotCommand(
         command='buy',
-        description='💎 Приобрести подписку или пакеты',
+        description='💎 Подписки и пакеты',
     ),
     BotCommand(
         command='text',
-        description='🔤 Генерация текста с: ChatGPT, Claude, Gemini, Grok, Perplexity',
+        description='🔤 Генерация текста',
     ),
     BotCommand(
         command='summary',
-        description='📝 Генерация резюме в: YouTube, Видео',
+        description='📝 Генерация резюме',
     ),
     BotCommand(
         command='image',
-        description='🖼 Генерация изображений с: DALL-E, Midjourney, Stable Diffusion, Flux, Luma Photon, FaceSwap, Photoshop AI',
+        description='🖼 Генерация изображений',
     ),
     BotCommand(
         command='music',
-        description='🎵 Генерация музыки с: MusicGen, Suno',
+        description='🎵 Генерация музыки',
     ),
     BotCommand(
         command='video',
-        description='📹 Генерация видео с: Kling, Runway, Luma Ray',
+        description='📹 Генерация видео',
     ),
     BotCommand(
         command='info',
-        description='ℹ️ Информация про модели ИИ',
+        description='ℹ️ Про нейросети',
     ),
     BotCommand(
         command='catalog',
-        description='📂 Каталог с промптами и цифровыми сотрудниками',
+        description='📂 Промпты и роли',
     ),
     BotCommand(
         command='settings',
-        description='🔧 Настроить модель под себя',
+        description='🔧 Настройки нейросети',
     ),
     BotCommand(
         command='language',
         description='🌍 Поменять язык',
     ),
     BotCommand(
-        command='bonus',
-        description='🎁 Бонусный баланс',
-    ),
-    BotCommand(
         command='help',
-        description='🛟 Детальная информация про команды',
+        description='🛟 Помощь и команды',
     ),
 ]
 
@@ -185,10 +177,6 @@ commands_es = [
     BotCommand(
         command='language',
         description='🌍 Cambiar idioma',
-    ),
-    BotCommand(
-        command='bonus',
-        description='🎁 Balance de bonificación',
     ),
     BotCommand(
         command='help',
@@ -248,10 +236,6 @@ commands_hi = [
     BotCommand(
         command='language',
         description='🌍 भाषा बदलें',
-    ),
-    BotCommand(
-        command='bonus',
-        description='🎁 बोनस बैलेंस',
     ),
     BotCommand(
         command='help',

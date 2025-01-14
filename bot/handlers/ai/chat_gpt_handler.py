@@ -142,14 +142,6 @@ async def handle_chat_gpt_choose_selection(callback_query: CallbackQuery, state:
 
 
 async def handle_chatgpt(message: Message, state: FSMContext, user: User, user_quota: Quota, photo_filenames=None):
-    if (
-        user_quota != Quota.CHAT_GPT4_OMNI_MINI and
-        user_quota != Quota.CHAT_GPT4_OMNI and
-        user_quota != Quota.CHAT_GPT_O_1_MINI and
-        user_quota != Quota.CHAT_GPT_O_1
-    ):
-        raise NotImplementedError(f'User quota is not implemented: {user_quota}')
-
     await state.update_data(is_processing=True)
 
     user_language_code = await get_user_language(user.id, state.storage)
@@ -191,7 +183,8 @@ async def handle_chatgpt(message: Message, state: FSMContext, user: User, user_q
     if can_work_with_photos:
         history.append({
             'role': 'system',
-            'content': role.translated_instructions.get(user_language_code, LanguageCode.EN),
+            'content': role.translated_instructions.get(user_language_code) or
+                       role.translated_instructions.get(LanguageCode.EN),
         })
 
     for sorted_message in sorted_messages:
@@ -291,7 +284,7 @@ async def handle_chatgpt(message: Message, state: FSMContext, user: User, user_q
                 chat_info = f'💬 {chat.title}\n' if (
                     user.settings[user.current_model][UserSettings.SHOW_THE_NAME_OF_THE_CHATS]
                 ) else ''
-                role_info = f'{role.translated_names.get(user_language_code, "en")}\n' if (
+                role_info = f'{role.translated_names.get(user_language_code) or role.translated_names.get(LanguageCode.EN)}\n' if (
                     user.settings[user.current_model][UserSettings.SHOW_THE_NAME_OF_THE_ROLES]
                 ) else ''
                 header_text = f'{chat_info}{role_info}\n' if chat_info or role_info else ''

@@ -24,11 +24,16 @@ SUMMARY_QUOTA = [
     Quota.EIGHTIFY,
     Quota.GEMINI_VIDEO,
 ]
-IMAGE_QUOTA = [
+IMAGE_SIMPLE_QUOTA = [
+    Quota.STABLE_DIFFUSION_XL,
+    Quota.FLUX_1_DEV,
+    Quota.LUMA_PHOTON,
+]
+IMAGE_ADVANCED_QUOTA = [
     Quota.DALL_E,
     Quota.MIDJOURNEY,
-    Quota.STABLE_DIFFUSION,
-    Quota.FLUX,
+    Quota.STABLE_DIFFUSION_3,
+    Quota.FLUX_1_PRO,
     Quota.LUMA_PHOTON,
     Quota.FACE_SWAP,
     Quota.PHOTOSHOP_AI,
@@ -41,6 +46,7 @@ VIDEO_QUOTA = [
     Quota.KLING,
     Quota.RUNWAY,
     Quota.LUMA_RAY,
+    Quota.PIKA,
 ]
 
 
@@ -57,8 +63,10 @@ def get_user_with_updated_quota(user: User, user_quota: Quota, quantity_to_delet
                 chosen_quota = TEXT_SUPER_ADVANCED_QUOTA
             elif user_quota in SUMMARY_QUOTA:
                 chosen_quota = SUMMARY_QUOTA
-            elif user_quota in IMAGE_QUOTA:
-                chosen_quota = IMAGE_QUOTA
+            elif user_quota in IMAGE_SIMPLE_QUOTA:
+                chosen_quota = IMAGE_SIMPLE_QUOTA
+            elif user_quota in IMAGE_ADVANCED_QUOTA:
+                chosen_quota = IMAGE_ADVANCED_QUOTA
             elif user_quota in MUSIC_QUOTA:
                 chosen_quota = MUSIC_QUOTA
             elif user_quota in VIDEO_QUOTA:

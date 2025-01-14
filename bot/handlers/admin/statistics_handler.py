@@ -796,7 +796,7 @@ async def handle_get_statistics(language_code: LanguageCode, period: str):
             count_activated_users=count_activated_users,
             count_activated_users_before=count_activated_users_before,
             count_referral_users=count_referred_users,
-            count_referral_users_before=count_activated_users_before,
+            count_referral_users_before=count_referred_users_before,
             count_english_users=count_english_users,
             count_english_users_before=count_english_users_before,
             count_russian_users=count_russian_users,

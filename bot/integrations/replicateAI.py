@@ -5,9 +5,9 @@ from typing import Optional
 import replicate
 
 from bot.config import config
-from bot.database.models.common import PhotoshopAIAction, AspectRatio
+from bot.database.models.common import PhotoshopAIAction, AspectRatio, StableDiffusionVersion, FluxVersion
 
-os.environ['REPLICATE_API_TOKEN'] = config.REPLICATE_API_TOKEN.get_secret_value()
+os.environ['REPLICATE_API_TOKEN'] = config.REPLICATE_API_KEY.get_secret_value()
 WEBHOOK_REPLICATE_URL = config.WEBHOOK_URL + config.WEBHOOK_REPLICATE_PATH
 
 
@@ -36,14 +36,46 @@ async def create_face_swap_image(target_image: str, source_image: str) -> Option
     return prediction.id
 
 
+async def create_flux_face_swap_image(
+    prompt: str,
+    main_face_image: str,
+) -> Optional[str]:
+    input_parameters = {
+        'prompt': prompt,
+        'main_face_image': main_face_image,
+        'width': 1024,
+        'height': 1024,
+        'output_quality': 100,
+    }
+
+    model = await replicate.models.async_get('bytedance/flux-pulid')
+    version = await model.versions.async_get('8baa7ef2255075b46f4d91cd238c21d31181b3e6a864463f967960bb0112525b')
+    prediction = await replicate.predictions.async_create(
+        version=version,
+        input=input_parameters,
+        webhook=WEBHOOK_REPLICATE_URL,
+        webhook_events_filter=['completed'],
+    )
+
+    return prediction.id
+
+
 async def create_photoshop_ai_image(action: PhotoshopAIAction, image_url: str) -> Optional[str]:
-    if action == PhotoshopAIAction.RESTORATION:
+    if action == PhotoshopAIAction.UPSCALE:
         input_parameters = {
             'img': image_url,
         }
 
         model = await replicate.models.async_get('tencentarc/gfpgan')
         version = await model.versions.async_get('0fbacf7afc6c144e5be9767cff80f25aff23e52b0708f17e20f9879b2f21516c')
+    elif action == PhotoshopAIAction.RESTORATION:
+        input_parameters = {
+            'image': image_url,
+            'with_scratch': True,
+        }
+
+        model = await replicate.models.async_get('microsoft/bringing-old-photos-back-to-life')
+        version = await model.versions.async_get('c75db81db6cbd809d93cc3b7e7a088a351a3349c9fa02b6d393e35e0d51ba799')
     elif action == PhotoshopAIAction.COLORIZATION:
         input_parameters = {
             'image': image_url,
@@ -93,47 +125,81 @@ async def create_music_gen_melody(prompt: str, duration: int) -> Optional[str]:
 
 async def create_stable_diffusion_image(
     prompt: str,
+    model_version: StableDiffusionVersion,
     aspect_ratio: AspectRatio,
     image_link: Optional[str] = None,
 ) -> Optional[str]:
-    input_parameters = {
-        'prompt': prompt,
-        'output_format': 'png',
-        'output_quality': 100,
-        'aspect_ratio': aspect_ratio,
-    }
-    if image_link:
-        input_parameters['image'] = image_link
-        input_parameters['prompt_strength'] = 0.75
+    if model_version == StableDiffusionVersion.XL:
+        input_parameters = {
+            'prompt': prompt,
+            'disable_safety_checker': True,
+        }
+        if image_link:
+            input_parameters['image'] = image_link
+            input_parameters['prompt_strength'] = 0.75
 
-    model = await replicate.models.async_get('stability-ai/stable-diffusion-3.5-large-turbo')
-    prediction = await replicate.predictions.async_create(
-        model=model,
-        input=input_parameters,
-        webhook=WEBHOOK_REPLICATE_URL,
-        webhook_events_filter=['completed'],
-    )
+        model = await replicate.models.async_get('stability-ai/sdxl')
+        version = await model.versions.async_get('7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc')
+
+        prediction = await replicate.predictions.async_create(
+            version=version,
+            input=input_parameters,
+            webhook=WEBHOOK_REPLICATE_URL,
+            webhook_events_filter=['completed'],
+        )
+    elif model_version == StableDiffusionVersion.V3:
+        input_parameters = {
+            'prompt': prompt,
+            'output_format': 'png',
+            'output_quality': 100,
+            'aspect_ratio': aspect_ratio,
+        }
+        if image_link:
+            input_parameters['image'] = image_link
+            input_parameters['prompt_strength'] = 0.75
+
+        model = await replicate.models.async_get('stability-ai/stable-diffusion-3.5-large-turbo')
+        prediction = await replicate.predictions.async_create(
+            model=model,
+            input=input_parameters,
+            webhook=WEBHOOK_REPLICATE_URL,
+            webhook_events_filter=['completed'],
+        )
+    else:
+        return
 
     return prediction.id
 
 
 async def create_flux_image(
     prompt: str,
+    model_version: FluxVersion,
     aspect_ratio: AspectRatio,
     safety_tolerance=3,
     image_link: Optional[str] = None,
 ) -> Optional[str]:
     input_parameters = {
         'prompt': prompt,
-        'output_format': 'jpg',
-        'output_quality': 100,
         'aspect_ratio': aspect_ratio,
-        'safety_tolerance': safety_tolerance,
+        'output_quality': 100,
     }
-    if image_link:
-        input_parameters['image_prompt'] = image_link
+    version = ''
+    if model_version == FluxVersion.V1_Dev:
+        input_parameters.update({
+            'disable_safety_checker': True,
+        })
+        version = 'flux-dev'
+        if image_link:
+            input_parameters['image'] = image_link
+    elif model_version == FluxVersion.V1_Pro:
+        input_parameters.update({
+            'safety_tolerance': safety_tolerance,
+        })
+        version = 'flux-1.1-pro'
+        if image_link:
+            input_parameters['image_prompt'] = image_link
 
-    model = await replicate.models.async_get('black-forest-labs/flux-1.1-pro')
+    model = await replicate.models.async_get(f'black-forest-labs/{version}')
     prediction = await replicate.predictions.async_create(
         model=model,
         input=input_parameters,

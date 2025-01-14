@@ -5,7 +5,7 @@ from bot.database.models.common import VideoSummaryFocus, VideoSummaryFormat, Vi
 from bot.locales.types import LanguageCode
 
 EIGHTIFY_API_URL = 'https://backend.eightify.app'
-EIGHTIFY_TOKEN = config.EIGHTIFY_API_TOKEN.get_secret_value()
+EIGHTIFY_API_KEY = config.EIGHTIFY_API_KEY.get_secret_value()
 
 
 class Eightify:
@@ -13,7 +13,7 @@ class Eightify:
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {EIGHTIFY_TOKEN}'
+            'Authorization': f'Bearer {EIGHTIFY_API_KEY}'
         }
         self.session = session
 

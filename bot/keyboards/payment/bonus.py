@@ -6,37 +6,48 @@ from bot.locales.main import get_localization
 from bot.locales.types import LanguageCode
 
 
-def build_bonus_keyboard(language_code: LanguageCode, user_id: str) -> InlineKeyboardMarkup:
+def build_bonus_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).BONUS_EARN,
+                callback_data=f'bonus:earn'
+            ),
+            InlineKeyboardButton(
+                text=get_localization(language_code).BONUS_SPEND,
+                callback_data=f'bonus:spend'
+            ),
+        ],
+    ]
+
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def build_bonus_earn_keyboard(language_code: LanguageCode, user_id: str) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).BONUS_INVITE_FRIEND,
                 url=get_localization(language_code).bonus_referral_link(user_id, True),
-                callback_data=f'bonus:invite_friend'
+                callback_data=f'bonus_earn:invite_friend'
             ),
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).BONUS_LEAVE_FEEDBACK,
-                callback_data=f'bonus:leave_feedback'
+                callback_data=f'bonus_earn:leave_feedback'
             ),
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).BONUS_PLAY_GAME,
-                callback_data=f'bonus:play_game'
+                callback_data=f'bonus_earn:play_game'
             ),
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).BONUS_CASH_OUT,
-                callback_data=f'bonus:cash_out'
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text=get_localization(language_code).ACTION_CLOSE,
-                callback_data=f'bonus:close'
+                text=get_localization(language_code).ACTION_BACK,
+                callback_data=f'bonus_earn:back'
             ),
         ],
     ]
@@ -51,8 +62,6 @@ def build_bonus_play_game_keyboard(language_code: LanguageCode) -> InlineKeyboar
                 text=get_localization(language_code).BONUS_PLAY_BOWLING_GAME,
                 callback_data=f'bonus_play_game:{GameType.BOWLING}'
             ),
-        ],
-        [
             InlineKeyboardButton(
                 text=get_localization(language_code).BONUS_PLAY_SOCCER_GAME,
                 callback_data=f'bonus_play_game:{GameType.SOCCER}'
@@ -63,8 +72,6 @@ def build_bonus_play_game_keyboard(language_code: LanguageCode) -> InlineKeyboar
                 text=get_localization(language_code).BONUS_PLAY_BASKETBALL_GAME,
                 callback_data=f'bonus_play_game:{GameType.BASKETBALL}'
             ),
-        ],
-        [
             InlineKeyboardButton(
                 text=get_localization(language_code).BONUS_PLAY_DARTS_GAME,
                 callback_data=f'bonus_play_game:{GameType.DARTS}'
@@ -75,8 +82,6 @@ def build_bonus_play_game_keyboard(language_code: LanguageCode) -> InlineKeyboar
                 text=get_localization(language_code).BONUS_PLAY_DICE_GAME,
                 callback_data=f'bonus_play_game:{GameType.DICE}'
             ),
-        ],
-        [
             InlineKeyboardButton(
                 text=get_localization(language_code).BONUS_PLAY_CASINO_GAME,
                 callback_data=f'bonus_play_game:{GameType.CASINO}'
@@ -151,14 +156,14 @@ def build_bonus_play_game_chosen_keyboard(language_code: LanguageCode, game_type
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Product], page=0) -> InlineKeyboardMarkup:
+def build_bonus_spend_keyboard(language_code: LanguageCode, products: list[Product], page=0) -> InlineKeyboardMarkup:
     buttons = []
 
     if page == 0:
         buttons.append([
             InlineKeyboardButton(
-                text=get_localization(language_code).MODELS_TEXT,
-                callback_data=f'bonus_cash_out:{ProductCategory.TEXT}',
+                text=get_localization(language_code).MODELS_TEXT.upper(),
+                callback_data=f'bonus_spend:{ProductCategory.TEXT}',
             ),
         ])
         for product in products:
@@ -166,7 +171,7 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
                 [
                     InlineKeyboardButton(
                         text=product.names.get(language_code),
-                        callback_data=f'bonus_cash_out:{product.id}'
+                        callback_data=f'bonus_spend:{product.id}'
                     ),
                 ],
             )
@@ -174,23 +179,23 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
             [
                 InlineKeyboardButton(
                     text='⬅️',
-                    callback_data='bonus_cash_out:prev:5'
+                    callback_data='bonus_spend:prev:5'
                 ),
                 InlineKeyboardButton(
                     text='1/6',
-                    callback_data='bonus_cash_out:page:0'
+                    callback_data='bonus_spend:page:0'
                 ),
                 InlineKeyboardButton(
                     text='➡️',
-                    callback_data='bonus_cash_out:next:1'
+                    callback_data='bonus_spend:next:1'
                 ),
             ]
         )
     elif page == 1:
         buttons.append([
             InlineKeyboardButton(
-                text=get_localization(language_code).MODELS_SUMMARY,
-                callback_data=f'bonus_cash_out:{ProductCategory.SUMMARY}',
+                text=get_localization(language_code).MODELS_SUMMARY.upper(),
+                callback_data=f'bonus_spend:{ProductCategory.SUMMARY}',
             ),
         ])
         for product in products:
@@ -198,7 +203,7 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
                 [
                     InlineKeyboardButton(
                         text=product.names.get(language_code),
-                        callback_data=f'bonus_cash_out:{product.id}'
+                        callback_data=f'bonus_spend:{product.id}'
                     ),
                 ],
             )
@@ -206,23 +211,23 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
             [
                 InlineKeyboardButton(
                     text='⬅️',
-                    callback_data='bonus_cash_out:prev:0'
+                    callback_data='bonus_spend:prev:0'
                 ),
                 InlineKeyboardButton(
                     text='2/6',
-                    callback_data='bonus_cash_out:page:1'
+                    callback_data='bonus_spend:page:1'
                 ),
                 InlineKeyboardButton(
                     text='➡️',
-                    callback_data='bonus_cash_out:next:2'
+                    callback_data='bonus_spend:next:2'
                 ),
             ]
         )
     elif page == 2:
         buttons.append([
             InlineKeyboardButton(
-                text=get_localization(language_code).MODELS_IMAGE,
-                callback_data=f'bonus_cash_out:{ProductCategory.IMAGE}',
+                text=get_localization(language_code).MODELS_IMAGE.upper(),
+                callback_data=f'bonus_spend:{ProductCategory.IMAGE}',
             ),
         ])
         for product in products:
@@ -230,7 +235,7 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
                 [
                     InlineKeyboardButton(
                         text=product.names.get(language_code),
-                        callback_data=f'bonus_cash_out:{product.id}'
+                        callback_data=f'bonus_spend:{product.id}'
                     ),
                 ],
             )
@@ -238,15 +243,15 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
             [
                 InlineKeyboardButton(
                     text='⬅️',
-                    callback_data='bonus_cash_out:prev:1'
+                    callback_data='bonus_spend:prev:1'
                 ),
                 InlineKeyboardButton(
                     text='3/6',
-                    callback_data='bonus_cash_out:page:2'
+                    callback_data='bonus_spend:page:2'
                 ),
                 InlineKeyboardButton(
                     text='➡️',
-                    callback_data='bonus_cash_out:next:3'
+                    callback_data='bonus_spend:next:3'
                 ),
             ]
         )
@@ -254,8 +259,8 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
         buttons.append(
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).MODELS_MUSIC,
-                    callback_data=f'bonus_cash_out:{ProductCategory.MUSIC}',
+                    text=get_localization(language_code).MODELS_MUSIC.upper(),
+                    callback_data=f'bonus_spend:{ProductCategory.MUSIC}',
                 ),
             ],
         )
@@ -264,7 +269,7 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
                 [
                     InlineKeyboardButton(
                         text=product.names.get(language_code),
-                        callback_data=f'bonus_cash_out:{product.id}'
+                        callback_data=f'bonus_spend:{product.id}'
                     ),
                 ],
             )
@@ -272,15 +277,15 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
             [
                 InlineKeyboardButton(
                     text='⬅️',
-                    callback_data='bonus_cash_out:prev:2'
+                    callback_data='bonus_spend:prev:2'
                 ),
                 InlineKeyboardButton(
                     text='4/6',
-                    callback_data='bonus_cash_out:page:3'
+                    callback_data='bonus_spend:page:3'
                 ),
                 InlineKeyboardButton(
                     text='➡️',
-                    callback_data='bonus_cash_out:next:4'
+                    callback_data='bonus_spend:next:4'
                 ),
             ]
         )
@@ -288,8 +293,8 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
         buttons.append(
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).MODELS_VIDEO,
-                    callback_data=f'bonus_cash_out:{ProductCategory.VIDEO}',
+                    text=get_localization(language_code).MODELS_VIDEO.upper(),
+                    callback_data=f'bonus_spend:{ProductCategory.VIDEO}',
                 ),
             ],
         )
@@ -298,7 +303,7 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
                 [
                     InlineKeyboardButton(
                         text=product.names.get(language_code),
-                        callback_data=f'bonus_cash_out:{product.id}'
+                        callback_data=f'bonus_spend:{product.id}'
                     ),
                 ],
             )
@@ -306,15 +311,15 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
             [
                 InlineKeyboardButton(
                     text='⬅️',
-                    callback_data='bonus_cash_out:prev:3'
+                    callback_data='bonus_spend:prev:3'
                 ),
                 InlineKeyboardButton(
                     text='5/6',
-                    callback_data='bonus_cash_out:page:4'
+                    callback_data='bonus_spend:page:4'
                 ),
                 InlineKeyboardButton(
                     text='➡️',
-                    callback_data='bonus_cash_out:next:5'
+                    callback_data='bonus_spend:next:5'
                 ),
             ]
         )
@@ -324,7 +329,7 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
                 [
                     InlineKeyboardButton(
                         text=product.names.get(language_code),
-                        callback_data=f'bonus_cash_out:{product.id}'
+                        callback_data=f'bonus_spend:{product.id}'
                     ),
                 ],
             )
@@ -332,15 +337,15 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
             [
                 InlineKeyboardButton(
                     text='⬅️',
-                    callback_data='bonus_cash_out:prev:4'
+                    callback_data='bonus_spend:prev:4'
                 ),
                 InlineKeyboardButton(
                     text='6/6',
-                    callback_data='bonus_cash_out:page:5'
+                    callback_data='bonus_spend:page:5'
                 ),
                 InlineKeyboardButton(
                     text='➡️',
-                    callback_data='bonus_cash_out:next:0'
+                    callback_data='bonus_spend:next:0'
                 ),
             ]
         )
@@ -349,9 +354,22 @@ def build_bonus_cash_out_keyboard(language_code: LanguageCode, products: list[Pr
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_BACK,
-                callback_data='bonus_cash_out:back'
+                callback_data='bonus_spend:back'
             )
         ],
     )
+
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def build_bonus_suggestion_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).OPEN_BONUS_INFO,
+                callback_data='bonus_suggestion:open'
+            )
+        ],
+    ]
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)

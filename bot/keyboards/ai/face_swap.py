@@ -22,15 +22,14 @@ def build_face_swap_choose_keyboard(language_code: LanguageCode, packages: list[
 
 def build_face_swap_package_keyboard(language_code: LanguageCode, quantities: list[int]) -> InlineKeyboardMarkup:
     buttons = []
-    for quantity in quantities:
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text=f'🔹 {quantity}',
-                    callback_data=f'face_swap_package:{quantity}'
-                )
-            ]
-        )
+    for i in range(0, len(quantities), 2):
+        pair = quantities[i:i + 2]
+        buttons.append([
+            InlineKeyboardButton(
+                text=f'🔹 {quantity}',
+                callback_data=f'face_swap_package:{quantity}'
+            ) for quantity in pair
+        ])
 
     buttons.extend([
         [

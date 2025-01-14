@@ -3,7 +3,7 @@ from typing import Optional
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.chat_action import ChatActionSender
 
 from bot.config import config, MessageEffect, MessageSticker
@@ -26,6 +26,7 @@ from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_mode
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.integrations.replicateAI import create_stable_diffusion_image
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
+from bot.keyboards.ai.stable_diffusion import build_stable_diffusion_keyboard
 from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.translate_text import translate_text
@@ -33,7 +34,8 @@ from bot.locales.types import LanguageCode
 
 stable_diffusion_router = Router()
 
-PRICE_STABLE_DIFFUSION = 0.04
+PRICE_STABLE_DIFFUSION_XL = 0.000975
+PRICE_STABLE_DIFFUSION_3 = 0.04
 
 
 @stable_diffusion_router.message(Command('stable_diffusion'))
@@ -44,38 +46,97 @@ async def stable_diffusion(message: Message, state: FSMContext):
     user = await get_user(user_id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    if user.current_model == Model.STABLE_DIFFUSION:
+    reply_markup = build_stable_diffusion_keyboard(
+        user_language_code,
+        user.current_model,
+        user.settings[Model.STABLE_DIFFUSION][UserSettings.VERSION],
+    )
+    await message.answer(
+        text=get_localization(user_language_code).MODEL_CHOOSE_STABLE_DIFFUSION,
+        reply_markup=reply_markup,
+    )
+
+
+@stable_diffusion_router.callback_query(lambda c: c.data.startswith('stable_diffusion:'))
+async def stable_diffusion_choose_selection(callback_query: CallbackQuery, state: FSMContext):
+    await callback_query.answer()
+
+    user_id = str(callback_query.from_user.id)
+    user = await get_user(user_id)
+    user_language_code = await get_user_language(user_id, state.storage)
+
+    chosen_version = callback_query.data.split(':')[1]
+
+    if (
+        user.current_model == Model.STABLE_DIFFUSION and
+        chosen_version == user.settings[Model.STABLE_DIFFUSION][UserSettings.VERSION]
+    ):
         reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.STABLE_DIFFUSION)
-        await message.answer(
+        await callback_query.message.answer(
             text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
             reply_markup=reply_markup,
         )
     else:
-        user.current_model = Model.STABLE_DIFFUSION
-        await update_user(user_id, {
-            'current_model': user.current_model,
-        })
+        keyboard = callback_query.message.reply_markup.inline_keyboard
+        keyboard_changed = False
 
-        text = await get_switched_to_ai_model(
-            user,
-            get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
-            user_language_code,
-        )
+        new_keyboard = []
+        for row in keyboard:
+            new_row = []
+            for button in row:
+                text = button.text
+                callback_data = button.callback_data.split(':', 1)[1]
+
+                if callback_data == chosen_version:
+                    if '✅' not in text:
+                        text += ' ✅'
+                        keyboard_changed = True
+                else:
+                    text = text.replace(' ✅', '')
+                new_row.append(InlineKeyboardButton(text=text, callback_data=button.callback_data))
+            new_keyboard.append(new_row)
+        await callback_query.message.edit_reply_markup(reply_markup=InlineKeyboardMarkup(inline_keyboard=new_keyboard))
+
         reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.STABLE_DIFFUSION)
-        answered_message = await message.answer(
-            text=text,
-            reply_markup=reply_markup,
-            message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
-        )
+        if keyboard_changed:
+            user.current_model = Model.STABLE_DIFFUSION
+            user.settings[Model.STABLE_DIFFUSION][UserSettings.VERSION] = chosen_version
+            await update_user(user_id, {
+                'current_model': user.current_model,
+                'settings': user.settings,
+            })
 
-        await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
-        await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+            text = await get_switched_to_ai_model(
+                user,
+                get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
+                user_language_code,
+            )
+            if not text:
+                raise NotImplementedError(
+                    f'Model version is not found: {user.settings[user.current_model][UserSettings.VERSION]}'
+                )
+
+            answered_message = await callback_query.message.answer(
+                text=text,
+                reply_markup=reply_markup,
+                message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
+            )
+            await callback_query.bot.unpin_all_chat_messages(user.telegram_chat_id)
+            await callback_query.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+        else:
+            await callback_query.message.answer(
+                text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
+                reply_markup=reply_markup,
+            )
+
+    await state.clear()
 
 
 async def handle_stable_diffusion(
     message: Message,
     state: FSMContext,
     user: User,
+    user_quota: Quota,
     image_filename: Optional[str] = None,
 ):
     user_language_code = await get_user_language(user.id, state.storage)
@@ -105,7 +166,7 @@ async def handle_stable_diffusion(
     )
 
     async with ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id):
-        product = await get_product_by_quota(Quota.STABLE_DIFFUSION)
+        product = await get_product_by_quota(user_quota)
 
         user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
 
@@ -131,6 +192,7 @@ async def handle_stable_diffusion(
                 prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
             result_id = await create_stable_diffusion_image(
                 prompt,
+                user.settings[Model.STABLE_DIFFUSION][UserSettings.VERSION],
                 user.settings[Model.STABLE_DIFFUSION][UserSettings.ASPECT_RATIO],
                 image_link,
             )

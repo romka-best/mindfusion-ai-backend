@@ -6,14 +6,14 @@ from aiogram.client.session import aiohttp
 from bot.config import config
 
 MIDJOURNEY_API_URL = 'https://api.userapi.ai'
-MIDJOURNEY_API_TOKEN = config.MIDJOURNEY_API_TOKEN.get_secret_value()
+MIDJOURNEY_API_KEY = config.MIDJOURNEY_API_KEY.get_secret_value()
 WEBHOOK_MIDJOURNEY_URL = config.WEBHOOK_URL + config.WEBHOOK_MIDJOURNEY_PATH
 
 
 async def create_midjourney_images(prompt: str):
     url = MIDJOURNEY_API_URL + '/midjourney/v2/imagine'
     headers = {
-        'api-key': MIDJOURNEY_API_TOKEN,
+        'api-key': MIDJOURNEY_API_KEY,
         'Content-Type': 'application/json',
     }
     data = {
@@ -37,7 +37,7 @@ async def create_midjourney_images(prompt: str):
 async def create_midjourney_image(hash_id: str, choice: int) -> Optional[str]:
     url = MIDJOURNEY_API_URL + '/midjourney/v2/upscale'
     headers = {
-        'api-key': MIDJOURNEY_API_TOKEN,
+        'api-key': MIDJOURNEY_API_KEY,
         'Content-Type': 'application/json',
     }
     data = {
@@ -61,7 +61,7 @@ async def create_midjourney_image(hash_id: str, choice: int) -> Optional[str]:
 async def create_different_midjourney_images(hash_id: str) -> Optional[str]:
     url = MIDJOURNEY_API_URL + '/midjourney/v2/reroll'
     headers = {
-        'api-key': MIDJOURNEY_API_TOKEN,
+        'api-key': MIDJOURNEY_API_KEY,
         'Content-Type': 'application/json',
     }
     data = {
@@ -84,7 +84,7 @@ async def create_different_midjourney_images(hash_id: str) -> Optional[str]:
 async def create_different_midjourney_image(hash_id: str, choice: int) -> Optional[str]:
     url = MIDJOURNEY_API_URL + '/midjourney/v2/variation'
     headers = {
-        'api-key': MIDJOURNEY_API_TOKEN,
+        'api-key': MIDJOURNEY_API_KEY,
         'Content-Type': 'application/json',
     }
     data = {

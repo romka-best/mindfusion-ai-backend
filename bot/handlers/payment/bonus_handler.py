@@ -5,7 +5,7 @@ from typing import cast
 from aiogram import Router, F, Bot
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery, URLInputFile
+from aiogram.types import Message, CallbackQuery, URLInputFile, InputMediaPhoto
 from google.cloud.firestore_v1 import Increment
 
 from bot.config import config, MessageEffect
@@ -27,9 +27,11 @@ from bot.handlers.common.feedback_handler import handle_feedback
 from bot.handlers.common.info_handler import handle_info_selection
 from bot.keyboards.payment.bonus import (
     build_bonus_keyboard,
+    build_bonus_earn_keyboard,
     build_bonus_play_game_keyboard,
-    build_bonus_cash_out_keyboard,
     build_bonus_play_game_chosen_keyboard,
+    build_bonus_spend_keyboard,
+    build_bonus_suggestion_keyboard,
 )
 from bot.keyboards.common.common import build_cancel_keyboard
 from bot.locales.main import get_localization, get_user_language
@@ -49,26 +51,15 @@ async def bonus(message: Message, state: FSMContext):
 async def handle_bonus(message: Message, user_id: str, state: FSMContext):
     user = await get_user(user_id)
     user_language_code = await get_user_language(user_id, state.storage)
-    count_of_referred_users = await get_count_of_users_by_referral(user_id)
-    count_of_feedbacks = await get_count_of_approved_feedbacks_by_user_id(user_id)
-    count_of_games = await get_count_of_games_by_user_id(user_id)
 
     photo_path = f'payments/packages_{user_language_code}.png'
     photo = await firebase.bucket.get_blob(photo_path)
     photo_link = firebase.get_public_url(photo.name)
 
-    text = get_localization(user_language_code).bonus_info(
-        user_id,
-        user.balance,
-        count_of_referred_users,
-        count_of_feedbacks,
-        count_of_games,
-    )
-    reply_markup = build_bonus_keyboard(user_language_code, user_id)
     await message.answer_photo(
         photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
-        caption=text,
-        reply_markup=reply_markup,
+        caption=get_localization(user_language_code).bonus_info(user.balance),
+        reply_markup=build_bonus_keyboard(user_language_code),
     )
 
 
@@ -76,50 +67,68 @@ async def handle_bonus(message: Message, user_id: str, state: FSMContext):
 async def handle_bonus_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
+    user_id = str(callback_query.from_user.id)
+
+    action = callback_query.data.split(':')[1]
+    if action == 'earn':
+        user_language_code = await get_user_language(user_id, state.storage)
+
+        count_of_referred_users = await get_count_of_users_by_referral(user_id)
+        count_of_feedbacks = await get_count_of_approved_feedbacks_by_user_id(user_id)
+        count_of_games = await get_count_of_games_by_user_id(user_id)
+
+        await callback_query.message.edit_caption(
+            caption=get_localization(user_language_code).bonus_info_earn(
+                user_id,
+                count_of_referred_users,
+                count_of_feedbacks,
+                count_of_games,
+            ),
+            reply_markup=build_bonus_earn_keyboard(user_language_code, user_id),
+        )
+    elif action == 'spend':
+        await handle_bonus_spend(callback_query.message, user_id, state)
+
+
+@bonus_router.callback_query(lambda c: c.data.startswith('bonus_earn:'))
+async def handle_bonus_earn_selection(callback_query: CallbackQuery, state: FSMContext):
+    await callback_query.answer()
+
+    user_id = str(callback_query.from_user.id)
+
     action = callback_query.data.split(':')[1]
     if action == 'leave_feedback':
-        await handle_feedback(callback_query.message, str(callback_query.from_user.id), state)
+        await handle_feedback(callback_query.message, user_id, state)
     elif action == 'play_game':
-        user_language_code = await get_user_language(str(callback_query.from_user.id), state.storage)
+        user_language_code = await get_user_language(user_id, state.storage)
 
-        reply_markup = build_bonus_play_game_keyboard(user_language_code)
-        await callback_query.message.edit_caption(
-            caption=get_localization(user_language_code).BONUS_PLAY_GAME_CHOOSE,
-            reply_markup=reply_markup,
+        photo_path = f'bonuses/games.png'
+        photo = await firebase.bucket.get_blob(photo_path)
+        photo_link = firebase.get_public_url(photo.name)
+
+        await callback_query.message.edit_media(
+            media=InputMediaPhoto(
+                media=URLInputFile(photo_link, filename=photo.name, timeout=300),
+                caption=get_localization(user_language_code).BONUS_PLAY_GAME_CHOOSE,
+            ),
+            reply_markup=build_bonus_play_game_keyboard(user_language_code),
         )
-    elif action == 'cash_out':
-        await handle_bonus_cash_out(callback_query.message, str(callback_query.from_user.id), state)
+    elif action == 'back':
+        user_language_code = await get_user_language(user_id, state.storage)
+        user = await get_user(user_id)
 
+        photo_path = f'payments/packages_{user_language_code}.png'
+        photo = await firebase.bucket.get_blob(photo_path)
+        photo_link = firebase.get_public_url(photo.name)
 
-async def handle_bonus_cash_out(message: Message, user_id: str, state: FSMContext, page=0):
-    user_language_code = await get_user_language(user_id, state.storage)
+        await callback_query.message.edit_media(
+            media=InputMediaPhoto(
+                media=URLInputFile(photo_link, filename=photo.name, timeout=300),
+                caption=get_localization(user_language_code).bonus_info(user.balance),
 
-    if page == 0:
-        product_category = ProductCategory.TEXT
-    elif page == 1:
-        product_category = ProductCategory.SUMMARY
-    elif page == 2:
-        product_category = ProductCategory.IMAGE
-    elif page == 3:
-        product_category = ProductCategory.MUSIC
-    elif page == 4:
-        product_category = ProductCategory.VIDEO
-    elif page == 5:
-        product_category = ProductCategory.OTHER
-    else:
-        product_category = None
-
-    products = await get_active_products_by_product_type_and_category(
-        ProductType.PACKAGE,
-        product_category,
-    )
-
-    text = get_localization(user_language_code).BONUS_CHOOSE_PACKAGE
-    reply_markup = build_bonus_cash_out_keyboard(user_language_code, products, page)
-    await message.edit_caption(
-        caption=text,
-        reply_markup=reply_markup,
-    )
+            ),
+            reply_markup=build_bonus_keyboard(user_language_code),
+        )
 
 
 @bonus_router.callback_query(lambda c: c.data.startswith('bonus_play_game:'))
@@ -162,23 +171,25 @@ async def handle_bonus_play_game_selection(callback_query: CallbackQuery, state:
             reply_markup=reply_markup,
         )
     else:
-        user = await get_user(user_id)
-
         count_of_referred_users = await get_count_of_users_by_referral(user_id)
         count_of_feedbacks = await get_count_of_approved_feedbacks_by_user_id(user_id)
         count_of_games = await get_count_of_games_by_user_id(user_id)
 
-        text = get_localization(user_language_code).bonus_info(
-            user_id,
-            user.balance,
-            count_of_referred_users,
-            count_of_feedbacks,
-            count_of_games,
-        )
-        reply_markup = build_bonus_keyboard(user_language_code, user_id)
-        await callback_query.message.edit_caption(
-            caption=text,
-            reply_markup=reply_markup,
+        photo_path = f'payments/packages_{user_language_code}.png'
+        photo = await firebase.bucket.get_blob(photo_path)
+        photo_link = firebase.get_public_url(photo.name)
+
+        await callback_query.message.edit_media(
+            media=InputMediaPhoto(
+                media=URLInputFile(photo_link, filename=photo.name, timeout=300),
+                caption=get_localization(user_language_code).bonus_info_earn(
+                    user_id,
+                    count_of_referred_users,
+                    count_of_feedbacks,
+                    count_of_games,
+                ),
+            ),
+            reply_markup=build_bonus_earn_keyboard(user_language_code, user_id),
         )
 
 
@@ -191,11 +202,14 @@ async def send_game_status_after_timeout(
 ):
     await asyncio.sleep(3)
 
-    text = get_localization(language_code).BONUS_PLAY_GAME_WON if won else get_localization(language_code).BONUS_PLAY_GAME_LOST
-
+    text = get_localization(language_code).BONUS_PLAY_GAME_WON \
+        if won \
+        else get_localization(language_code).BONUS_PLAY_GAME_LOST
+    reply_markup = build_bonus_suggestion_keyboard(language_code)
     await bot.send_message(
         chat_id=chat_id,
         text=text,
+        reply_markup=reply_markup,
         reply_to_message_id=reply_to_message_id,
         allow_sending_without_reply=True,
         message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.CONGRATS) if won else None,
@@ -283,8 +297,40 @@ async def handle_bonus_play_game_chosen_selection(callback_query: CallbackQuery,
         )
 
 
-@bonus_router.callback_query(lambda c: c.data.startswith('bonus_cash_out:'))
-async def handle_bonus_cash_out_selection(callback_query: CallbackQuery, state: FSMContext):
+async def handle_bonus_spend(message: Message, user_id: str, state: FSMContext, page=0):
+    user_language_code = await get_user_language(user_id, state.storage)
+    user = await get_user(user_id)
+
+    if page == 0:
+        product_category = ProductCategory.TEXT
+    elif page == 1:
+        product_category = ProductCategory.SUMMARY
+    elif page == 2:
+        product_category = ProductCategory.IMAGE
+    elif page == 3:
+        product_category = ProductCategory.MUSIC
+    elif page == 4:
+        product_category = ProductCategory.VIDEO
+    elif page == 5:
+        product_category = ProductCategory.OTHER
+    else:
+        product_category = None
+
+    products = await get_active_products_by_product_type_and_category(
+        ProductType.PACKAGE,
+        product_category,
+    )
+
+    text = get_localization(user_language_code).bonus_info_spend(user.balance)
+    reply_markup = build_bonus_spend_keyboard(user_language_code, products, page)
+    await message.edit_caption(
+        caption=text,
+        reply_markup=reply_markup,
+    )
+
+
+@bonus_router.callback_query(lambda c: c.data.startswith('bonus_spend:'))
+async def handle_bonus_spend_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
@@ -303,21 +349,14 @@ async def handle_bonus_cash_out_selection(callback_query: CallbackQuery, state: 
         await handle_info_selection(callback_query, state, product_id)
     elif product_id == 'next' or product_id == 'prev':
         page = int(callback_query.data.split(':')[2])
-        await handle_bonus_cash_out(callback_query.message, str(callback_query.from_user.id), state, page)
+        await handle_bonus_spend(callback_query.message, str(callback_query.from_user.id), state, page)
     elif product_id == 'back':
         user = await get_user(user_id)
-        count_of_referred_users = await get_count_of_users_by_referral(user_id)
-        count_of_feedbacks = await get_count_of_approved_feedbacks_by_user_id(user_id)
-        count_of_games = await get_count_of_games_by_user_id(user_id)
 
         text = get_localization(user_language_code).bonus_info(
-            user_id,
             user.balance,
-            count_of_referred_users,
-            count_of_feedbacks,
-            count_of_games,
         )
-        reply_markup = build_bonus_keyboard(user_language_code, user_id)
+        reply_markup = build_bonus_keyboard(user_language_code)
         await callback_query.message.edit_caption(
             caption=text,
             reply_markup=reply_markup,
@@ -414,3 +453,12 @@ async def quantity_of_bonus_package_sent(message: Message, state: FSMContext):
             reply_markup=reply_markup,
             allow_sending_without_reply=True,
         )
+
+
+@bonus_router.callback_query(lambda c: c.data.startswith('bonus_suggestion:'))
+async def bonus_suggestion_selection(callback_query: CallbackQuery, state: FSMContext):
+    await callback_query.answer()
+
+    action = callback_query.data.split(':')[1]
+    if action == 'open':
+        await handle_bonus(callback_query.message, str(callback_query.from_user.id), state)

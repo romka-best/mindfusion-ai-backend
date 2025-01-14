@@ -1,9 +1,10 @@
 from aiogram import Router, Bot
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, URLInputFile, InputMediaPhoto
 
 from bot.config import config, MessageEffect
+from bot.database.main import firebase
 from bot.database.models.common import Model, PhotoshopAIAction
 from bot.database.models.user import UserSettings
 from bot.database.operations.user.getters import get_user
@@ -13,11 +14,11 @@ from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_mode
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.ai.photoshop_ai import build_photoshop_ai_keyboard, build_photoshop_ai_chosen_keyboard
 from bot.locales.main import get_user_language, get_localization
-from bot.locales.types import LanguageCode
 from bot.states.ai.photoshop_ai import PhotoshopAI
 
 photoshop_ai_router = Router()
 
+PRICE_PHOTOSHOP_AI_UPSCALE = 0.000225
 PRICE_PHOTOSHOP_AI_RESTORATION = 0.000575
 PRICE_PHOTOSHOP_AI_COLORIZATION = 0.000225
 PRICE_PHOTOSHOP_AI_REMOVAL_BACKGROUND = 0.000575
@@ -61,73 +62,19 @@ async def photoshop_ai(message: Message, state: FSMContext):
     await handle_photoshop_ai(message.bot, user.telegram_chat_id, state, user_id)
 
 
-async def handle_photoshop_ai(bot: Bot, chat_id: str, state: FSMContext, user_id: str, chosen_action=None):
+async def handle_photoshop_ai(bot: Bot, chat_id: str, state: FSMContext, user_id: str):
     user_language_code = await get_user_language(str(user_id), state.storage)
 
-    if chosen_action:
-        await handle_photoshop_ai_choose_selection(
-            bot=bot,
-            chat_id=chat_id,
-            message_id=0,
-            language_code=user_language_code,
-            action_name=chosen_action,
-            state=state,
-        )
-    else:
-        reply_markup = build_photoshop_ai_keyboard(user_language_code)
-        await bot.send_message(
-            chat_id=chat_id,
-            text=get_localization(user_language_code).PHOTOSHOP_AI_INFO,
-            reply_markup=reply_markup,
-        )
+    photo_path = f'photoshop/main.png'
+    photo = await firebase.bucket.get_blob(photo_path)
+    photo_link = firebase.get_public_url(photo.name)
 
-
-async def handle_photoshop_ai_choose_selection(
-    bot: Bot,
-    chat_id: str,
-    message_id: int,
-    language_code: LanguageCode,
-    action_name: str,
-    state: FSMContext,
-):
-    if (
-        action_name == PhotoshopAIAction.RESTORATION or
-        action_name == get_localization(language_code).PHOTOSHOP_AI_RESTORATION
-    ):
-        action_name = PhotoshopAIAction.RESTORATION
-        text = get_localization(language_code).PHOTOSHOP_AI_RESTORATION_INFO
-    elif (
-        action_name == PhotoshopAIAction.COLORIZATION or
-        action_name == get_localization(language_code).PHOTOSHOP_AI_COLORIZATION
-    ):
-        action_name = PhotoshopAIAction.COLORIZATION
-        text = get_localization(language_code).PHOTOSHOP_AI_COLORIZATION_INFO
-    elif (
-        action_name == PhotoshopAIAction.REMOVAL_BACKGROUND or
-        action_name == get_localization(language_code).PHOTOSHOP_AI_REMOVE_BACKGROUND
-    ):
-        action_name = PhotoshopAIAction.REMOVAL_BACKGROUND
-        text = get_localization(language_code).PHOTOSHOP_AI_REMOVE_BACKGROUND_INFO
-    else:
-        return
-
-    reply_markup = build_photoshop_ai_chosen_keyboard(language_code)
-    if message_id != 0:
-        await bot.edit_message_text(
-            text=text,
-            chat_id=chat_id,
-            message_id=message_id,
-            reply_markup=reply_markup,
-        )
-    else:
-        await bot.send_message(
-            text=text,
-            chat_id=chat_id,
-            reply_markup=reply_markup,
-        )
-
-    await state.update_data(photoshop_ai_action_name=action_name)
-    await state.set_state(PhotoshopAI.waiting_for_photo)
+    await bot.send_photo(
+        chat_id=chat_id,
+        photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
+        caption=get_localization(user_language_code).PHOTOSHOP_AI_INFO,
+        reply_markup=build_photoshop_ai_keyboard(user_language_code),
+    )
 
 
 @photoshop_ai_router.callback_query(lambda c: c.data.startswith('photoshop_ai:'))
@@ -137,14 +84,31 @@ async def photoshop_ai_choose_selection(callback_query: CallbackQuery, state: FS
     user_language_code = await get_user_language(str(callback_query.from_user.id), state.storage)
 
     action_name = callback_query.data.split(':')[1]
-    await handle_photoshop_ai_choose_selection(
-        bot=callback_query.message.bot,
-        chat_id=str(callback_query.message.chat.id),
-        message_id=callback_query.message.message_id,
-        language_code=user_language_code,
-        action_name=action_name,
-        state=state,
+    if action_name == PhotoshopAIAction.UPSCALE:
+        text = get_localization(user_language_code).PHOTOSHOP_AI_UPSCALE_INFO
+    elif action_name == PhotoshopAIAction.RESTORATION:
+        text = get_localization(user_language_code).PHOTOSHOP_AI_RESTORATION_INFO
+    elif action_name == PhotoshopAIAction.COLORIZATION:
+        text = get_localization(user_language_code).PHOTOSHOP_AI_COLORIZATION_INFO
+    elif action_name == PhotoshopAIAction.REMOVAL_BACKGROUND:
+        text = get_localization(user_language_code).PHOTOSHOP_AI_REMOVE_BACKGROUND_INFO
+    else:
+        return
+
+    photo_path = f'photoshop/{action_name}.png'
+    photo = await firebase.bucket.get_blob(photo_path)
+    photo_link = firebase.get_public_url(photo.name)
+
+    await callback_query.message.edit_media(
+        media=InputMediaPhoto(
+            media=URLInputFile(photo_link, filename=photo.name, timeout=300),
+            caption=text,
+        ),
+        reply_markup=build_photoshop_ai_chosen_keyboard(user_language_code),
     )
+
+    await state.update_data(photoshop_ai_action_name=action_name)
+    await state.set_state(PhotoshopAI.waiting_for_photo)
 
 
 @photoshop_ai_router.callback_query(lambda c: c.data.startswith('photoshop_ai_chosen:'))
@@ -152,10 +116,17 @@ async def handle_photoshop_ai_action_selection(callback_query: CallbackQuery, st
     await callback_query.answer()
 
     user_language_code = await get_user_language(str(callback_query.from_user.id), state.storage)
-    reply_markup = build_photoshop_ai_keyboard(user_language_code)
-    await callback_query.message.edit_text(
-        text=get_localization(user_language_code).PHOTOSHOP_AI_INFO,
-        reply_markup=reply_markup,
+
+    photo_path = f'photoshop/main.png'
+    photo = await firebase.bucket.get_blob(photo_path)
+    photo_link = firebase.get_public_url(photo.name)
+
+    await callback_query.message.edit_media(
+        media=InputMediaPhoto(
+            media=URLInputFile(photo_link, filename=photo.name, timeout=300),
+            caption=get_localization(user_language_code).PHOTOSHOP_AI_INFO,
+        ),
+        reply_markup=build_photoshop_ai_keyboard(user_language_code),
     )
 
     await state.clear()

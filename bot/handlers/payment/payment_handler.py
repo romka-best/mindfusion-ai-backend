@@ -11,7 +11,7 @@ from aiogram.types import Message, CallbackQuery, URLInputFile, LabeledPrice, Pr
 from bot.config import config, MessageEffect
 from bot.database.main import firebase
 from bot.database.models.cart import CartItem
-from bot.database.models.common import Model, Currency, PaymentType, PaymentMethod
+from bot.database.models.common import Currency, PaymentType, PaymentMethod
 from bot.database.models.package import Package, PackageStatus
 from bot.database.models.product import Product, ProductType, ProductCategory
 from bot.database.models.subscription import (
@@ -35,10 +35,6 @@ from bot.database.operations.subscription.writers import write_subscription
 from bot.database.operations.transaction.writers import write_transaction
 from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user
-from bot.handlers.ai.face_swap_handler import handle_face_swap
-from bot.handlers.ai.music_gen_handler import handle_music_gen
-from bot.handlers.ai.photoshop_ai_handler import handle_photoshop_ai
-from bot.handlers.ai.suno_handler import handle_suno
 from bot.handlers.common.info_handler import handle_info_selection
 from bot.handlers.payment.promo_code_handler import handle_promo_code
 from bot.helpers.billing.create_payment import OrderItem, create_payment
@@ -49,6 +45,7 @@ from bot.helpers.creaters.create_subscription import create_subscription
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.getters.get_user_discount import get_user_discount
+from bot.helpers.handlers.handle_model_info import handle_model_info
 from bot.helpers.senders.send_message_to_admins import send_message_to_admins
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.payment.payment import (
@@ -1108,13 +1105,14 @@ async def handle_successful_payment(message: Message, state: FSMContext):
                 None,
             )
 
+        subscription.income_amount = subscription.amount
         transaction = firebase.db.transaction()
         await create_subscription(
             transaction,
             message.bot,
             subscription.id,
             subscription.user_id,
-            subscription.amount,
+            subscription.income_amount,
             payment.telegram_payment_charge_id,
             subscription_id,
         )
@@ -1123,7 +1121,7 @@ async def handle_successful_payment(message: Message, state: FSMContext):
             type=TransactionType.INCOME,
             product_id=subscription.product_id,
             amount=subscription.amount,
-            clear_amount=subscription.amount,
+            clear_amount=subscription.income_amount,
             currency=subscription.currency,
             quantity=1,
             details={
@@ -1157,12 +1155,14 @@ async def handle_successful_payment(message: Message, state: FSMContext):
         package = await get_package(package_id)
         product = await get_product(package.product_id)
 
+        package.income_amount = package.amount
+
         transaction = firebase.db.transaction()
         await create_package(
             transaction,
             package.id,
             package.user_id,
-            package.amount,
+            package.income_amount,
             payment.provider_payment_charge_id,
         )
 
@@ -1182,7 +1182,7 @@ async def handle_successful_payment(message: Message, state: FSMContext):
             type=TransactionType.INCOME,
             product_id=package.product_id,
             amount=package.amount,
-            clear_amount=package.amount,
+            clear_amount=package.income_amount,
             currency=package.currency,
             quantity=package.quantity,
             details={
@@ -1209,11 +1209,12 @@ async def handle_successful_payment(message: Message, state: FSMContext):
 
         transaction = firebase.db.transaction()
         for package in packages:
+            package.income_amount = package.amount
             await create_package(
                 transaction,
                 package.id,
                 package.user_id,
-                package.amount,
+                package.income_amount,
                 payment.provider_payment_charge_id,
             )
 
@@ -1222,7 +1223,7 @@ async def handle_successful_payment(message: Message, state: FSMContext):
                 type=TransactionType.INCOME,
                 product_id=package.product_id,
                 amount=package.amount,
-                clear_amount=package.amount,
+                clear_amount=package.income_amount,
                 currency=package.currency,
                 quantity=package.quantity,
                 details={
@@ -1278,42 +1279,13 @@ async def handle_successful_payment(message: Message, state: FSMContext):
     await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
     await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
 
-    if user.current_model == Model.EIGHTIFY:
-        await message.answer(
-            text=get_localization(user_language_code).EIGHTIFY_INFO,
-        )
-    elif user.current_model == Model.GEMINI_VIDEO:
-        await message.answer(
-            text=get_localization(user_language_code).GEMINI_VIDEO_INFO,
-        )
-    elif user.current_model == Model.FACE_SWAP:
-        await handle_face_swap(
-            bot=message.bot,
-            chat_id=user.telegram_chat_id,
-            state=state,
-            user_id=user.id,
-        )
-    elif user.current_model == Model.PHOTOSHOP_AI:
-        await handle_photoshop_ai(
-            bot=message.bot,
-            chat_id=user.telegram_chat_id,
-            state=state,
-            user_id=user.id,
-        )
-    elif user.current_model == Model.MUSIC_GEN:
-        await handle_music_gen(
-            bot=message.bot,
-            chat_id=user.telegram_chat_id,
-            state=state,
-            user_id=user.id,
-        )
-    elif user.current_model == Model.SUNO:
-        await handle_suno(
-            bot=message.bot,
-            chat_id=user.telegram_chat_id,
-            state=state,
-            user_id=user.id,
-        )
+    await handle_model_info(
+        bot=message.bot,
+        chat_id=user.telegram_chat_id,
+        state=state,
+        model=user.current_model,
+        language_code=user_language_code,
+    )
 
 
 async def handle_cancel_subscription(message: Message, user_id: str, state: FSMContext):

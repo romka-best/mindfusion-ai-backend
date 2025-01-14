@@ -21,8 +21,8 @@ from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_mode
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
 from bot.integrations.openAI import get_response_image, get_cost_for_image
-from bot.keyboards.ai.model import build_switched_to_ai_keyboard
-from bot.keyboards.common.common import build_error_keyboard, build_limit_exceeded_keyboard
+from bot.keyboards.ai.model import build_switched_to_ai_keyboard, build_model_limit_exceeded_keyboard
+from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_localization, get_user_language
 
 dall_e_router = Router()
@@ -84,7 +84,6 @@ async def handle_dall_e(message: Message, state: FSMContext, user: User):
     async with ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id):
         try:
             maximum_generations = user.daily_limits[Quota.DALL_E] + user.additional_usage_quota[Quota.DALL_E]
-            model_version = user.settings[Model.DALL_E][UserSettings.VERSION]
             resolution = user.settings[Model.DALL_E][UserSettings.RESOLUTION]
             quality = user.settings[Model.DALL_E][UserSettings.QUALITY]
             cost = get_cost_for_image(quality, resolution)
@@ -93,7 +92,7 @@ async def handle_dall_e(message: Message, state: FSMContext, user: User):
                     sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
                 )
 
-                reply_markup = build_limit_exceeded_keyboard(user_language_code)
+                reply_markup = build_model_limit_exceeded_keyboard(user_language_code)
                 await message.reply(
                     text=get_localization(user_language_code).model_reached_usage_limit(),
                     reply_markup=reply_markup,
@@ -102,7 +101,7 @@ async def handle_dall_e(message: Message, state: FSMContext, user: User):
                 return
 
             response_url = await get_response_image(
-                model_version,
+                user.settings[Model.DALL_E][UserSettings.VERSION],
                 text,
                 resolution,
                 quality,

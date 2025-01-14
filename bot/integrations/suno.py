@@ -4,7 +4,7 @@ from bot.config import config
 from bot.database.models.common import SunoVersion
 
 SUNO_API_URL = 'https://api.acedata.cloud/suno/audios'
-SUNO_API_TOKEN = config.SUNO_API_TOKEN.get_secret_value()
+SUNO_API_KEY = config.SUNO_API_KEY.get_secret_value()
 WEBHOOK_SUNO_URL = config.WEBHOOK_URL + config.WEBHOOK_SUNO_PATH
 
 
@@ -13,7 +13,7 @@ class Suno:
         self.headers = {
             'accept': 'application/json',
             'content-type': 'application/json',
-            'authorization': f'Bearer {SUNO_API_TOKEN}',
+            'authorization': f'Bearer {SUNO_API_KEY}',
         }
         self.session = session
 

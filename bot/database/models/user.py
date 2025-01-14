@@ -24,6 +24,7 @@ from bot.database.models.common import (
     FluxVersion,
     FluxSafetyTolerance,
     LumaPhotonVersion,
+    RecraftVersion,
     FaceSwapVersion,
     PhotoshopAIVersion,
     MusicGenVersion,
@@ -37,6 +38,7 @@ from bot.database.models.common import (
     RunwayResolution,
     RunwayDuration,
     LumaRayVersion,
+    PikaVersion,
 )
 from bot.database.models.subscription import SUBSCRIPTION_FREE_LIMITS
 from bot.locales.types import LanguageCode
@@ -86,7 +88,7 @@ class User:
     is_banned: bool
     current_model: Model
     currency: Currency
-    balance: float
+    balance: int
     subscription_id: Optional[str]
     last_subscription_limit_update: datetime
     daily_limits: dict
@@ -115,9 +117,12 @@ class User:
         Quota.GEMINI_VIDEO: 0,
         Quota.DALL_E: 0,
         Quota.MIDJOURNEY: 0,
-        Quota.STABLE_DIFFUSION: 0,
-        Quota.FLUX: 0,
+        Quota.STABLE_DIFFUSION_XL: 0,
+        Quota.STABLE_DIFFUSION_3: 0,
+        Quota.FLUX_1_DEV: 0,
+        Quota.FLUX_1_PRO: 0,
         Quota.LUMA_PHOTON: 0,
+        Quota.RECRAFT: 0,
         Quota.FACE_SWAP: 0,
         Quota.PHOTOSHOP_AI: 0,
         Quota.MUSIC_GEN: 0,
@@ -125,6 +130,7 @@ class User:
         Quota.KLING: 0,
         Quota.RUNWAY: 0,
         Quota.LUMA_RAY: 0,
+        Quota.PIKA: 0,
         Quota.FAST_MESSAGES: False,
         Quota.VOICE_MESSAGES: False,
         Quota.ACCESS_TO_CATALOG: False,
@@ -214,14 +220,14 @@ class User:
         },
         Model.STABLE_DIFFUSION: {
             UserSettings.SHOW_USAGE_QUOTA: True,
-            UserSettings.VERSION: StableDiffusionVersion.LATEST,
+            UserSettings.VERSION: StableDiffusionVersion.XL,
             UserSettings.ASPECT_RATIO: AspectRatio.SQUARE,
             UserSettings.SEND_TYPE: SendType.IMAGE,
             UserSettings.SHOW_EXAMPLES: False,
         },
         Model.FLUX: {
             UserSettings.SHOW_USAGE_QUOTA: True,
-            UserSettings.VERSION: FluxVersion.LATEST,
+            UserSettings.VERSION: FluxVersion.V1_Dev,
             UserSettings.SAFETY_TOLERANCE: FluxSafetyTolerance.MIDDLE,
             UserSettings.ASPECT_RATIO: AspectRatio.SQUARE,
             UserSettings.SEND_TYPE: SendType.IMAGE,
@@ -234,8 +240,15 @@ class User:
             UserSettings.SEND_TYPE: SendType.IMAGE,
             UserSettings.SHOW_EXAMPLES: False,
         },
-        Model.FACE_SWAP: {
+        Model.RECRAFT: {
             UserSettings.SHOW_USAGE_QUOTA: True,
+            UserSettings.VERSION: RecraftVersion.V3,
+            UserSettings.ASPECT_RATIO: AspectRatio.SQUARE,
+            UserSettings.SEND_TYPE: SendType.IMAGE,
+            UserSettings.SHOW_EXAMPLES: False,
+        },
+        Model.FACE_SWAP: {
+            UserSettings.SHOW_USAGE_QUOTA: False,
             UserSettings.VERSION: FaceSwapVersion.LATEST,
             UserSettings.ASPECT_RATIO: AspectRatio.CUSTOM,
             UserSettings.SEND_TYPE: SendType.IMAGE,
@@ -282,6 +295,13 @@ class User:
             UserSettings.SHOW_USAGE_QUOTA: True,
             UserSettings.SEND_TYPE: SendType.VIDEO,
             UserSettings.VERSION: LumaRayVersion.LATEST,
+            UserSettings.ASPECT_RATIO: AspectRatio.LANDSCAPE,
+            UserSettings.SHOW_EXAMPLES: False,
+        },
+        Model.PIKA: {
+            UserSettings.SHOW_USAGE_QUOTA: True,
+            UserSettings.SEND_TYPE: SendType.VIDEO,
+            UserSettings.VERSION: PikaVersion.V2,
             UserSettings.ASPECT_RATIO: AspectRatio.LANDSCAPE,
             UserSettings.SHOW_EXAMPLES: False,
         },

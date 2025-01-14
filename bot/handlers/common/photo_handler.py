@@ -42,12 +42,14 @@ from bot.handlers.ai.grok_handler import handle_grok
 from bot.handlers.ai.kling_handler import handle_kling
 from bot.handlers.ai.luma_handler import handle_luma_photon, handle_luma_ray
 from bot.handlers.ai.midjourney_handler import handle_midjourney
+from bot.handlers.ai.pika_handler import handle_pika
 from bot.handlers.ai.runway_handler import handle_runway
 from bot.handlers.ai.stable_diffusion_handler import handle_stable_diffusion
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.integrations.replicateAI import create_face_swap_image, create_photoshop_ai_image
 from bot.keyboards.admin.catalog import build_manage_catalog_create_role_confirmation_keyboard
-from bot.keyboards.common.common import build_cancel_keyboard, build_limit_exceeded_keyboard, build_suggestions_keyboard
+from bot.keyboards.ai.model import build_model_limit_exceeded_keyboard
+from bot.keyboards.common.common import build_cancel_keyboard, build_suggestions_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.middlewares.AlbumMiddleware import AlbumMiddleware
 from bot.states.common.catalog import Catalog
@@ -164,7 +166,7 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
             )
 
-            reply_markup = build_limit_exceeded_keyboard(user_language_code)
+            reply_markup = build_model_limit_exceeded_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).model_reached_usage_limit(),
                 reply_markup=reply_markup,
@@ -195,6 +197,7 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
         user_data = await state.get_data()
         photoshop_ai_action_name = user_data['photoshop_ai_action_name']
         if photoshop_ai_action_name not in [
+            PhotoshopAIAction.UPSCALE,
             PhotoshopAIAction.RESTORATION,
             PhotoshopAIAction.COLORIZATION,
             PhotoshopAIAction.REMOVAL_BACKGROUND,
@@ -294,7 +297,8 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
         user.current_model == Model.MIDJOURNEY or
         user.current_model == Model.STABLE_DIFFUSION or
         user.current_model == Model.FLUX or
-        user.current_model == Model.LUMA_PHOTON
+        user.current_model == Model.LUMA_PHOTON or
+        user.current_model == Model.RECRAFT
     ):
         current_time = time.time()
 
@@ -329,9 +333,9 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
                 photo_vision_filename,
             )
         elif user.current_model == Model.STABLE_DIFFUSION:
-            await handle_stable_diffusion(message, state, user, photo_vision_filename)
+            await handle_stable_diffusion(message, state, user, user_quota, photo_vision_filename)
         elif user.current_model == Model.FLUX:
-            await handle_flux(message, state, user, photo_vision_filename)
+            await handle_flux(message, state, user, user_quota, photo_vision_filename)
         elif user.current_model == Model.LUMA_PHOTON:
             await handle_luma_photon(message, state, user, photo_vision_filename)
     elif user.current_model == Model.FACE_SWAP:
@@ -401,7 +405,8 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
     elif (
         user.current_model == Model.KLING or
         user.current_model == Model.RUNWAY or
-        user.current_model == Model.LUMA_RAY
+        user.current_model == Model.LUMA_RAY or
+        user.current_model == Model.PIKA
     ):
         current_time = time.time()
 
@@ -430,6 +435,8 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
             await handle_runway(message, state, user, video_frame_photo_link)
         elif user.current_model == Model.LUMA_RAY:
             await handle_luma_ray(message, state, user, video_frame_photo_link)
+        elif user.current_model == Model.PIKA:
+            await handle_pika(message, state, user, video_frame_photo_link)
     else:
         await message.reply(
             text=get_localization(user_language_code).ERROR_PHOTO_FORBIDDEN,
@@ -519,8 +526,10 @@ async def handle_album(message: Message, state: FSMContext, album: list[Message]
         user.current_model == Model.LUMA_PHOTON or
         user.current_model == Model.FACE_SWAP or
         user.current_model == Model.PHOTOSHOP_AI or
+        user.current_model == Model.KLING or
         user.current_model == Model.RUNWAY or
-        user.current_model == Model.LUMA_RAY
+        user.current_model == Model.LUMA_RAY or
+        user.current_model == Model.PIKA
     ):
         await message.reply(
             text=get_localization(user_language_code).ERROR_ALBUM_FORBIDDEN,

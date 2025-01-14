@@ -6,9 +6,11 @@ from bot.database.models.user import User
 
 async def update_user(user_id: str, data: dict):
     user_ref = firebase.db.collection(User.COLLECTION_NAME).document(user_id)
-    data['edited_at'] = datetime.now(timezone.utc)
+    user_doc = await user_ref.get()
 
-    await user_ref.update(data)
+    if user_doc.exists:
+        data['edited_at'] = datetime.now(timezone.utc)
+        await user_ref.update(data)
 
 
 async def update_user_in_transaction(transaction, user_id: str, data: dict):

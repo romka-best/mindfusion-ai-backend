@@ -241,7 +241,8 @@ Selecciona una <b>subcategoría</b> que necesites presionando el botón a contin
             is_last = index == len(prompts) - 1
             left_part = '┣' if not is_last else '┗'
             right_part = '\n' if not is_last else ''
-            prompt_info += f'    {left_part} <b>{index + 1}</b>: {prompt.names.get(LanguageCode.ES)}{right_part}'
+            prompt_name = prompt.names.get(LanguageCode.ES) or prompt.names.get(LanguageCode.EN)
+            prompt_info += f'    {left_part} <b>{index + 1}</b>: {prompt_name}{right_part}'
 
         return f"""
 🗯 <b>Catálogo de prompts</b>
@@ -259,12 +260,13 @@ Selecciona el <b>número del prompt</b> para obtener el prompt completo presiona
             is_last = index == len(products) - 1
             left_part = '┣' if not is_last else '┗'
             right_part = '\n' if not is_last else ''
-            model_info += f'    {left_part} <b>{product.names.get(LanguageCode.ES)}</b>{right_part}'
+            product_name = product.names.get(LanguageCode.ES) or product.names.get(LanguageCode.EN)
+            model_info += f'    {left_part} <b>{product_name}</b>{right_part}'
 
         return f"""
 🗯 <b>Catálogo de prompts</b>
 
-Has seleccionado el prompt: <b>{prompt.names.get(LanguageCode.ES)}</b>
+Has seleccionado el prompt: <b>{prompt.names.get(LanguageCode.ES) or prompt.names.get(LanguageCode.EN)}</b>
 Este prompt es adecuado para los modelos:
 {model_info}
 
@@ -279,7 +281,8 @@ Elige lo que deseas hacer presionando el botón a continuación 👇
             is_first = index == 0
             left_part = '┣' if not is_last else '┗'
             right_part = '\n' if not is_last else ''
-            prompt_examples_info += f'{left_part if not is_first else "┏"} <b>{index + 1}</b>: {product.names.get(LanguageCode.ES)}{right_part}'
+            product_name = product.names.get(LanguageCode.ES) or product.names.get(LanguageCode.EN)
+            prompt_examples_info += f'{left_part if not is_first else "┏"} <b>{index + 1}</b>: {product_name}{right_part}'
 
         return prompt_examples_info
 

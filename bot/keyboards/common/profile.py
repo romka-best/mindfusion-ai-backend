@@ -33,12 +33,6 @@ def build_profile_keyboard(
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).PAYMENT_CHANGE_CURRENCY,
-                callback_data=f'profile:change_currency'
-            ),
-        ],
-        [
-            InlineKeyboardButton(
                 text=get_localization(language_code).OPEN_BONUS_INFO,
                 callback_data=f'profile:open_bonus_info'
             ),

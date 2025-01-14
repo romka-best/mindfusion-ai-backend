@@ -12,19 +12,17 @@ def build_buy_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
             InlineKeyboardButton(
                 text=get_localization(language_code).SUBSCRIPTION,
                 callback_data=f'buy:{PaymentType.SUBSCRIPTION}'
-            )
-        ],
-        [
+            ),
             InlineKeyboardButton(
                 text=get_localization(language_code).PACKAGES,
                 callback_data=f'buy:{PaymentType.PACKAGE}'
-            )
+            ),
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).PROMO_CODE_ACTIVATE,
                 callback_data=f'buy:promo_code'
-            )
+            ),
         ],
     ]
 
@@ -162,7 +160,7 @@ def build_packages_keyboard(language_code: LanguageCode, products: list[Product]
     if page == 0:
         buttons.append([
             InlineKeyboardButton(
-                text=get_localization(language_code).MODELS_TEXT,
+                text=get_localization(language_code).MODELS_TEXT.upper(),
                 callback_data=f'package:{ProductCategory.TEXT}',
             ),
         ])
@@ -194,7 +192,7 @@ def build_packages_keyboard(language_code: LanguageCode, products: list[Product]
     elif page == 1:
         buttons.append([
             InlineKeyboardButton(
-                text=get_localization(language_code).MODELS_SUMMARY,
+                text=get_localization(language_code).MODELS_SUMMARY.upper(),
                 callback_data=f'package:{ProductCategory.SUMMARY}',
             ),
         ])
@@ -226,7 +224,7 @@ def build_packages_keyboard(language_code: LanguageCode, products: list[Product]
     elif page == 2:
         buttons.append([
             InlineKeyboardButton(
-                text=get_localization(language_code).MODELS_IMAGE,
+                text=get_localization(language_code).MODELS_IMAGE.upper(),
                 callback_data=f'package:{ProductCategory.IMAGE}',
             ),
         ])
@@ -259,7 +257,7 @@ def build_packages_keyboard(language_code: LanguageCode, products: list[Product]
         buttons.append(
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).MODELS_MUSIC,
+                    text=get_localization(language_code).MODELS_MUSIC.upper(),
                     callback_data=f'package:{ProductCategory.MUSIC}',
                 ),
             ],
@@ -293,7 +291,7 @@ def build_packages_keyboard(language_code: LanguageCode, products: list[Product]
         buttons.append(
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).MODELS_VIDEO,
+                    text=get_localization(language_code).MODELS_VIDEO.upper(),
                     callback_data=f'package:{ProductCategory.VIDEO}',
                 ),
             ],

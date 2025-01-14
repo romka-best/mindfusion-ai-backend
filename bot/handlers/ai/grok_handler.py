@@ -106,7 +106,8 @@ async def handle_grok(message: Message, state: FSMContext, user: User, photo_fil
     history = [
         {
             'role': 'system',
-            'content': role.translated_instructions.get(user_language_code, LanguageCode.EN),
+            'content': role.translated_instructions.get(user_language_code) or
+                       role.translated_instructions.get(LanguageCode.EN),
         },
     ]
 
@@ -193,7 +194,7 @@ async def handle_grok(message: Message, state: FSMContext, user: User, photo_fil
                 chat_info = f'💬 {chat.title}\n' if (
                     user.settings[user.current_model][UserSettings.SHOW_THE_NAME_OF_THE_CHATS]
                 ) else ''
-                role_info = f'{role.translated_names.get(user_language_code, "en")}\n' if (
+                role_info = f'{role.translated_names.get(user_language_code) or role.translated_names.get(LanguageCode.EN)}\n' if (
                     user.settings[user.current_model][UserSettings.SHOW_THE_NAME_OF_THE_ROLES]
                 ) else ''
                 header_text = f'{chat_info}{role_info}\n' if chat_info or role_info else ''
