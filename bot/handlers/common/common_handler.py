@@ -18,6 +18,7 @@ from bot.database.models.common import (
 )
 from bot.database.models.generation import Generation
 from bot.database.models.user import UserSettings
+from bot.database.operations.campaign.getters import get_campaign, get_campaign_by_name
 from bot.database.operations.generation.updaters import update_generation
 from bot.database.operations.user.getters import get_user, get_count_of_users_by_referral
 from bot.database.operations.user.initialize_user_for_the_first_time import initialize_user_for_the_first_time
@@ -62,6 +63,7 @@ async def start(message: Message, state: FSMContext):
     user = await get_user(user_id)
     if not user:
         default_quota = Quota.CHAT_GPT4_OMNI_MINI
+        user_discount = 0
         referred_by = None
         referred_by_user = None
         if len(params) > 1:
@@ -100,7 +102,13 @@ async def start(message: Message, state: FSMContext):
                             ))
                 elif sub_param_key == 'c':
                     campaign_id = sub_param_value
-                    # TODO
+                    campaign = await get_campaign(campaign_id)
+                    if not campaign:
+                        campaign = await get_campaign_by_name(campaign_id)
+
+                    if campaign:
+                        user_utm = campaign.utm
+                        user_discount = campaign.discount
                 elif sub_param_key == 'model' and sub_param_value in [
                     'chatgpt4omnimini',
                     'chatgpt4omni',
@@ -208,6 +216,7 @@ async def start(message: Message, state: FSMContext):
             bool(referred_by_user),
             default_quota,
             user_utm,
+            user_discount,
         )
     elif user and user.is_blocked:
         user.is_blocked = False
@@ -466,7 +475,9 @@ async def notify_about_quota_selection(callback_query: CallbackQuery, state: FSM
     user_id = str(callback_query.from_user.id)
 
     action = callback_query.data.split(':')[1]
-    if action == 'examples':
+    if action == 'change_ai':
+        await handle_model(callback_query.message, user_id, state)
+    elif action == 'examples':
         await handle_catalog_prompts(
             callback_query.message,
             user_id,

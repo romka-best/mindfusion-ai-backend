@@ -260,9 +260,9 @@ async def handle_midjourney_example(user: User, user_language_code: LanguageCode
     current_date = datetime.now(timezone.utc)
     if (
         not user.subscription_id and
-        user.current_model == Model.DALL_E and
+        user.current_model == Model.LUMA_PHOTON and
         user.settings[user.current_model][UserSettings.SHOW_EXAMPLES] and
-        user.daily_limits[Quota.DALL_E] + 1 in [1] and
+        user.daily_limits[Quota.LUMA_PHOTON] in [1] and
         (current_date - user.last_subscription_limit_update).days <= 3
     ):
         product = await get_product_by_quota(Quota.MIDJOURNEY)

@@ -171,7 +171,7 @@ class User:
             UserSettings.TURN_ON_VOICE_MESSAGES: False,
             UserSettings.VOICE: 'alloy',
             UserSettings.VERSION: GrokGPTVersion.V2,
-            UserSettings.SHOW_EXAMPLES: True,
+            UserSettings.SHOW_EXAMPLES: False,
         },
         Model.PERPLEXITY: {
             UserSettings.SHOW_THE_NAME_OF_THE_CHATS: False,
@@ -180,7 +180,7 @@ class User:
             UserSettings.TURN_ON_VOICE_MESSAGES: False,
             UserSettings.VOICE: 'alloy',
             UserSettings.VERSION: PerplexityGPTVersion.V3_Sonar_Large,
-            UserSettings.SHOW_EXAMPLES: True,
+            UserSettings.SHOW_EXAMPLES: False,
         },
         Model.EIGHTIFY: {
             UserSettings.SHOW_USAGE_QUOTA: False,
@@ -209,7 +209,7 @@ class User:
             UserSettings.ASPECT_RATIO: AspectRatio.SQUARE,
             UserSettings.QUALITY: DALLEQuality.STANDARD,
             UserSettings.SEND_TYPE: SendType.IMAGE,
-            UserSettings.SHOW_EXAMPLES: True,
+            UserSettings.SHOW_EXAMPLES: False,
         },
         Model.MIDJOURNEY: {
             UserSettings.SHOW_USAGE_QUOTA: True,
@@ -223,7 +223,7 @@ class User:
             UserSettings.VERSION: StableDiffusionVersion.XL,
             UserSettings.ASPECT_RATIO: AspectRatio.SQUARE,
             UserSettings.SEND_TYPE: SendType.IMAGE,
-            UserSettings.SHOW_EXAMPLES: False,
+            UserSettings.SHOW_EXAMPLES: True,
         },
         Model.FLUX: {
             UserSettings.SHOW_USAGE_QUOTA: True,
@@ -231,14 +231,14 @@ class User:
             UserSettings.SAFETY_TOLERANCE: FluxSafetyTolerance.MIDDLE,
             UserSettings.ASPECT_RATIO: AspectRatio.SQUARE,
             UserSettings.SEND_TYPE: SendType.IMAGE,
-            UserSettings.SHOW_EXAMPLES: False,
+            UserSettings.SHOW_EXAMPLES: True,
         },
         Model.LUMA_PHOTON: {
             UserSettings.SHOW_USAGE_QUOTA: True,
             UserSettings.VERSION: LumaPhotonVersion.V1,
             UserSettings.ASPECT_RATIO: AspectRatio.SQUARE,
             UserSettings.SEND_TYPE: SendType.IMAGE,
-            UserSettings.SHOW_EXAMPLES: False,
+            UserSettings.SHOW_EXAMPLES: True,
         },
         Model.RECRAFT: {
             UserSettings.SHOW_USAGE_QUOTA: True,
@@ -265,7 +265,7 @@ class User:
         Model.MUSIC_GEN: {
             UserSettings.SHOW_USAGE_QUOTA: True,
             UserSettings.VERSION: MusicGenVersion.LATEST,
-            UserSettings.SHOW_EXAMPLES: True,
+            UserSettings.SHOW_EXAMPLES: False,
         },
         Model.SUNO: {
             UserSettings.SHOW_USAGE_QUOTA: True,

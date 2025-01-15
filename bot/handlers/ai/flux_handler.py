@@ -1,3 +1,5 @@
+import asyncio
+from datetime import datetime, timezone
 from typing import Optional
 
 from aiogram import Router
@@ -8,7 +10,7 @@ from aiogram.utils.chat_action import ChatActionSender
 
 from bot.config import config, MessageEffect, MessageSticker
 from bot.database.main import firebase
-from bot.database.models.common import Model, Quota
+from bot.database.models.common import Model, Quota, FluxVersion
 from bot.database.models.generation import GenerationStatus
 from bot.database.models.request import RequestStatus
 from bot.database.models.user import User, UserSettings
@@ -24,7 +26,7 @@ from bot.database.operations.user.updaters import update_user
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.senders.send_error_info import send_error_info
-from bot.integrations.replicateAI import create_flux_image
+from bot.integrations.replicate_ai import create_flux_image
 from bot.keyboards.ai.flux import build_flux_keyboard
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_error_keyboard
@@ -243,3 +245,86 @@ async def handle_flux(
 
             await processing_sticker.delete()
             await processing_message.delete()
+
+    asyncio.create_task(
+        handle_flux_example(
+            user=user,
+            user_language_code=user_language_code,
+            prompt=prompt,
+            message=message,
+        )
+    )
+
+
+async def handle_flux_example(
+    user: User,
+    user_language_code: LanguageCode,
+    prompt: str,
+    message: Message,
+):
+    current_date = datetime.now(timezone.utc)
+    if (
+        not user.subscription_id and
+        user.current_model == Model.FLUX and
+        user.settings[user.current_model][UserSettings.VERSION] == FluxVersion.V1_Dev and
+        user.settings[user.current_model][UserSettings.SHOW_EXAMPLES] and
+        user.daily_limits[Quota.FLUX_1_DEV] in [1] and
+        (current_date - user.last_subscription_limit_update).days <= 3
+    ):
+        product = await get_product_by_quota(Quota.FLUX_1_PRO)
+
+        request = await write_request(
+            user_id=user.id,
+            processing_message_ids=[message.message_id],
+            product_id=product.id,
+            requested=1,
+            details={
+                'prompt': prompt,
+                'is_suggestion': True,
+            }
+        )
+
+        try:
+            if user_language_code != LanguageCode.EN:
+                prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
+            result_id = await create_flux_image(
+                prompt,
+                FluxVersion.V1_Pro,
+                user.settings[Model.FLUX][UserSettings.ASPECT_RATIO],
+                user.settings[Model.FLUX][UserSettings.SAFETY_TOLERANCE],
+            )
+
+            await write_generation(
+                id=result_id,
+                request_id=request.id,
+                product_id=product.id,
+                has_error=result_id is None,
+                details={
+                    'prompt': prompt,
+                    'is_suggestion': True,
+                }
+            )
+        except Exception as e:
+            await send_error_info(
+                bot=message.bot,
+                user_id=user.id,
+                info=str(e),
+                hashtags=['flux', 'example'],
+            )
+
+            request.status = RequestStatus.FINISHED
+            await update_request(request.id, {
+                'status': request.status
+            })
+
+            generations = await get_generations_by_request_id(request.id)
+            for generation in generations:
+                generation.status = GenerationStatus.FINISHED
+                generation.has_error = True
+                await update_generation(
+                    generation.id,
+                    {
+                        'status': generation.status,
+                        'has_error': generation.has_error,
+                    },
+                )

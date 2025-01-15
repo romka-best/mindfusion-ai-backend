@@ -1,5 +1,3 @@
-import asyncio
-
 import openai
 from aiogram import Router
 from aiogram.filters import Command
@@ -15,12 +13,11 @@ from bot.database.operations.product.getters import get_product_by_quota
 from bot.database.operations.transaction.writers import write_transaction
 from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user
-from bot.handlers.ai.midjourney_handler import handle_midjourney_example
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
-from bot.integrations.openAI import get_response_image, get_cost_for_image
+from bot.integrations.open_ai import get_response_image, get_cost_for_image
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard, build_model_limit_exceeded_keyboard
 from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_localization, get_user_language
@@ -186,12 +183,3 @@ async def handle_dall_e(message: Message, state: FSMContext, user: User):
             await processing_sticker.delete()
             await processing_message.delete()
             await state.update_data(is_processing=False)
-
-    asyncio.create_task(
-        handle_midjourney_example(
-            user=user,
-            user_language_code=user_language_code,
-            prompt=text,
-            message=message,
-        )
-    )

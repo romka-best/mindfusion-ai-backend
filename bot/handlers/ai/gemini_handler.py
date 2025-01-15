@@ -30,7 +30,7 @@ from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_mode
 from bot.helpers.reply_with_voice import reply_with_voice
 from bot.helpers.senders.send_ai_message import send_ai_message
 from bot.helpers.senders.send_error_info import send_error_info
-from bot.integrations.googleAI import get_response_message
+from bot.integrations.google import get_response_message
 from bot.keyboards.ai.gemini import build_gemini_keyboard
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import (

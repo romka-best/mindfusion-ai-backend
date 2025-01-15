@@ -48,7 +48,7 @@ from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_mode
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
 from bot.integrations.face_swap import generate_face_swap_video, get_face_swap_video_generation
-from bot.integrations.replicateAI import create_face_swap_images, create_flux_face_swap_image
+from bot.integrations.replicate_ai import create_face_swap_images, create_flux_face_swap_image
 from bot.keyboards.ai.face_swap import (
     build_face_swap_choose_keyboard,
     build_face_swap_package_keyboard,

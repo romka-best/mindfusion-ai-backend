@@ -46,7 +46,7 @@ from bot.handlers.ai.pika_handler import handle_pika
 from bot.handlers.ai.runway_handler import handle_runway
 from bot.handlers.ai.stable_diffusion_handler import handle_stable_diffusion
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
-from bot.integrations.replicateAI import create_face_swap_image, create_photoshop_ai_image
+from bot.integrations.replicate_ai import create_face_swap_image, create_photoshop_ai_image
 from bot.keyboards.admin.catalog import build_manage_catalog_create_role_confirmation_keyboard
 from bot.keyboards.ai.model import build_model_limit_exceeded_keyboard
 from bot.keyboards.common.common import build_cancel_keyboard, build_suggestions_keyboard

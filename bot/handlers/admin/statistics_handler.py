@@ -25,7 +25,12 @@ from bot.database.operations.product.getters import get_products
 from bot.database.operations.promo_code.getters import get_count_of_used_promo_codes
 from bot.database.operations.subscription.getters import get_count_of_subscriptions, get_subscription
 from bot.database.operations.transaction.writers import write_transaction
-from bot.database.operations.user.getters import get_user, get_count_of_users, get_count_of_users_referred_by
+from bot.database.operations.user.getters import (
+    get_user,
+    get_count_of_users,
+    get_count_of_users_referred_by,
+    get_count_of_users_campaign_by,
+)
 from bot.keyboards.admin.admin import build_admin_keyboard
 from bot.keyboards.common.common import build_cancel_keyboard
 from bot.states.admin.statistics import Statistics
@@ -403,6 +408,8 @@ async def handle_get_statistics(language_code: LanguageCode, period: str):
         count_blocked_users_before,
         count_referred_users,
         count_referred_users_before,
+        count_campaign_users,
+        count_campaign_users_before,
         count_english_users,
         count_english_users_before,
         count_russian_users,
@@ -441,6 +448,16 @@ async def handle_get_statistics(language_code: LanguageCode, period: str):
         ),
         # count_referred_users_before
         get_count_of_users_referred_by(
+            start_date=start_date_before,
+            end_date=end_date_before,
+        ) if start_date_before and end_date_before else get_zero(),
+        # count_campaign_users
+        get_count_of_users_campaign_by(
+            start_date=start_date,
+            end_date=end_date,
+        ),
+        # count_campaign_users_before
+        get_count_of_users_campaign_by(
             start_date=start_date_before,
             end_date=end_date_before,
         ) if start_date_before and end_date_before else get_zero(),
@@ -797,6 +814,8 @@ async def handle_get_statistics(language_code: LanguageCode, period: str):
             count_activated_users_before=count_activated_users_before,
             count_referral_users=count_referred_users,
             count_referral_users_before=count_referred_users_before,
+            count_campaign_users=count_campaign_users,
+            count_campaign_users_before=count_campaign_users_before,
             count_english_users=count_english_users,
             count_english_users_before=count_english_users_before,
             count_russian_users=count_russian_users,

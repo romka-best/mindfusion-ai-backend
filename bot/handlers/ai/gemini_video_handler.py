@@ -21,7 +21,7 @@ from bot.helpers.reply_with_voice import reply_with_voice
 from bot.helpers.senders.send_ai_message import send_ai_message
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
-from bot.integrations.googleAI import get_response_video_summary
+from bot.integrations.google import get_response_video_summary
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_user_language, get_localization

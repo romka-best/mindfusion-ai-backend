@@ -554,7 +554,6 @@ class Texts(Protocol):
     SHOPPING_CART: str
     SHOPPING_CART_ADD: str
     SHOPPING_CART_ADD_OR_BUY_NOW: str
-    SHOPPING_CART_ADDED: str
     SHOPPING_CART_BUY_NOW: str
     SHOPPING_CART_REMOVE: str
     SHOPPING_CART_GO_TO: str
@@ -662,8 +661,8 @@ class Texts(Protocol):
     ADMIN_ADS_SEND_LINK: str
     ADMIN_ADS_CHOOSE_SOURCE: str
     ADMIN_ADS_CHOOSE_MEDIUM: str
+    ADMIN_ADS_SEND_DISCOUNT: str
     ADMIN_ADS_SEND_NAME: str
-    ADMIN_ADS_SEND_QUANTITY: str
     ADMIN_ADS_VALUE_ERROR: str
 
     ADMIN_BAN_INFO: str
@@ -784,6 +783,8 @@ class Texts(Protocol):
         count_activated_users_before: int,
         count_referral_users: int,
         count_referral_users_before: int,
+        count_campaign_users: int,
+        count_campaign_users_before: int,
         count_english_users: int,
         count_english_users_before: int,
         count_russian_users: int,

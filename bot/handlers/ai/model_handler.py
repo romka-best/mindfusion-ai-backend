@@ -22,7 +22,7 @@ from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.handlers.handle_model_info import handle_model_info
 from bot.integrations.kling import Kling
-from bot.integrations.openAI import get_cost_for_image
+from bot.integrations.open_ai import get_cost_for_image
 from bot.integrations.runway import get_cost_for_video
 from bot.keyboards.ai.model import (
     build_model_keyboard,

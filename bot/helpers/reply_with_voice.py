@@ -7,7 +7,7 @@ from bot.database.models.common import Currency, Quota
 from bot.database.models.transaction import TransactionType
 from bot.database.operations.product.getters import get_product_by_quota
 from bot.database.operations.transaction.writers import write_transaction
-from bot.integrations.openAI import get_response_text_to_speech
+from bot.integrations.open_ai import get_response_text_to_speech
 
 
 async def reply_with_voice(

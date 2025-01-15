@@ -23,7 +23,7 @@ from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_mode
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.locales.translate_text import translate_text
-from bot.integrations.replicateAI import create_music_gen_melody
+from bot.integrations.replicate_ai import create_music_gen_melody
 from bot.keyboards.common.common import build_cancel_keyboard, build_error_keyboard
 from bot.keyboards.ai.music_gen import build_music_gen_keyboard
 from bot.locales.main import get_localization, get_user_language

@@ -128,6 +128,12 @@ def build_notify_about_quota_keyboard(language_code: LanguageCode) -> InlineKeyb
     buttons = [
         [
             InlineKeyboardButton(
+                text=get_localization(language_code).MODEL_CHANGE_AI,
+                callback_data=f'notify_about_quota:change_ai'
+            )
+        ],
+        [
+            InlineKeyboardButton(
                 text=get_localization(language_code).MODEL_SWITCHED_TO_AI_EXAMPLES,
                 callback_data=f'notify_about_quota:examples'
             )

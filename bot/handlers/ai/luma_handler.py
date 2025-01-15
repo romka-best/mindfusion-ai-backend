@@ -1,3 +1,4 @@
+import asyncio
 from typing import Optional
 
 from aiogram import Router
@@ -21,6 +22,7 @@ from bot.database.operations.request.updaters import update_request
 from bot.database.operations.request.writers import write_request
 from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user
+from bot.handlers.ai.midjourney_handler import handle_midjourney_example
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.senders.send_error_info import send_error_info
@@ -188,6 +190,15 @@ async def handle_luma_photon(
 
             await processing_sticker.delete()
             await processing_message.delete()
+
+        asyncio.create_task(
+            handle_midjourney_example(
+                user=user,
+                user_language_code=user_language_code,
+                prompt=prompt,
+                message=message,
+            )
+        )
 
 
 @luma_router.message(Command('luma_ray'))

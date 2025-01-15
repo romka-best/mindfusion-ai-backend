@@ -42,7 +42,7 @@ from bot.handlers.payment.payment_handler import handle_buy
 from bot.helpers.getters.get_human_model import get_human_model
 from bot.helpers.getters.get_model_type import get_model_type
 from bot.integrations.kling import Kling
-from bot.integrations.openAI import get_cost_for_image
+from bot.integrations.open_ai import get_cost_for_image
 from bot.integrations.runway import get_cost_for_video
 from bot.keyboards.settings.chats import (
     build_chats_keyboard,

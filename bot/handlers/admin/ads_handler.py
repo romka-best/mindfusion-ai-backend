@@ -10,6 +10,8 @@ from bot.database.main import firebase
 from bot.database.models.common import UTM
 from bot.database.models.product import ProductCategory
 from bot.database.models.transaction import Transaction, TransactionType
+from bot.database.operations.campaign.getters import get_campaign, get_campaign_by_name
+from bot.database.operations.campaign.writers import write_campaign
 from bot.database.operations.product.getters import get_product
 from bot.database.operations.user.getters import get_users
 from bot.keyboards.admin.admin import build_admin_keyboard
@@ -32,10 +34,9 @@ async def handle_ads(message: Message, user_id: str, state: FSMContext):
 
     user_language_code = await get_user_language(user_id, state.storage)
 
-    reply_markup = build_ads_keyboard(user_language_code)
     await message.edit_text(
         text=get_localization(user_language_code).ADMIN_ADS_INFO,
-        reply_markup=reply_markup,
+        reply_markup=build_ads_keyboard(user_language_code),
     )
 
 
@@ -47,25 +48,22 @@ async def handle_ads_selection(callback_query: CallbackQuery, state: FSMContext)
 
     action = callback_query.data.split(':')[1]
     if action == 'back':
-        reply_markup = build_admin_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_INFO,
-            reply_markup=reply_markup,
+            reply_markup=build_admin_keyboard(user_language_code),
         )
 
         await state.clear()
         return
     elif action == 'create':
-        reply_markup = build_ads_create_choose_source_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_ADS_CHOOSE_SOURCE,
-            reply_markup=reply_markup,
+            reply_markup=build_ads_create_choose_source_keyboard(user_language_code),
         )
     elif action == 'get':
-        reply_markup = build_ads_get_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_ADS_SEND_LINK,
-            reply_markup=reply_markup,
+            reply_markup=build_ads_get_keyboard(user_language_code),
         )
 
         await state.set_state(Ads.waiting_for_link)
@@ -79,19 +77,17 @@ async def handle_ads_create_choose_source_selection(callback_query: CallbackQuer
 
     action = callback_query.data.split(':')[1]
     if action == 'back':
-        reply_markup = build_ads_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_ADS_INFO,
-            reply_markup=reply_markup,
+            reply_markup=build_ads_keyboard(user_language_code),
         )
     else:
-        reply_markup = build_ads_create_choose_medium_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_ADS_CHOOSE_MEDIUM,
-            reply_markup=reply_markup,
+            reply_markup=build_ads_create_choose_medium_keyboard(user_language_code),
         )
 
-        await state.update_data(source=action)
+        await state.update_data(campaign_source=action)
 
 
 @ads_router.callback_query(lambda c: c.data.startswith('ads_create_choose_medium:'))
@@ -102,73 +98,109 @@ async def handle_ads_create_choose_source_selection(callback_query: CallbackQuer
 
     action = callback_query.data.split(':')[1]
     if action == 'back':
-        reply_markup = build_ads_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_ADS_INFO,
-            reply_markup=reply_markup,
+            reply_markup=build_ads_keyboard(user_language_code),
         )
     else:
-        reply_markup = build_ads_create_keyboard(user_language_code)
         await callback_query.message.edit_text(
-            text=get_localization(user_language_code).ADMIN_ADS_SEND_NAME,
-            reply_markup=reply_markup,
+            text=get_localization(user_language_code).ADMIN_ADS_SEND_DISCOUNT,
+            reply_markup=build_ads_create_keyboard(user_language_code),
         )
 
-        await state.update_data(medium=action)
-        await state.set_state(Ads.waiting_for_campaign_name)
+        await state.update_data(campaign_medium=action)
+        await state.set_state(Ads.waiting_for_discount)
+
+
+@ads_router.callback_query(lambda c: c.data.startswith('ads_create_choose_discount:'))
+async def handle_ads_create_choose_discount_selection(callback_query: CallbackQuery, state: FSMContext):
+    await callback_query.answer()
+
+    user_language_code = await get_user_language(str(callback_query.from_user.id), state.storage)
+
+    discount = int(callback_query.data.split(':')[1])
+    reply_markup = build_cancel_keyboard(user_language_code)
+    await callback_query.message.answer(
+        text=get_localization(user_language_code).ADMIN_ADS_SEND_NAME,
+        reply_markup=reply_markup
+    )
+
+    await state.set_state(Ads.waiting_for_campaign_name)
+    await state.update_data(campaign_discount=discount)
+
+
+@ads_router.message(Ads.waiting_for_discount, F.text, ~F.text.startswith('/'))
+async def ads_discount_sent(message: Message, state: FSMContext):
+    user_language_code = await get_user_language(str(message.from_user.id), state.storage)
+
+    try:
+        discount = int(message.text)
+
+        if 1 <= discount <= 50:
+            await message.answer(
+                text=get_localization(user_language_code).ADMIN_ADS_SEND_NAME,
+                reply_markup=build_cancel_keyboard(user_language_code)
+            )
+
+            await state.set_state(Ads.waiting_for_campaign_name)
+            await state.update_data(campaign_discount=discount)
+        else:
+            raise ValueError
+    except (TypeError, ValueError):
+        await message.reply(
+            text=get_localization(user_language_code).ERROR_IS_NOT_NUMBER,
+            reply_markup=build_cancel_keyboard(user_language_code),
+            allow_sending_without_reply=True,
+        )
 
 
 @ads_router.message(Ads.waiting_for_campaign_name, F.text, ~F.text.startswith('/'))
 async def ads_campaign_name_sent(message: Message, state: FSMContext):
     user_language_code = await get_user_language(str(message.from_user.id), state.storage)
+    user_data = await state.get_data()
 
     campaign_name = message.text
     if re.match(r'^[a-zA-Z]+$', campaign_name):
-        reply_markup = build_ads_create_keyboard(user_language_code)
-        await message.reply(
-            text=get_localization(user_language_code).ADMIN_ADS_SEND_QUANTITY,
-            reply_markup=reply_markup,
-            allow_sending_without_reply=True,
+        existed_campaign = await get_campaign_by_name(campaign_name)
+        if existed_campaign:
+            await message.reply(
+                text=get_localization(user_language_code).ADMIN_ADS_VALUE_ERROR,
+                reply_markup=build_cancel_keyboard(user_language_code),
+                allow_sending_without_reply=True,
+            )
+            return
+
+        await state.update_data(campaign_name=campaign_name)
+
+        (
+            campaign_source,
+            campaign_medium,
+            campaign_discount,
+        ) = (
+            user_data.get('campaign_source'),
+            user_data.get('campaign_medium'),
+            user_data.get('campaign_discount'),
         )
-        await state.update_data(name=campaign_name)
-        await state.set_state(Ads.waiting_for_quantity)
-    else:
-        reply_markup = build_cancel_keyboard(user_language_code)
-        await message.reply(
-            text=get_localization(user_language_code).ADMIN_ADS_VALUE_ERROR,
-            reply_markup=reply_markup,
-            allow_sending_without_reply=True,
+        utm = {
+            UTM.SOURCE: campaign_source,
+            UTM.MEDIUM: campaign_medium,
+            UTM.CAMPAIGN: campaign_name,
+        }
+
+        campaign = await write_campaign(
+            utm,
+            campaign_discount,
         )
 
-
-@ads_router.message(Ads.waiting_for_quantity, F.text, ~F.text.startswith('/'))
-async def ads_quantity_sent(message: Message, state: FSMContext):
-    user_language_code = await get_user_language(str(message.from_user.id), state.storage)
-    user_data = await state.get_data()
-
-    try:
-        quantity = int(message.text)
-        source, medium, name = user_data.get('source'), user_data.get('medium'), user_data.get('name')
-        urls = []
-        for i in range(quantity):
-            utm = {
-                UTM.SOURCE: source,
-                UTM.MEDIUM: medium,
-                UTM.CAMPAIGN: name,
-                UTM.CONTENT: i + 1,
-            }
-            start_value = '_'.join(f'{key}-{value}' for key, value in utm.items())
-            final_url = f'{config.BOT_URL}?start={start_value}'
-            urls.append(final_url)
         await message.answer(
-            text='\n'.join(urls),
+            text=f'1. {config.BOT_URL}?start=c-{campaign.id}'
+                 f'2. {config.BOT_URL}?start=c-{campaign.utm.get(UTM.CAMPAIGN)}',
         )
         await state.clear()
-    except (TypeError, ValueError):
-        reply_markup = build_cancel_keyboard(user_language_code)
+    else:
         await message.reply(
-            text=get_localization(user_language_code).ERROR_IS_NOT_NUMBER,
-            reply_markup=reply_markup,
+            text=get_localization(user_language_code).ADMIN_ADS_VALUE_ERROR,
+            reply_markup=build_cancel_keyboard(user_language_code),
             allow_sending_without_reply=True,
         )
 
@@ -181,10 +213,9 @@ async def handle_ads_create_selection(callback_query: CallbackQuery, state: FSMC
 
     action = callback_query.data.split(':')[1]
     if action == 'back':
-        reply_markup = build_ads_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_ADS_INFO,
-            reply_markup=reply_markup,
+            reply_markup=build_ads_keyboard(user_language_code),
         )
 
         await state.clear()
@@ -195,20 +226,28 @@ async def ads_link_sent(message: Message, state: FSMContext):
     parsed_url = urlparse(message.text)
     params = parse_qs(parsed_url.query)
     start_param = params.get('start', [''])[0]
-    utm_parts = dict(item.split('-', 1) for item in start_param.split('_') if '-' in item)
+    campaign_id = start_param.split('_')[0].split('-')[0]
+
+    campaign = await get_campaign(campaign_id)
 
     users = await get_users(
-        utm=utm_parts,
+        utm=campaign.utm,
     )
 
     product_cache = {}
 
+    nothing_users = 0
     only_text_users = 0
+    only_summary_users = 0
     only_image_users = 0
+    text_and_summary_users = 0
+    summary_and_image_users = 0
     text_and_image_users = 0
+    all_ai_users = 0
     clients = 0
     for user in users:
         has_text_requests = False
+        has_summary_requests = False
         has_image_requests = False
         has_purchases = False
 
@@ -244,6 +283,8 @@ async def ads_link_sent(message: Message, state: FSMContext):
                         transaction_product = product_cache[transaction.product_id]
                     if transaction_product.category == ProductCategory.TEXT:
                         has_text_requests = True
+                    elif transaction_product.category == ProductCategory.SUMMARY:
+                        has_summary_requests = True
                     elif transaction_product.category == ProductCategory.IMAGE:
                         has_image_requests = True
 
@@ -253,23 +294,39 @@ async def ads_link_sent(message: Message, state: FSMContext):
 
             last_doc = doc
 
-        if has_purchases:
-            clients += 1
-
-        if has_text_requests and has_image_requests:
+        if has_text_requests and has_summary_requests and has_image_requests:
+            all_ai_users += 1
+        elif has_text_requests and has_summary_requests:
+            text_and_summary_users += 1
+        elif has_summary_requests and has_image_requests:
+            summary_and_image_users += 1
+        elif has_text_requests and has_image_requests:
             text_and_image_users += 1
         elif has_text_requests:
             only_text_users += 1
+        elif has_summary_requests:
+            only_summary_users += 1
         elif has_image_requests:
             only_image_users += 1
+        else:
+            nothing_users += 1
+
+        if has_purchases:
+            clients += 1
 
     await message.answer(text=f'''
-📯 <i>{utm_parts[UTM.CAMPAIGN]}</i>. <b>{len(users)}</b>
-┣ <b>{len(users) - only_text_users - only_image_users - text_and_image_users}</b> - Не писали ничего
-┣ <b>{only_text_users}</b> - Сделали запрос только в текстовой модели
-┣ <b>{only_image_users}</b> - Сделали запрос только в графической модели
-┣ <b>{text_and_image_users}</b> - Сделали запрос в текстовой и графической моделях
-┗ <b>{clients}</b> - Купили что-то
+📯 <b>{campaign.id}</b>
+
+• <b>{len(users)}</b> - Всего пришло
+• <b>{nothing_users}</b> - Не писали ничего
+• <b>{only_text_users}</b> - Сделали запрос только в текстовой модели
+• <b>{only_summary_users}</b> - Сделали запрос только в резюме модели
+• <b>{only_image_users}</b> - Сделали запрос только в графической модели
+• <b>{text_and_summary_users}</b> - Сделали запрос в текстовой и резюме моделях
+• <b>{summary_and_image_users}</b> - Сделали запрос в резюме и графической моделях
+• <b>{text_and_image_users}</b> - Сделали запрос в текстовой и графической моделях
+• <b>{all_ai_users}</b> - Сделали запрос во всех моделях
+• <b>{clients}</b> - Купили что-то
 ''')
 
     await state.clear()

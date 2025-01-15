@@ -36,7 +36,7 @@ from bot.helpers.senders.send_document import send_document
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.senders.send_images import send_image
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
-from bot.keyboards.common.common import build_reaction_keyboard, build_error_keyboard
+from bot.keyboards.common.common import build_reaction_keyboard, build_error_keyboard, build_buy_motivation_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.types import LanguageCode
 
@@ -455,9 +455,10 @@ async def handle_replicate_stable_diffusion(
     request: Request,
     generation: Generation,
 ):
+    is_suggestion = generation.details.get('is_suggestion', False)
     prompt = generation.details.get('prompt')
 
-    if generation.result:
+    if generation.result and not is_suggestion:
         footer_text = f'\n\n🖼 {user.daily_limits[user_quota] + user.additional_usage_quota[user_quota]}' \
             if user.settings[Model.STABLE_DIFFUSION][UserSettings.SHOW_USAGE_QUOTA] and \
                user.daily_limits[user_quota] != float('inf') else ''
@@ -468,18 +469,29 @@ async def handle_replicate_stable_diffusion(
             await send_document(bot, user.telegram_chat_id, generation.result, reply_markup, caption)
         else:
             await send_image(bot, user.telegram_chat_id, generation.result, reply_markup, caption)
+    elif generation.result and is_suggestion:
+        header_text = f'{get_localization(user_language_code).example_image_model(get_localization(user_language_code).STABLE_DIFFUSION_3)}\n'
+        footer_text = f'\n{get_localization(user_language_code).EXAMPLE_INFO}'
+        full_text = f'{header_text}{footer_text}'
+        await send_image(
+            bot,
+            user.telegram_chat_id,
+            generation.result,
+            build_buy_motivation_keyboard(user_language_code),
+            full_text,
+        )
     elif generation.has_error:
-        await bot.send_sticker(
-            chat_id=user.telegram_chat_id,
-            sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
-        )
+        if not is_suggestion:
+            await bot.send_sticker(
+                chat_id=user.telegram_chat_id,
+                sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
+            )
 
-        reply_markup = build_error_keyboard(user_language_code)
-        await bot.send_message(
-            chat_id=user.telegram_chat_id,
-            text=get_localization(user_language_code).ERROR,
-            reply_markup=reply_markup,
-        )
+            await bot.send_message(
+                chat_id=user.telegram_chat_id,
+                text=get_localization(user_language_code).ERROR,
+                reply_markup=build_error_keyboard(user_language_code),
+            )
 
     if request.status != RequestStatus.FINISHED:
         request.status = RequestStatus.FINISHED
@@ -500,15 +512,20 @@ async def handle_replicate_stable_diffusion(
                 details={
                     'result': generation.result,
                     'prompt': prompt,
+                    'is_suggestion': is_suggestion,
                     'has_error': generation.has_error,
                 },
             ),
-            update_user_usage_quota(
-                user,
-                user_quota,
-                1 if generation.result else 0,
-            ),
         ]
+
+        if generation.result and not is_suggestion:
+            update_tasks.append(
+                update_user_usage_quota(
+                    user,
+                    user_quota,
+                    1,
+                ),
+            )
 
         await asyncio.gather(*update_tasks)
 
@@ -522,11 +539,12 @@ async def handle_replicate_stable_diffusion(
         )
         await state.clear()
 
-        for processing_message_id in request.processing_message_ids:
-            try:
-                await bot.delete_message(user.telegram_chat_id, processing_message_id)
-            except Exception:
-                continue
+        if not is_suggestion:
+            for processing_message_id in request.processing_message_ids:
+                try:
+                    await bot.delete_message(user.telegram_chat_id, processing_message_id)
+                except Exception:
+                    continue
 
 
 async def handle_replicate_flux(
@@ -538,9 +556,10 @@ async def handle_replicate_flux(
     request: Request,
     generation: Generation,
 ):
+    is_suggestion = generation.details.get('is_suggestion', False)
     prompt = generation.details.get('prompt')
 
-    if generation.result:
+    if generation.result and not is_suggestion:
         footer_text = f'\n\n🖼 {user.daily_limits[user_quota] + user.additional_usage_quota[user_quota]}' \
             if user.settings[Model.FLUX][UserSettings.SHOW_USAGE_QUOTA] and \
                user.daily_limits[user_quota] != float('inf') else ''
@@ -551,18 +570,30 @@ async def handle_replicate_flux(
             await send_document(bot, user.telegram_chat_id, generation.result, reply_markup, caption)
         else:
             await send_image(bot, user.telegram_chat_id, generation.result, reply_markup, caption)
+    elif generation.result and is_suggestion:
+        header_text = f'{get_localization(user_language_code).example_image_model(get_localization(user_language_code).FLUX_1_PRO)}\n'
+        footer_text = f'\n{get_localization(user_language_code).EXAMPLE_INFO}'
+        full_text = f'{header_text}{footer_text}'
+        await send_image(
+            bot,
+            user.telegram_chat_id,
+            generation.result,
+            build_buy_motivation_keyboard(user_language_code),
+            full_text,
+        )
     elif generation.has_error:
-        await bot.send_sticker(
-            chat_id=user.telegram_chat_id,
-            sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
-        )
+        if not is_suggestion:
+            await bot.send_sticker(
+                chat_id=user.telegram_chat_id,
+                sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
+            )
 
-        reply_markup = build_error_keyboard(user_language_code)
-        await bot.send_message(
-            chat_id=user.telegram_chat_id,
-            text=get_localization(user_language_code).ERROR,
-            reply_markup=reply_markup,
-        )
+            reply_markup = build_error_keyboard(user_language_code)
+            await bot.send_message(
+                chat_id=user.telegram_chat_id,
+                text=get_localization(user_language_code).ERROR,
+                reply_markup=reply_markup,
+            )
 
     if request.status != RequestStatus.FINISHED:
         request.status = RequestStatus.FINISHED
@@ -583,15 +614,20 @@ async def handle_replicate_flux(
                 details={
                     'result': generation.result,
                     'prompt': prompt,
+                    'is_suggestion': is_suggestion,
                     'has_error': generation.has_error,
                 },
             ),
-            update_user_usage_quota(
-                user,
-                user_quota,
-                1 if generation.result else 0,
-            ),
         ]
+
+        if generation.result and not is_suggestion:
+            update_tasks.append(
+                update_user_usage_quota(
+                    user,
+                    user_quota,
+                    1,
+                ),
+            )
 
         await asyncio.gather(*update_tasks)
 
@@ -605,8 +641,9 @@ async def handle_replicate_flux(
         )
         await state.clear()
 
-        for processing_message_id in request.processing_message_ids:
-            try:
-                await bot.delete_message(user.telegram_chat_id, processing_message_id)
-            except Exception:
-                continue
+        if not is_suggestion:
+            for processing_message_id in request.processing_message_ids:
+                try:
+                    await bot.delete_message(user.telegram_chat_id, processing_message_id)
+                except Exception:
+                    continue

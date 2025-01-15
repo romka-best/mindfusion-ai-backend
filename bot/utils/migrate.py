@@ -29,10 +29,10 @@ async def migrate(bot: Bot):
             LanguageCode.HI: '🦄 Stable Diffusion XL',
         },
         descriptions={
-            LanguageCode.RU: 'TODO',
-            LanguageCode.EN: 'TODO',
-            LanguageCode.ES: 'TODO',
-            LanguageCode.HI: 'TODO',
+            LanguageCode.RU: '🦄 Stable Diffusion XL',
+            LanguageCode.EN: '🦄 Stable Diffusion XL',
+            LanguageCode.ES: '🦄 Stable Diffusion XL',
+            LanguageCode.HI: '🦄 Stable Diffusion XL',
         },
         prices={
             Currency.RUB: 4,
@@ -57,10 +57,10 @@ async def migrate(bot: Bot):
             LanguageCode.HI: '🌲 Flux 1.0 Dev',
         },
         descriptions={
-            LanguageCode.RU: 'TODO',
-            LanguageCode.EN: 'TODO',
-            LanguageCode.ES: 'TODO',
-            LanguageCode.HI: 'TODO',
+            LanguageCode.RU: '🌲 Flux 1.0 Dev',
+            LanguageCode.EN: '🌲 Flux 1.0 Dev',
+            LanguageCode.ES: '🌲 Flux 1.0 Dev',
+            LanguageCode.HI: '🌲 Flux 1.0 Dev',
         },
         prices={
             Currency.RUB: 4,
@@ -85,10 +85,10 @@ async def migrate(bot: Bot):
             LanguageCode.HI: '🐼 Recraft 3',
         },
         descriptions={
-            LanguageCode.RU: 'TODO',
-            LanguageCode.EN: 'TODO',
-            LanguageCode.ES: 'TODO',
-            LanguageCode.HI: 'TODO',
+            LanguageCode.RU: '🐼 Recraft 3',
+            LanguageCode.EN: '🐼 Recraft 3',
+            LanguageCode.ES: '🐼 Recraft 3',
+            LanguageCode.HI: '🐼 Recraft 3',
         },
         prices={
             Currency.RUB: 8,
@@ -114,10 +114,10 @@ async def migrate(bot: Bot):
             LanguageCode.HI: '🐇 Pika',
         },
         descriptions={
-            LanguageCode.RU: 'TODO',
-            LanguageCode.EN: 'TODO',
-            LanguageCode.ES: 'TODO',
-            LanguageCode.HI: 'TODO',
+            LanguageCode.RU: '🐇 Pika',
+            LanguageCode.EN: '🐇 Pika',
+            LanguageCode.ES: '🐇 Pika',
+            LanguageCode.HI: '🐇 Pika',
         },
         prices={
             Currency.RUB: 75,

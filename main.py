@@ -35,7 +35,7 @@ from bot.handlers.admin.ban_handler import ban_router
 from bot.handlers.admin.blast_handler import blast_router
 from bot.handlers.admin.catalog_handler import admin_catalog_router
 from bot.handlers.admin.face_swap_handler import admin_face_swap_router
-from bot.handlers.admin.promo_code import admin_promo_code_router
+from bot.handlers.admin.promo_code_handler import admin_promo_code_router
 from bot.handlers.admin.statistics_handler import statistics_router
 from bot.handlers.ai.chat_gpt_handler import chat_gpt_router
 from bot.handlers.ai.claude_handler import claude_router

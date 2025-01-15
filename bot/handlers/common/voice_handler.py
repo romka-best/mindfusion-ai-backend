@@ -44,7 +44,7 @@ from bot.handlers.ai.runway_handler import handle_runway
 from bot.handlers.ai.stable_diffusion_handler import handle_stable_diffusion
 from bot.handlers.ai.suno_handler import handle_suno
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
-from bot.integrations.openAI import get_response_speech_to_text
+from bot.integrations.open_ai import get_response_speech_to_text
 from bot.keyboards.common.common import build_buy_motivation_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode

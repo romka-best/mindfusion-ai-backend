@@ -28,6 +28,7 @@ def create_user_object(
     is_referred_by_user=False,
     quota=Quota.CHAT_GPT4_OMNI_MINI,
     utm=None,
+    discount=0,
 ) -> User:
     default_model = Model.CHAT_GPT
     default_settings = User.DEFAULT_SETTINGS
@@ -138,6 +139,7 @@ def create_user_object(
         additional_usage_quota=user_data.get('additional_usage_quota', User.DEFAULT_ADDITIONAL_USAGE_QUOTA),
         settings=user_data.get('settings', default_settings),
         referred_by=user_data.get('referred_by', referred_by),
+        discount=user_data.get('discount', discount),
         utm=utm,
         created_at=user_data.get('created_at', None),
         edited_at=user_data.get('edited_at', None),

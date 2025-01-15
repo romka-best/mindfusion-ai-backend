@@ -86,14 +86,12 @@ async def handle_midjourney_result(
         header_text = f'{get_localization(user_language_code).example_image_model(get_localization(user_language_code).MIDJOURNEY)}\n'
         footer_text = f'\n{get_localization(user_language_code).EXAMPLE_INFO}'
         full_text = f'{header_text}{footer_text}'
-        reply_markup = build_buy_motivation_keyboard(user_language_code)
         await send_image(
             bot,
             user.telegram_chat_id,
             generation.result,
-            reply_markup,
+            build_buy_motivation_keyboard(user_language_code),
             full_text,
-            request.processing_message_ids[-1],
         )
     else:
         generation_error = generation.details.get('error', '').lower()
