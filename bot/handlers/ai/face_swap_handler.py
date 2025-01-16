@@ -377,7 +377,6 @@ async def handle_face_swap_video(
         )
 
         try:
-            print(video_link)
             result_id = await generate_face_swap_video(
                 user_photo_link,
                 video_link,
@@ -397,7 +396,6 @@ async def handle_face_swap_video(
                 await asyncio.sleep(30)
 
                 video_generation = await get_face_swap_video_generation(result_id)
-                print(video_generation)
                 if video_generation.get('progress') == 100:
                     video_result_url = video_generation.get('output')[0]
                     footer_text = f'\n\n📹 {user.daily_limits[Quota.FACE_SWAP] + user.additional_usage_quota[Quota.FACE_SWAP]}' \

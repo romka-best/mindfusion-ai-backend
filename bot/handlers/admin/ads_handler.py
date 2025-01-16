@@ -18,7 +18,7 @@ from bot.keyboards.admin.admin import build_admin_keyboard
 from bot.keyboards.admin.ads import (
     build_ads_keyboard,
     build_ads_get_keyboard,
-    build_ads_create_keyboard,
+    build_ads_create_choose_discount_keyboard,
     build_ads_create_choose_source_keyboard,
     build_ads_create_choose_medium_keyboard,
 )
@@ -105,7 +105,7 @@ async def handle_ads_create_choose_source_selection(callback_query: CallbackQuer
     else:
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_ADS_SEND_DISCOUNT,
-            reply_markup=build_ads_create_keyboard(user_language_code),
+            reply_markup=build_ads_create_choose_discount_keyboard(user_language_code),
         )
 
         await state.update_data(campaign_medium=action)
@@ -119,10 +119,9 @@ async def handle_ads_create_choose_discount_selection(callback_query: CallbackQu
     user_language_code = await get_user_language(str(callback_query.from_user.id), state.storage)
 
     discount = int(callback_query.data.split(':')[1])
-    reply_markup = build_cancel_keyboard(user_language_code)
-    await callback_query.message.answer(
+    await callback_query.message.edit_text(
         text=get_localization(user_language_code).ADMIN_ADS_SEND_NAME,
-        reply_markup=reply_markup
+        reply_markup=build_cancel_keyboard(user_language_code)
     )
 
     await state.set_state(Ads.waiting_for_campaign_name)
@@ -193,7 +192,7 @@ async def ads_campaign_name_sent(message: Message, state: FSMContext):
         )
 
         await message.answer(
-            text=f'1. {config.BOT_URL}?start=c-{campaign.id}'
+            text=f'1. {config.BOT_URL}?start=c-{campaign.id}\n'
                  f'2. {config.BOT_URL}?start=c-{campaign.utm.get(UTM.CAMPAIGN)}',
         )
         await state.clear()
@@ -226,9 +225,11 @@ async def ads_link_sent(message: Message, state: FSMContext):
     parsed_url = urlparse(message.text)
     params = parse_qs(parsed_url.query)
     start_param = params.get('start', [''])[0]
-    campaign_id = start_param.split('_')[0].split('-')[0]
+    campaign_id = start_param.split('_')[0].split('-')[1]
 
     campaign = await get_campaign(campaign_id)
+    if not campaign:
+        campaign = await get_campaign_by_name(campaign_id)
 
     users = await get_users(
         utm=campaign.utm,

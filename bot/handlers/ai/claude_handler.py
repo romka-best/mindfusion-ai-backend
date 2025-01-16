@@ -271,7 +271,6 @@ async def handle_claude(
             product = await get_product_by_quota(user_quota)
 
             total_price = round(input_price + output_price, 6)
-            print(total_price)
             message_role, message_content = 'assistant', response_message
             await write_transaction(
                 user_id=user.id,

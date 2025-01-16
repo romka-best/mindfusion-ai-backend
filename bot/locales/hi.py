@@ -1290,7 +1290,7 @@ class Hindi(Texts):
     def model_switched(model_name: str, model_type: ModelType, model_info: dict):
         if model_type == ModelType.TEXT:
             model_role = model_info.get('role').split(' ')
-            model_role = ' '.join([model_role[-1] + model_role[:-1]])
+            model_role = ' '.join(model_role[1:] + [model_role[0]])
             facts = f"""<b>तथ्य और सेटिंग्स:</b>
 📅 जानकारी उपलब्धता: {model_info.get('training_data')}
 📷 फोटो के साथ काम: {'हां ✅' if model_info.get('support_photos', False) else 'नहीं ❌'}
@@ -2274,7 +2274,7 @@ class Hindi(Texts):
                 elif is_trial and currency == Currency.USD:
                     is_trial_info = 'पहले 3 दिन मुफ्त, फिर '
 
-                text_subscriptions += f'- <b>{subscription_name}</b>: '
+                text_subscriptions += f'<b>{subscription_name}</b>: '
                 per_period = 'प्रति महीना' if subscription.category == ProductCategory.MONTHLY else 'प्रति वर्ष'
 
                 discount = get_user_discount(user_discount, 0, subscription.discount)

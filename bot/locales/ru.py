@@ -1312,7 +1312,7 @@ class Russian(Texts):
     def model_switched(model_name: str, model_type: ModelType, model_info: dict):
         if model_type == ModelType.TEXT:
             model_role = model_info.get('role').split(' ')
-            model_role = ' '.join([model_role[-1] + model_role[:-1]])
+            model_role = ' '.join(model_role[1:] + [model_role[0]])
             facts = f"""<b>Факты и настройки:</b>
 📅 Знания до: {model_info.get('training_data')}
 📷 Работа с фото: {'Да ✅' if model_info.get('support_photos', False) else 'Нет ❌'}
@@ -2165,7 +2165,7 @@ class Russian(Texts):
 
 🤖 Все доступные модели можно посмотреть в /model
 
-ℹ️ Узнать больше о нейросетях и о том, что они умеют можно в /info
+ℹ️ Узнать больше о нейросетях можно в /info
 
 ✨ <b>Начните творить уже сейчас!</b>
 """
@@ -2298,7 +2298,7 @@ class Russian(Texts):
                 elif is_trial and currency == Currency.USD:
                     is_trial_info = 'Бесплатно первые 3 дня, затем '
 
-                text_subscriptions += f'• <b>{subscription_name}</b>: '
+                text_subscriptions += f'<b>{subscription_name}</b>: '
                 per_period = 'в месяц' if subscription.category == ProductCategory.MONTHLY else 'в год'
 
                 discount = get_user_discount(user_discount, 0, subscription.discount)

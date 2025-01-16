@@ -1254,7 +1254,7 @@ You selected the same model you’re currently using
     def model_switched(model_name: str, model_type: ModelType, model_info: dict):
         if model_type == ModelType.TEXT:
             model_role = model_info.get('role').split(' ')
-            model_role = ' '.join([model_role[-1] + model_role[:-1]])
+            model_role = ' '.join(model_role[1:] + [model_role[0]])
             facts = f"""<b>Facts and Settings:</b>
 📅 Knowledge up to: {model_info.get('training_data')}
 📷 Vision Support: {'Yes ✅' if model_info.get('support_photos', False) else 'No ❌'}
@@ -2233,7 +2233,7 @@ You can continue exploring the universe of AI models and regain access by clicki
                 elif is_trial and currency == Currency.USD:
                     is_trial_info = 'Free first 3 days, then '
 
-                text_subscriptions += f'• <b>{subscription_name}</b>: '
+                text_subscriptions += f'<b>{subscription_name}</b>: '
                 per_period = 'per month' if subscription.category == ProductCategory.MONTHLY else 'per year'
 
                 discount = get_user_discount(user_discount, 0, subscription.discount)

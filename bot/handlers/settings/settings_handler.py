@@ -406,7 +406,7 @@ async def handle_setting_selection(callback_query: CallbackQuery, state: FSMCont
     ):
         user.settings[chosen_model][UserSettings.SEND_TYPE] = chosen_setting
         what_changed = UserSettings.SEND_TYPE
-    elif chosen_setting == SunoVersion.V3 or chosen_setting == SunoVersion.V3_5 or chosen_setting == SunoVersion.V4:
+    elif chosen_setting == SunoVersion.V3 or chosen_setting == SunoVersion.V4:
         user.settings[Model.SUNO][UserSettings.VERSION] = chosen_setting
         what_changed = UserSettings.VERSION
     elif chosen_setting == KlingMode.STANDARD or chosen_setting == KlingMode.PRO:

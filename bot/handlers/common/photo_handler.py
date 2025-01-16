@@ -297,8 +297,7 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
         user.current_model == Model.MIDJOURNEY or
         user.current_model == Model.STABLE_DIFFUSION or
         user.current_model == Model.FLUX or
-        user.current_model == Model.LUMA_PHOTON or
-        user.current_model == Model.RECRAFT
+        user.current_model == Model.LUMA_PHOTON
     ):
         current_time = time.time()
 

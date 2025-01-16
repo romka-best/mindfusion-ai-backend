@@ -1286,7 +1286,7 @@ Has seleccionado el mismo modelo que ya estás usando.
     def model_switched(model_name: str, model_type: ModelType, model_info: dict):
         if model_type == ModelType.TEXT:
             model_role = model_info.get('role').split(' ')
-            model_role = ' '.join([model_role[-1] + model_role[:-1]])
+            model_role = ' '.join(model_role[1:] + [model_role[0]])
             facts = f"""<b>Hechos y configuraciones:</b>
 📅 Conocimientos hasta: {model_info.get('training_data')}
 📷 Compatibilidad con fotos: {'Sí ✅' if model_info.get('support_photos', False) else 'No ❌'}
@@ -2265,7 +2265,7 @@ Puedes continuar explorando el universo de las redes neuronales y reactivar tu a
                 elif is_trial and currency == Currency.USD:
                     is_trial_info = 'Gratis los primeros 3 días, luego '
 
-                text_subscriptions += f'• <b>{subscription_name}</b>: '
+                text_subscriptions += f'<b>{subscription_name}</b>: '
                 per_period = 'por mes' if subscription.category == ProductCategory.MONTHLY else 'por año'
 
                 discount = get_user_discount(user_discount, 0, subscription.discount)

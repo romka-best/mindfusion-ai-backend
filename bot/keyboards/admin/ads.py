@@ -105,18 +105,18 @@ def build_ads_create_choose_discount_keyboard(language_code: LanguageCode) -> In
     buttons = [
         [
             InlineKeyboardButton(
-                text=f'5%',
-                callback_data=f'ads_create_choose_discount:5'
+                text=f'0%',
+                callback_data=f'ads_create_choose_discount:0'
             ),
             InlineKeyboardButton(
-                text=f'10%',
-                callback_data=f'ads_create_choose_discount:10'
+                text=f'5%',
+                callback_data=f'ads_create_choose_discount:5'
             ),
         ],
         [
             InlineKeyboardButton(
-                text=f'15%',
-                callback_data=f'ads_create_choose_discount:15'
+                text=f'10%',
+                callback_data=f'ads_create_choose_discount:10'
             ),
             InlineKeyboardButton(
                 text=f'20%',

@@ -74,7 +74,6 @@ class Videos(APIResource):
             f'{FACE_SWAP_API_URL}/v2/face-swap-video/create-job',
             data=form_data,
         )
-        print(data)
         return data['result']['job_id']
 
     async def get_generation(
@@ -82,7 +81,6 @@ class Videos(APIResource):
         job_id: str,
     ):
         data = await self.request('GET', f'{FACE_SWAP_API_URL}/v2/face-swap-video/{job_id}')
-        print(data)
         return data['result']
 
 

@@ -48,7 +48,7 @@ async def handle_text(message: Message, state: FSMContext):
     user_quota = get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION])
     if not user_quota:
         raise NotImplementedError(
-            f'User model is not found: {user.current_model}'
+            f'User Model Is Not Found: {user.current_model}, {user.settings[user.current_model][UserSettings.VERSION]}'
         )
 
     need_exit = (

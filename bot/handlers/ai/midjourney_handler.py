@@ -274,7 +274,7 @@ async def handle_midjourney_example(user: User, user_language_code: LanguageCode
             requested=1,
             details={
                 'prompt': prompt,
-                'action': MidjourneyAction.UPSCALE,
+                'action': MidjourneyAction.IMAGINE,
                 'version': MidjourneyVersion.V6,
                 'is_suggestion': True,
             }
