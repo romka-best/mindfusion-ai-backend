@@ -15,33 +15,23 @@ def build_chats_keyboard(
     buttons = [
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).CHAT_SHOW,
-                callback_data=f'chat:show'
-            )
-        ],
-        [
-            InlineKeyboardButton(
                 text=get_localization(language_code).CHAT_CREATE,
                 callback_data=f'chat:create'
-            )
-        ],
-        [
+            ),
             InlineKeyboardButton(
                 text=get_localization(language_code).CHAT_SWITCH,
                 callback_data=f'chat:switch'
-            )
+            ),
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).CHAT_RESET,
                 callback_data=f'chat:reset'
-            )
-        ],
-        [
+            ),
             InlineKeyboardButton(
                 text=get_localization(language_code).CHAT_DELETE,
                 callback_data=f'chat:delete'
-            )
+            ),
         ],
         [
             InlineKeyboardButton(

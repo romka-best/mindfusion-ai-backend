@@ -1,4 +1,12 @@
-from bot.database.models.common import Model, Quota, ChatGPTVersion, ClaudeGPTVersion, GeminiGPTVersion
+from bot.database.models.common import (
+    Model,
+    Quota,
+    ChatGPTVersion,
+    ClaudeGPTVersion,
+    GeminiGPTVersion,
+    StableDiffusionVersion,
+    FluxVersion,
+)
 
 
 def get_quota_by_model(model: Model, version: str):
@@ -38,11 +46,19 @@ def get_quota_by_model(model: Model, version: str):
     elif model == Model.MIDJOURNEY:
         return Quota.MIDJOURNEY
     elif model == Model.STABLE_DIFFUSION:
-        return Quota.STABLE_DIFFUSION
+        if version == StableDiffusionVersion.XL:
+            return Quota.STABLE_DIFFUSION_XL
+        elif version == StableDiffusionVersion.V3:
+            return Quota.STABLE_DIFFUSION_3
     elif model == Model.FLUX:
-        return Quota.FLUX
+        if version == FluxVersion.V1_Dev:
+            return Quota.FLUX_1_DEV
+        elif version == FluxVersion.V1_Pro:
+            return Quota.FLUX_1_PRO
     elif model == Model.LUMA_PHOTON:
         return Quota.LUMA_PHOTON
+    elif model == Model.RECRAFT:
+        return Quota.RECRAFT
     elif model == Model.FACE_SWAP:
         return Quota.FACE_SWAP
     elif model == Model.PHOTOSHOP_AI:
@@ -57,5 +73,7 @@ def get_quota_by_model(model: Model, version: str):
         return Quota.RUNWAY
     elif model == Model.LUMA_RAY:
         return Quota.LUMA_RAY
+    elif model == Model.PIKA:
+        return Quota.PIKA
     else:
         raise NotImplementedError(f'User Model is not Implemented: {model}')

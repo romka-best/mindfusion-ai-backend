@@ -89,8 +89,6 @@ def build_create_promo_code_discount_keyboard(language_code: LanguageCode):
                 text=f'5%',
                 callback_data=f'create_promo_code_discount:5'
             ),
-        ],
-        [
             InlineKeyboardButton(
                 text=f'10%',
                 callback_data=f'create_promo_code_discount:10'
@@ -98,8 +96,22 @@ def build_create_promo_code_discount_keyboard(language_code: LanguageCode):
         ],
         [
             InlineKeyboardButton(
+                text=f'15%',
+                callback_data=f'create_promo_code_discount:15'
+            ),
+            InlineKeyboardButton(
                 text=f'20%',
                 callback_data=f'create_promo_code_discount:20'
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text=f'25%',
+                callback_data=f'create_promo_code_discount:25'
+            ),
+            InlineKeyboardButton(
+                text=f'30%',
+                callback_data=f'create_promo_code_discount:30'
             ),
         ],
         [

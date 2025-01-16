@@ -124,7 +124,6 @@ async def handle_kling(
             chat_id=user.telegram_chat_id,
             text=get_localization(user_language_code).ERROR,
             reply_markup=reply_markup,
-            parse_mode=None,
         )
 
     if request.status != RequestStatus.FINISHED:

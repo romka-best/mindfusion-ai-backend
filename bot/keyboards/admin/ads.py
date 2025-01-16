@@ -33,26 +33,28 @@ def build_ads_create_choose_source_keyboard(language_code: LanguageCode) -> Inli
     buttons = [
         [
             InlineKeyboardButton(
-                text='Telegram ✈️',
+                text='✈️ Telegram',
                 callback_data='ads_create_choose_source:telegram',
             ),
-        ],
-        [
             InlineKeyboardButton(
-                text='Instagram 📷',
+                text='📷 Instagram',
                 callback_data='ads_create_choose_source:instagram',
             ),
         ],
         [
             InlineKeyboardButton(
-                text='Google 🔍',
+                text='🔍 Google',
                 callback_data='ads_create_choose_source:google',
+            ),
+            InlineKeyboardButton(
+                text='🔎 Yandex',
+                callback_data='ads_create_choose_source:yandex',
             ),
         ],
         [
             InlineKeyboardButton(
-                text='Yandex 🔎',
-                callback_data='ads_create_choose_source:google',
+                text='💼 Affiliate',
+                callback_data='ads_create_choose_source:affiliate',
             ),
         ],
         [
@@ -70,26 +72,61 @@ def build_ads_create_choose_medium_keyboard(language_code: LanguageCode) -> Inli
     buttons = [
         [
             InlineKeyboardButton(
-                text='Контекстная Реклама 🪧',
+                text='🪧 Target',
                 callback_data='ads_create_choose_medium:cpc',
             ),
-        ],
-        [
             InlineKeyboardButton(
-                text='E-Mail 📧',
+                text='📧 E-Mail',
                 callback_data='ads_create_choose_medium:email',
             ),
         ],
         [
             InlineKeyboardButton(
-                text='Социальные Сети 🌐',
+                text='🌐 Social Media',
                 callback_data='ads_create_choose_medium:social',
+            ),
+            InlineKeyboardButton(
+                text='💼 Affiliate',
+                callback_data='ads_create_choose_medium:affiliate',
             ),
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_BACK,
                 callback_data='ads_create_choose_medium:back',
+            ),
+        ],
+    ]
+
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def build_ads_create_choose_discount_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text=f'0%',
+                callback_data=f'ads_create_choose_discount:0'
+            ),
+            InlineKeyboardButton(
+                text=f'5%',
+                callback_data=f'ads_create_choose_discount:5'
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text=f'10%',
+                callback_data=f'ads_create_choose_discount:10'
+            ),
+            InlineKeyboardButton(
+                text=f'20%',
+                callback_data=f'ads_create_choose_discount:20'
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).ACTION_BACK,
+                callback_data='ads_create_choose_discount:back',
             ),
         ],
     ]

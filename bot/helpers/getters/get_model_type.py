@@ -18,11 +18,17 @@ def get_model_type(model: Model):
         model == Model.STABLE_DIFFUSION or
         model == Model.FLUX or
         model == Model.LUMA_PHOTON or
+        model == Model.RECRAFT or
         model == Model.FACE_SWAP or
         model == Model.PHOTOSHOP_AI
     ):
         return ModelType.IMAGE
     elif model == Model.MUSIC_GEN or model == Model.SUNO:
         return ModelType.MUSIC
-    elif model == Model.KLING or model == Model.RUNWAY or model == Model.LUMA_RAY:
+    elif (
+        model == Model.KLING or
+        model == Model.RUNWAY or
+        model == Model.LUMA_RAY or
+        model == Model.PIKA
+    ):
         return ModelType.VIDEO

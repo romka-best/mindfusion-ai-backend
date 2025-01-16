@@ -13,7 +13,7 @@ async def check_user_last_activity(user_id: str, created_at: datetime, storage: 
     notification_stage = await get_notification_stage(user_id, storage)
     if last_activity:
         days_since_last_activity = (current_date - last_activity.created_at).days
-        if days_since_last_activity <= 1:
+        if days_since_last_activity <= 1 and notification_stage != 10:
             await set_notification_stage(user_id, 0, storage)
             return False
 

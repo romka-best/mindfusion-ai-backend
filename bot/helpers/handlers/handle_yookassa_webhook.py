@@ -8,7 +8,7 @@ from yookassa.domain.notification import WebhookNotification
 
 from bot.config import config, MessageEffect, MessageSticker
 from bot.database.main import firebase
-from bot.database.models.common import Model, Currency, PaymentMethod
+from bot.database.models.common import Currency, PaymentMethod
 from bot.database.models.package import PackageStatus
 from bot.database.models.subscription import (
     SubscriptionStatus,
@@ -32,14 +32,11 @@ from bot.database.operations.subscription.writers import write_subscription
 from bot.database.operations.transaction.writers import write_transaction
 from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user
-from bot.handlers.ai.face_swap_handler import handle_face_swap
-from bot.handlers.ai.music_gen_handler import handle_music_gen
-from bot.handlers.ai.photoshop_ai_handler import handle_photoshop_ai
-from bot.handlers.ai.suno_handler import handle_suno
 from bot.helpers.creaters.create_package import create_package
 from bot.helpers.creaters.create_subscription import create_subscription
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
+from bot.helpers.handlers.handle_model_info import handle_model_info
 from bot.helpers.senders.send_message_to_admins import send_message_to_admins
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_buy_motivation_keyboard
@@ -129,44 +126,14 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                         bot_id=bot.id,
                     )
                 )
-                if user.current_model == Model.EIGHTIFY:
-                    await bot.send_message(
-                        chat_id=user.telegram_chat_id,
-                        text=get_localization(user_language_code).EIGHTIFY_INFO,
-                    )
-                elif user.current_model == Model.GEMINI_VIDEO:
-                    await bot.send_message(
-                        chat_id=user.telegram_chat_id,
-                        text=get_localization(user_language_code).GEMINI_VIDEO_INFO,
-                    )
-                elif user.current_model == Model.FACE_SWAP:
-                    await handle_face_swap(
-                        bot=bot,
-                        chat_id=user.telegram_chat_id,
-                        state=state,
-                        user_id=user.id,
-                    )
-                elif user.current_model == Model.PHOTOSHOP_AI:
-                    await handle_photoshop_ai(
-                        bot=bot,
-                        chat_id=user.telegram_chat_id,
-                        state=state,
-                        user_id=user.id,
-                    )
-                elif user.current_model == Model.MUSIC_GEN:
-                    await handle_music_gen(
-                        bot=bot,
-                        chat_id=user.telegram_chat_id,
-                        state=state,
-                        user_id=user.id,
-                    )
-                elif user.current_model == Model.SUNO:
-                    await handle_suno(
-                        bot=bot,
-                        chat_id=user.telegram_chat_id,
-                        state=state,
-                        user_id=user.id,
-                    )
+
+                await handle_model_info(
+                    bot=bot,
+                    chat_id=user.telegram_chat_id,
+                    state=state,
+                    model=user.current_model,
+                    language_code=user_language_code,
+                )
 
                 await send_message_to_admins(
                     bot=bot,
@@ -451,44 +418,13 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                         bot_id=bot.id,
                     )
                 )
-                if user.current_model == Model.EIGHTIFY:
-                    await bot.send_message(
-                        chat_id=user.telegram_chat_id,
-                        text=get_localization(user_language_code).EIGHTIFY_INFO,
-                    )
-                elif user.current_model == Model.GEMINI_VIDEO:
-                    await bot.send_message(
-                        chat_id=user.telegram_chat_id,
-                        text=get_localization(user_language_code).GEMINI_VIDEO_INFO,
-                    )
-                elif user.current_model == Model.FACE_SWAP:
-                    await handle_face_swap(
-                        bot=bot,
-                        chat_id=user.telegram_chat_id,
-                        state=state,
-                        user_id=user.id,
-                    )
-                elif user.current_model == Model.PHOTOSHOP_AI:
-                    await handle_photoshop_ai(
-                        bot=bot,
-                        chat_id=user.telegram_chat_id,
-                        state=state,
-                        user_id=user.id,
-                    )
-                elif user.current_model == Model.MUSIC_GEN:
-                    await handle_music_gen(
-                        bot=bot,
-                        chat_id=user.telegram_chat_id,
-                        state=state,
-                        user_id=user.id,
-                    )
-                elif user.current_model == Model.SUNO:
-                    await handle_suno(
-                        bot=bot,
-                        chat_id=user.telegram_chat_id,
-                        state=state,
-                        user_id=user.id,
-                    )
+                await handle_model_info(
+                    bot=bot,
+                    chat_id=user.telegram_chat_id,
+                    state=state,
+                    model=user.current_model,
+                    language_code=user_language_code,
+                )
 
                 await send_message_to_admins(
                     bot=bot,
@@ -614,44 +550,13 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                         bot_id=bot.id,
                     )
                 )
-                if user.current_model == Model.EIGHTIFY:
-                    await bot.send_message(
-                        chat_id=user.telegram_chat_id,
-                        text=get_localization(user_language_code).EIGHTIFY_INFO,
-                    )
-                elif user.current_model == Model.GEMINI_VIDEO:
-                    await bot.send_message(
-                        chat_id=user.telegram_chat_id,
-                        text=get_localization(user_language_code).GEMINI_VIDEO_INFO,
-                    )
-                elif user.current_model == Model.FACE_SWAP:
-                    await handle_face_swap(
-                        bot=bot,
-                        chat_id=user.telegram_chat_id,
-                        state=state,
-                        user_id=user.id,
-                    )
-                elif user.current_model == Model.PHOTOSHOP_AI:
-                    await handle_photoshop_ai(
-                        bot=bot,
-                        chat_id=user.telegram_chat_id,
-                        state=state,
-                        user_id=user.id,
-                    )
-                elif user.current_model == Model.MUSIC_GEN:
-                    await handle_music_gen(
-                        bot=bot,
-                        chat_id=user.telegram_chat_id,
-                        state=state,
-                        user_id=user.id,
-                    )
-                elif user.current_model == Model.SUNO:
-                    await handle_suno(
-                        bot=bot,
-                        chat_id=user.telegram_chat_id,
-                        state=state,
-                        user_id=user.id,
-                    )
+                await handle_model_info(
+                    bot=bot,
+                    chat_id=user.telegram_chat_id,
+                    state=state,
+                    model=user.current_model,
+                    language_code=user_language_code,
+                )
 
                 await send_message_to_admins(
                     bot=bot,

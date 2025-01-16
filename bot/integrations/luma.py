@@ -31,24 +31,6 @@ async def get_response_image(
     return response.id
 
 
-async def get_response_face_swap(
-    prompt_text: str,
-    prompt_image: str,
-) -> str:
-    response = await client.generations.image.create(
-        model=LumaPhotonVersion.V1,
-        prompt=prompt_text,
-        callback_url=WEBHOOK_LUMA_URL,
-        character_ref={
-            'identity0': {
-                'images': [prompt_image]
-            },
-        },
-    )
-
-    return response.id
-
-
 async def get_response_video(
     prompt_text: str,
     aspect_ratio: AspectRatio,

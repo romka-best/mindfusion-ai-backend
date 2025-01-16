@@ -3,7 +3,7 @@ from typing import cast
 
 from babel.dates import format_date
 
-from bot.database.models.common import Quota, ModelType
+from bot.database.models.common import ModelType, Quota
 from bot.database.models.user import User
 from bot.database.operations.chat.getters import get_chat
 from bot.database.operations.product.getters import get_product_by_quota
@@ -21,7 +21,7 @@ async def get_switched_to_ai_model(user: User, quota: Quota, language_code: Lang
     if model_type == ModelType.TEXT:
         chat = await get_chat(user.current_chat_id)
         role = await get_role(chat.role_id)
-        role_info = {'role': role.translated_names.get(language_code, LanguageCode.EN)}
+        role_info = {'role': role.translated_names.get(language_code) or role.translated_names.get(LanguageCode.EN)}
 
     current_date = datetime.now(timezone.utc)
     training_data = product.details.get('training_data', current_date)
@@ -31,7 +31,7 @@ async def get_switched_to_ai_model(user: User, quota: Quota, language_code: Lang
     product_info = product.details
     settings_info = user.settings[user.current_model]
 
-    model_name = product.names.get(language_code, LanguageCode.EN)
+    model_name = product.names.get(language_code) or product.names.get(LanguageCode.EN)
     model_type = cast(ModelType, product.category)
     model_info = product_info | role_info | settings_info
 

@@ -30,7 +30,7 @@ from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_mode
 from bot.helpers.reply_with_voice import reply_with_voice
 from bot.helpers.senders.send_ai_message import send_ai_message
 from bot.helpers.senders.send_error_info import send_error_info
-from bot.integrations.googleAI import get_response_message
+from bot.integrations.google import get_response_message
 from bot.keyboards.ai.gemini import build_gemini_keyboard
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import (
@@ -189,7 +189,8 @@ async def handle_gemini(
     sorted_messages = sorted(messages, key=lambda m: m.created_at)
     if single_mode:
         sorted_messages = [sorted_messages[-1]]
-    system_prompt = role.translated_instructions.get(user_language_code, LanguageCode.EN)
+    system_prompt = role.translated_instructions.get(user_language_code) or \
+                    role.translated_instructions.get(LanguageCode.EN)
     history = []
     for sorted_message in sorted_messages:
         parts = []
@@ -296,7 +297,7 @@ async def handle_gemini(
                 chat_info = f'💬 {chat.title}\n' if (
                     user.settings[user.current_model][UserSettings.SHOW_THE_NAME_OF_THE_CHATS]
                 ) else ''
-                role_info = f'{role.translated_names.get(user_language_code, "en")}\n' if (
+                role_info = f'{role.translated_names.get(user_language_code) or role.translated_names.get(LanguageCode.EN)}\n' if (
                     user.settings[user.current_model][UserSettings.SHOW_THE_NAME_OF_THE_ROLES]
                 ) else ''
                 header_text = f'{chat_info}{role_info}\n' if chat_info or role_info else ''

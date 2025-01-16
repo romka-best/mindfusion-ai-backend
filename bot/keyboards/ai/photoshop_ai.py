@@ -9,6 +9,12 @@ def build_photoshop_ai_keyboard(language_code: LanguageCode) -> InlineKeyboardMa
     buttons = [
         [
             InlineKeyboardButton(
+                text=get_localization(language_code).PHOTOSHOP_AI_UPSCALE,
+                callback_data=f'photoshop_ai:{PhotoshopAIAction.UPSCALE}',
+            ),
+        ],
+        [
+            InlineKeyboardButton(
                 text=get_localization(language_code).PHOTOSHOP_AI_RESTORATION,
                 callback_data=f'photoshop_ai:{PhotoshopAIAction.RESTORATION}',
             ),

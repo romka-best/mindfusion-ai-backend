@@ -29,6 +29,8 @@ async def set_user_language(user_id: str, language_code: LanguageCode, storage: 
         }
     )
 
+    return language_code
+
 
 async def get_user_language(user_id: str, storage: BaseStorage) -> LanguageCode:
     key = f'user:{user_id}:language'

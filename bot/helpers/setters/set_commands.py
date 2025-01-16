@@ -10,11 +10,11 @@ from bot.locales.types import LanguageCode
 commands_en = [
     BotCommand(
         command='start',
-        description='👋 About this bot',
+        description='👋 About bot',
     ),
     BotCommand(
         command='model',
-        description='🤖 Select AI model',
+        description='🤖 Select AI Model',
     ),
     BotCommand(
         command='profile',
@@ -22,58 +22,54 @@ commands_en = [
     ),
     BotCommand(
         command='buy',
-        description='💎 Buy a subscription or packages',
+        description='💎 Subscriptions and Packages',
     ),
     BotCommand(
         command='text',
-        description='🔤 Generate Text with: ChatGPT, Claude, Gemini, Grok, Perplexity',
+        description='🔤 Generate Text',
     ),
     BotCommand(
         command='summary',
-        description='📝 Generate Summary in: YouTube, Video',
+        description='📝 Generate Summary',
     ),
     BotCommand(
         command='image',
-        description='🖼 Generate Images with: DALL-E, Midjourney, Stable Diffusion, Flux, Luma Photon, FaceSwap, Photoshop AI',
+        description='🖼 Generate Images',
     ),
     BotCommand(
         command='music',
-        description='🎵 Generate Music with: MusicGen, Suno',
+        description='🎵 Generate Music',
     ),
     BotCommand(
         command='video',
-        description='📹 Generate Videos with: Kling, Runway, Luma Ray',
+        description='📹 Generate Videos',
     ),
     BotCommand(
         command='info',
-        description='ℹ️ Info about AI models',
+        description='ℹ️ About AI models',
     ),
     BotCommand(
         command='catalog',
-        description='📂 Catalog with prompts and digital employees',
+        description='📂 Prompts and Roles',
     ),
     BotCommand(
         command='settings',
-        description='🔧 Customize AI model for yourself',
+        description='🔧 Customize AI model',
     ),
     BotCommand(
         command='language',
-        description='🌍 Select language',
-    ),
-    BotCommand(
-        command='bonus',
-        description='🎁 Bonus balance',
+        description='🌍 Select Language',
     ),
     BotCommand(
         command='help',
-        description='🛟 Detailed information about commands',
+        description='🛟 Help and Commands',
     ),
 ]
 
 commands_ru = [
     BotCommand(
         command='start',
-        description='👋 Что умеет этот бот',
+        description='👋 Что умеет бот',
     ),
     BotCommand(
         command='model',
@@ -85,62 +81,58 @@ commands_ru = [
     ),
     BotCommand(
         command='buy',
-        description='💎 Приобрести подписку или пакеты',
+        description='💎 Подписки и пакеты',
     ),
     BotCommand(
         command='text',
-        description='🔤 Генерация текста с: ChatGPT, Claude, Gemini, Grok, Perplexity',
+        description='🔤 Генерация текста',
     ),
     BotCommand(
         command='summary',
-        description='📝 Генерация резюме в: YouTube, Видео',
+        description='📝 Генерация резюме',
     ),
     BotCommand(
         command='image',
-        description='🖼 Генерация изображений с: DALL-E, Midjourney, Stable Diffusion, Flux, Luma Photon, FaceSwap, Photoshop AI',
+        description='🖼 Генерация изображений',
     ),
     BotCommand(
         command='music',
-        description='🎵 Генерация музыки с: MusicGen, Suno',
+        description='🎵 Генерация музыки',
     ),
     BotCommand(
         command='video',
-        description='📹 Генерация видео с: Kling, Runway, Luma Ray',
+        description='📹 Генерация видео',
     ),
     BotCommand(
         command='info',
-        description='ℹ️ Информация про модели ИИ',
+        description='ℹ️ Про нейросети',
     ),
     BotCommand(
         command='catalog',
-        description='📂 Каталог с промптами и цифровыми сотрудниками',
+        description='📂 Промпты и роли',
     ),
     BotCommand(
         command='settings',
-        description='🔧 Настроить модель под себя',
+        description='🔧 Настройки нейросети',
     ),
     BotCommand(
         command='language',
         description='🌍 Поменять язык',
     ),
     BotCommand(
-        command='bonus',
-        description='🎁 Бонусный баланс',
-    ),
-    BotCommand(
         command='help',
-        description='🛟 Детальная информация про команды',
+        description='🛟 Помощь и команды',
     ),
 ]
 
 commands_es = [
     BotCommand(
         command='start',
-        description='👋 Qué puede hacer este bot',
+        description='👋 Qué puede hacer el bot',
     ),
     BotCommand(
         command='model',
-        description='🤖 Seleccionar modelo IA',
+        description='🤖 Elegir modelo de IA',
     ),
     BotCommand(
         command='profile',
@@ -148,58 +140,54 @@ commands_es = [
     ),
     BotCommand(
         command='buy',
-        description='💎 Comprar suscripción o paquetes',
+        description='💎 Suscripciones y paquetes',
     ),
     BotCommand(
         command='text',
-        description='🔤 Generación de texto con: ChatGPT, Claude, Gemini, Grok, Perplexity',
+        description='🔤 Generación de texto',
     ),
     BotCommand(
         command='summary',
-        description='📝 Generación de resúmenes en: YouTube, Video',
+        description='📝 Generación de resúmenes',
     ),
     BotCommand(
         command='image',
-        description='🖼 Generación de imágenes con: DALL-E, Midjourney, Stable Diffusion, Flux, Luma Photon, FaceSwap, Photoshop IA',
+        description='🖼 Generación de imágenes',
     ),
     BotCommand(
         command='music',
-        description='🎵 Generación de música con: MusicGen, Suno',
+        description='🎵 Generación de música',
     ),
     BotCommand(
         command='video',
-        description='📹 Generación de video con: Kling, Runway, Luma Ray',
+        description='📹 Generación de video',
     ),
     BotCommand(
         command='info',
-        description='ℹ️ Información sobre modelos AI',
+        description='ℹ️ Sobre las redes neuronales',
     ),
     BotCommand(
         command='catalog',
-        description='📂 Catálogo de prompts y empleados digitales',
+        description='📂 Prompts y roles',
     ),
     BotCommand(
         command='settings',
-        description='🔧 Configurar el modelo a tu medida',
+        description='🔧 Configuración de IA',
     ),
     BotCommand(
         command='language',
         description='🌍 Cambiar idioma',
     ),
     BotCommand(
-        command='bonus',
-        description='🎁 Balance de bonificación',
-    ),
-    BotCommand(
         command='help',
-        description='🛟 Información detallada sobre comandos',
+        description='🛟 Ayuda y comandos',
     ),
 ]
 
 commands_hi = [
     BotCommand(
         command='start',
-        description='👋 इस बॉट की क्षमताएँ जानें',
+        description='👋 बॉट क्या कर सकता है',
     ),
     BotCommand(
         command='model',
@@ -211,51 +199,47 @@ commands_hi = [
     ),
     BotCommand(
         command='buy',
-        description='💎 सदस्यता या पैकेज खरीदें',
+        description='💎 सब्सक्रिप्शन और पैकेज',
     ),
     BotCommand(
         command='text',
-        description='🔤 टेक्स्ट जनरेशन: ChatGPT, Claude, Gemini, Grok, Perplexity से',
+        description='🔤 टेक्स्ट जनरेशन',
     ),
     BotCommand(
         command='summary',
-        description='📝 सारांश जनरेशन: YouTube, वीडियो से',
+        description='📝 सारांश जनरेशन',
     ),
     BotCommand(
         command='image',
-        description='🖼 छवियों का निर्माण: DALL-E, Midjourney, Stable Diffusion, Flux, Luma Photon, FaceSwap, Photoshop AI से',
+        description='🖼 इमेज जनरेशन',
     ),
     BotCommand(
         command='music',
-        description='🎵 संगीत निर्माण: MusicGen, Suno से',
+        description='🎵 म्यूजिक जनरेशन',
     ),
     BotCommand(
         command='video',
-        description='📹 वीडियो निर्माण: Kling, Runway, Luma Ray से',
+        description='📹 वीडियो जनरेशन',
     ),
     BotCommand(
         command='info',
-        description='ℹ️ AI मॉडल की जानकारी',
+        description='ℹ️ न्यूरल नेटवर्क के बारे में',
     ),
     BotCommand(
         command='catalog',
-        description='📂 प्रॉम्प्ट और डिजिटल सहायक की सूची',
+        description='📂 प्रॉम्प्ट्स और भूमिकाएं',
     ),
     BotCommand(
         command='settings',
-        description='🔧 अपनी जरूरतों के अनुसार मॉडल सेट करें',
+        description='🔧 AI सेटिंग्स',
     ),
     BotCommand(
         command='language',
         description='🌍 भाषा बदलें',
     ),
     BotCommand(
-        command='bonus',
-        description='🎁 बोनस बैलेंस',
-    ),
-    BotCommand(
         command='help',
-        description='🛟 कमांड की विस्तृत जानकारी',
+        description='🛟 मदद और कमांड्स',
     ),
 ]
 

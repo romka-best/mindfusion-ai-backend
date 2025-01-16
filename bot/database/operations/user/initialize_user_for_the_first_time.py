@@ -22,6 +22,7 @@ async def initialize_user_for_the_first_time(
     is_referred_by_user=False,
     quota=Quota.CHAT_GPT4_OMNI_MINI,
     utm=None,
+    discount=0,
 ):
     full_name = telegram_user.first_name
     if telegram_user.last_name:
@@ -43,6 +44,7 @@ async def initialize_user_for_the_first_time(
         is_referred_by_user,
         quota,
         utm,
+        discount,
     )
 
     # create user in firebase

@@ -38,11 +38,13 @@ from bot.handlers.ai.midjourney_handler import handle_midjourney
 from bot.handlers.ai.music_gen_handler import handle_music_gen
 from bot.handlers.ai.perplexity_handler import handle_perplexity
 from bot.handlers.ai.photoshop_ai_handler import handle_photoshop_ai
+from bot.handlers.ai.pika_handler import handle_pika
+from bot.handlers.ai.recraft_handler import handle_recraft
 from bot.handlers.ai.runway_handler import handle_runway
 from bot.handlers.ai.stable_diffusion_handler import handle_stable_diffusion
 from bot.handlers.ai.suno_handler import handle_suno
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
-from bot.integrations.openAI import get_response_speech_to_text
+from bot.integrations.open_ai import get_response_speech_to_text
 from bot.keyboards.common.common import build_buy_motivation_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
@@ -121,7 +123,7 @@ async def handle_voice(message: Message, state: FSMContext):
         user_quota = get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION])
         if not user_quota:
             raise NotImplementedError(
-                f'User model is not found: {user.current_model}'
+                f'User Model Is Not Found: {user.current_model}, {user.settings[user.current_model][UserSettings.VERSION]}'
             )
 
         need_exit = (
@@ -163,15 +165,17 @@ async def handle_voice(message: Message, state: FSMContext):
         elif user.current_model == Model.MIDJOURNEY:
             await handle_midjourney(message, state, user, text, MidjourneyAction.IMAGINE)
         elif user.current_model == Model.STABLE_DIFFUSION:
-            await handle_stable_diffusion(message, state, user)
+            await handle_stable_diffusion(message, state, user, user_quota)
         elif user.current_model == Model.FLUX:
-            await handle_flux(message, state, user)
+            await handle_flux(message, state, user, user_quota)
         elif user.current_model == Model.LUMA_PHOTON:
             await handle_luma_photon(message, state, user)
+        elif user.current_model == Model.RECRAFT:
+            await handle_recraft(message, state, user)
         elif user.current_model == Model.FACE_SWAP:
             await handle_face_swap_prompt(message, state, user)
         elif user.current_model == Model.PHOTOSHOP_AI:
-            await handle_photoshop_ai(message.bot, str(message.chat.id), state, user_id, text)
+            await handle_photoshop_ai(message.bot, str(message.chat.id), state, user_id)
         elif user.current_model == Model.MUSIC_GEN:
             await handle_music_gen(message.bot, str(message.chat.id), state, user_id, text)
         elif user.current_model == Model.SUNO:
@@ -182,6 +186,8 @@ async def handle_voice(message: Message, state: FSMContext):
             await handle_runway(message, state, user)
         elif user.current_model == Model.LUMA_RAY:
             await handle_luma_ray(message, state, user)
+        elif user.current_model == Model.PIKA:
+            await handle_pika(message, state, user)
         else:
             raise NotImplementedError(
                 f'User model is not found: {user.current_model}'

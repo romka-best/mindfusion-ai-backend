@@ -15,9 +15,7 @@ def build_catalog_keyboard(language_code: LanguageCode):
             InlineKeyboardButton(
                 text=get_localization(language_code).CATALOG_DIGITAL_EMPLOYEES,
                 callback_data=f'catalog:digital_employees'
-            )
-        ],
-        [
+            ),
             InlineKeyboardButton(
                 text=get_localization(language_code).CATALOG_PROMPTS,
                 callback_data=f'catalog:prompts'
@@ -41,7 +39,7 @@ def build_catalog_digital_employees_keyboard(
             [
                 InlineKeyboardButton(
                     text=role.translated_names.get(language_code) + (
-                        ' ✅' if current_role_id == role.id else ' ❌'
+                        ' ✅' if current_role_id == role.id else ''
                     ),
                     callback_data=f'catalog_digital_employees:{role.id}'
                 )
@@ -75,7 +73,7 @@ def build_catalog_prompts_model_type_keyboard(
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).MODELS_VIDEO,
+                text=get_localization(language_code).MODELS_MUSIC,
                 callback_data=f'catalog_prompts_model_type:{ModelType.MUSIC}'
             ),
         ],

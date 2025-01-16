@@ -1,7 +1,9 @@
+import logging
 from datetime import datetime, timezone
 
 import stripe
 from aiogram import Bot
+from aiogram.exceptions import TelegramBadRequest
 from google.cloud import firestore
 
 from bot.database.models.common import PaymentMethod
@@ -32,11 +34,14 @@ async def unsubscribe(transaction, old_subscription: Subscription, bot: Bot):
             cancel_at_period_end=True,
         )
     elif old_subscription.payment_method == PaymentMethod.TELEGRAM_STARS:
-        await bot.edit_user_star_subscription(
-            user_id=int(old_subscription.user_id),
-            telegram_payment_charge_id=old_subscription.provider_payment_charge_id,
-            is_canceled=True,
-        )
+        try:
+            await bot.edit_user_star_subscription(
+                user_id=int(old_subscription.user_id),
+                telegram_payment_charge_id=old_subscription.provider_payment_charge_id,
+                is_canceled=True,
+            )
+        except TelegramBadRequest as e:
+            logging.exception(e)
 
     product = await get_product(old_subscription.product_id)
 

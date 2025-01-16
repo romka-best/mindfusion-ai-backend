@@ -2,18 +2,19 @@ from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
+from google.cloud.firestore_v1 import Increment
 
 from bot.config import config
 from bot.database.models.feedback import FeedbackStatus
 from bot.database.operations.feedback.getters import get_count_of_approved_feedbacks_by_user_id
 from bot.database.operations.feedback.updaters import update_feedback
 from bot.database.operations.feedback.writers import write_feedback
-from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user
 from bot.helpers.senders.send_message_to_admins_and_developers import send_message_to_admins_and_developers
 from bot.keyboards.admin.feedback import build_manage_feedback_keyboard
 
 from bot.keyboards.common.feedback import build_feedback_keyboard
+from bot.keyboards.payment.bonus import build_bonus_suggestion_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.states.common.feedback import Feedback
 
@@ -80,23 +81,23 @@ async def handle_manage_feedback(callback_query: CallbackQuery, state: FSMContex
 
     status = FeedbackStatus.WAITING
     if action == 'approve':
-        user = await get_user(user_id)
         count_of_feedbacks = await get_count_of_approved_feedbacks_by_user_id(user_id)
         if count_of_feedbacks > 2:
             await callback_query.bot.send_message(
                 chat_id=user_id,
                 text=get_localization(user_language_code).FEEDBACK_APPROVED_WITH_LIMIT_ERROR,
+                reply_markup=build_bonus_suggestion_keyboard(user_language_code),
                 disable_notification=True,
             )
         else:
-            user.balance += 25.00
             await update_user(user_id, {
-                'balance': user.balance,
+                'balance': Increment(25),
             })
 
             await callback_query.bot.send_message(
                 chat_id=user_id,
                 text=get_localization(user_language_code).FEEDBACK_APPROVED,
+                reply_markup=build_bonus_suggestion_keyboard(user_language_code),
                 disable_notification=True,
             )
         status = FeedbackStatus.APPROVED
@@ -112,7 +113,10 @@ async def handle_manage_feedback(callback_query: CallbackQuery, state: FSMContex
         'status': status,
     })
 
-    new_text = f'<b>{callback_query.message.text}</b>\n\n<b>Status:</b> {"Approved ✅" if action == "approve" else "Denied ❌"}'
+    status = get_localization(user_language_code).ACTION_APPROVE \
+        if status == FeedbackStatus.APPROVED \
+        else get_localization(user_language_code).ACTION_DENY
+    new_text = f'<b>{callback_query.message.text}</b>\n\n<b>Status:</b> {status}'
     await callback_query.message.edit_text(
         text=new_text,
         reply_markup=None,

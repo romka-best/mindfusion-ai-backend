@@ -25,7 +25,7 @@ from bot.database.operations.user.updaters import update_user
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.senders.send_error_info import send_error_info
-from bot.keyboards.ai.model import build_switched_to_ai_keyboard
+from bot.keyboards.ai.model import build_switched_to_ai_keyboard, build_model_limit_exceeded_keyboard
 from bot.locales.translate_text import translate_text
 from bot.integrations.midjourney import (
     create_midjourney_images,
@@ -33,7 +33,7 @@ from bot.integrations.midjourney import (
     create_different_midjourney_image,
     create_different_midjourney_images,
 )
-from bot.keyboards.common.common import build_error_keyboard, build_limit_exceeded_keyboard
+from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
 
@@ -88,13 +88,7 @@ async def handle_midjourney(
     choice=0,
     image_filename: Optional[str] = None,
 ):
-    await state.update_data(is_processing=True)
-
     user_language_code = await get_user_language(user.id, state.storage)
-    user_data = await state.get_data()
-
-    if not prompt:
-        prompt = user_data.get('recognized_text', '')
 
     version = user.settings[Model.MIDJOURNEY][UserSettings.VERSION]
 
@@ -113,7 +107,7 @@ async def handle_midjourney(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
             )
 
-            reply_markup = build_limit_exceeded_keyboard(user_language_code)
+            reply_markup = build_model_limit_exceeded_keyboard(user_language_code)
             await message.reply(
                 text=get_localization(user_language_code).model_reached_usage_limit(),
                 reply_markup=reply_markup,
@@ -266,9 +260,9 @@ async def handle_midjourney_example(user: User, user_language_code: LanguageCode
     current_date = datetime.now(timezone.utc)
     if (
         not user.subscription_id and
-        user.current_model == Model.DALL_E and
+        user.current_model == Model.LUMA_PHOTON and
         user.settings[user.current_model][UserSettings.SHOW_EXAMPLES] and
-        user.daily_limits[Quota.DALL_E] + 1 in [1] and
+        user.daily_limits[Quota.LUMA_PHOTON] in [1] and
         (current_date - user.last_subscription_limit_update).days <= 3
     ):
         product = await get_product_by_quota(Quota.MIDJOURNEY)
@@ -280,7 +274,7 @@ async def handle_midjourney_example(user: User, user_language_code: LanguageCode
             requested=1,
             details={
                 'prompt': prompt,
-                'action': MidjourneyAction.UPSCALE,
+                'action': MidjourneyAction.IMAGINE,
                 'version': MidjourneyVersion.V6,
                 'is_suggestion': True,
             }

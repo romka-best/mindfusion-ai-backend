@@ -22,8 +22,8 @@ from bot.helpers.senders.send_ai_message import send_ai_message
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
 from bot.integrations.eightify import generate_summary
-from bot.keyboards.ai.model import build_switched_to_ai_keyboard
-from bot.keyboards.common.common import build_limit_exceeded_keyboard, build_error_keyboard
+from bot.keyboards.ai.model import build_switched_to_ai_keyboard, build_model_limit_exceeded_keyboard
+from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 
 eightify_router = Router()
@@ -116,7 +116,7 @@ async def handle_eightify(message: Message, state: FSMContext, user: User):
                     sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
                 )
 
-                reply_markup = build_limit_exceeded_keyboard(user_language_code)
+                reply_markup = build_model_limit_exceeded_keyboard(user_language_code)
                 await message.answer(
                     text=get_localization(user_language_code).model_reached_usage_limit(),
                     reply_markup=reply_markup,

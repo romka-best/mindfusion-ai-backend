@@ -105,6 +105,24 @@ async def get_count_of_users_referred_by(
     return int(users_query[0][0].value)
 
 
+async def get_count_of_users_campaign_by(
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+) -> int:
+    users_query = firebase.db.collection(User.COLLECTION_NAME)
+
+    if start_date:
+        users_query = users_query.where(filter=FieldFilter('created_at', '>=', start_date))
+    if end_date:
+        users_query = users_query.where(filter=FieldFilter('created_at', '<=', end_date))
+
+    users_query = await users_query.where(filter=FieldFilter('utm.campaign', '>=', '')) \
+        .count() \
+        .get()
+
+    return int(users_query[0][0].value)
+
+
 async def get_count_of_users_by_referral(referred_by: str) -> int:
     users_query = await firebase.db.collection(User.COLLECTION_NAME) \
         .where(filter=FieldFilter('referred_by', '==', referred_by)) \

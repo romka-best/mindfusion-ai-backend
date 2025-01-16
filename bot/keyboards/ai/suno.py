@@ -11,13 +11,11 @@ def build_suno_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
             InlineKeyboardButton(
                 text=get_localization(language_code).SUNO_SIMPLE_MODE,
                 callback_data=f'suno:{SunoMode.SIMPLE}'
-            )
-        ],
-        [
+            ),
             InlineKeyboardButton(
                 text=get_localization(language_code).SUNO_CUSTOM_MODE,
                 callback_data=f'suno:{SunoMode.CUSTOM}'
-            )
+            ),
         ],
     ]
 

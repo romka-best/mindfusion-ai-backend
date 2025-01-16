@@ -8,7 +8,7 @@ from bot.handlers.admin.ban_handler import handle_ban
 from bot.handlers.admin.blast_handler import handle_blast
 from bot.handlers.admin.catalog_handler import handle_manage_catalog
 from bot.handlers.admin.face_swap_handler import handle_manage_face_swap
-from bot.handlers.admin.promo_code import handle_create_promo_code
+from bot.handlers.admin.promo_code_handler import handle_create_promo_code
 from bot.handlers.admin.statistics_handler import handle_statistics
 from bot.keyboards.admin.admin import build_admin_keyboard
 from bot.locales.main import get_user_language, get_localization

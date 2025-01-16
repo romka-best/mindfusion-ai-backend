@@ -8,7 +8,8 @@ class Campaign(BaseModel):
     COLLECTION_NAME: ClassVar[str] = 'campaigns'
 
     id: str
-    name: str
+    utm: dict
+    discount: int
     created_at: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
     edited_at: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
 

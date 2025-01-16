@@ -28,6 +28,8 @@ def get_human_model(model: Model, language_code: LanguageCode):
         human_model = get_localization(language_code).FLUX
     elif model == Model.LUMA_PHOTON:
         human_model = get_localization(language_code).LUMA_PHOTON
+    elif model == Model.RECRAFT:
+        human_model = get_localization(language_code).RECRAFT
     elif model == Model.FACE_SWAP:
         human_model = get_localization(language_code).FACE_SWAP
     elif model == Model.PHOTOSHOP_AI:
@@ -42,6 +44,8 @@ def get_human_model(model: Model, language_code: LanguageCode):
         human_model = get_localization(language_code).RUNWAY
     elif model == Model.LUMA_RAY:
         human_model = get_localization(language_code).LUMA_RAY
+    elif model == Model.PIKA:
+        human_model = get_localization(language_code).PIKA
     else:
         human_model = model
 

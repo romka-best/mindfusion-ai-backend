@@ -24,14 +24,14 @@ from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.integrations.suno import generate_song
-from bot.keyboards.ai.model import build_switched_to_ai_keyboard
+from bot.keyboards.ai.model import build_switched_to_ai_keyboard, build_model_limit_exceeded_keyboard
 from bot.keyboards.ai.suno import (
     build_suno_keyboard,
     build_suno_simple_mode_keyboard,
     build_suno_custom_mode_lyrics_keyboard,
     build_suno_custom_mode_genres_keyboard,
 )
-from bot.keyboards.common.common import build_error_keyboard, build_limit_exceeded_keyboard
+from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
@@ -175,7 +175,7 @@ async def suno_prompt_sent(message: Message, state: FSMContext):
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
             )
 
-            reply_markup = build_limit_exceeded_keyboard(user_language_code)
+            reply_markup = build_model_limit_exceeded_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).model_reached_usage_limit(),
                 reply_markup=reply_markup,
@@ -394,7 +394,7 @@ async def suno_genres_sent(message: Message, state: FSMContext):
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
             )
 
-            reply_markup = build_limit_exceeded_keyboard(user_language_code)
+            reply_markup = build_model_limit_exceeded_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).model_reached_usage_limit(),
                 reply_markup=reply_markup,

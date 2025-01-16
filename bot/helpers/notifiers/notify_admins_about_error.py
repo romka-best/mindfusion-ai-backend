@@ -49,7 +49,7 @@ async def notify_admins_about_error(bot: Bot, telegram_update: Update, dp: Dispa
                 else:
                     raise
 
-                await set_user_language(user_id, language_code, dp.storage)
+                language_code = await set_user_language(user_id, language_code, dp.storage)
 
                 chat_title = get_localization(language_code).CHAT_DEFAULT_TITLE
                 transaction = firebase.db.transaction()

@@ -68,14 +68,10 @@ def build_settings_choose_text_model_keyboard(language_code: LanguageCode) -> In
                 text=get_localization(language_code).CHAT_GPT,
                 callback_data=f'settings_choose_text_model:{Model.CHAT_GPT}'
             ),
-        ],
-        [
             InlineKeyboardButton(
                 text=get_localization(language_code).CLAUDE,
                 callback_data=f'settings_choose_text_model:{Model.CLAUDE}'
             ),
-        ],
-        [
             InlineKeyboardButton(
                 text=get_localization(language_code).GEMINI,
                 callback_data=f'settings_choose_text_model:{Model.GEMINI}'
@@ -86,8 +82,6 @@ def build_settings_choose_text_model_keyboard(language_code: LanguageCode) -> In
                 text=get_localization(language_code).GROK,
                 callback_data=f'settings_choose_text_model:{Model.GROK}'
             ),
-        ],
-        [
             InlineKeyboardButton(
                 text=get_localization(language_code).PERPLEXITY,
                 callback_data=f'settings_choose_text_model:{Model.PERPLEXITY}'
@@ -95,7 +89,7 @@ def build_settings_choose_text_model_keyboard(language_code: LanguageCode) -> In
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).SETTINGS_TO_OTHER_TYPE_MODELS,
+                text=get_localization(language_code).ACTION_TO_OTHER_TYPE_MODELS,
                 callback_data='settings_choose_text_model:back'
             ),
         ],
@@ -111,8 +105,6 @@ def build_settings_choose_summary_model_keyboard(language_code: LanguageCode) ->
                 text=get_localization(language_code).EIGHTIFY,
                 callback_data=f'settings_choose_summary_model:{Model.EIGHTIFY}'
             ),
-        ],
-        [
             InlineKeyboardButton(
                 text=get_localization(language_code).GEMINI_VIDEO,
                 callback_data=f'settings_choose_summary_model:{Model.GEMINI_VIDEO}'
@@ -120,7 +112,7 @@ def build_settings_choose_summary_model_keyboard(language_code: LanguageCode) ->
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).SETTINGS_TO_OTHER_TYPE_MODELS,
+                text=get_localization(language_code).ACTION_TO_OTHER_TYPE_MODELS,
                 callback_data='settings_choose_summary_model:back'
             ),
         ],
@@ -136,8 +128,6 @@ def build_settings_choose_image_model_keyboard(language_code: LanguageCode) -> I
                 text=get_localization(language_code).DALL_E,
                 callback_data=f'settings_choose_image_model:{Model.DALL_E}'
             ),
-        ],
-        [
             InlineKeyboardButton(
                 text=get_localization(language_code).MIDJOURNEY,
                 callback_data=f'settings_choose_image_model:{Model.MIDJOURNEY}'
@@ -154,8 +144,6 @@ def build_settings_choose_image_model_keyboard(language_code: LanguageCode) -> I
                 text=get_localization(language_code).FLUX,
                 callback_data=f'settings_choose_image_model:{Model.FLUX}'
             ),
-        ],
-        [
             InlineKeyboardButton(
                 text=get_localization(language_code).LUMA_PHOTON,
                 callback_data=f'settings_choose_image_model:{Model.LUMA_PHOTON}'
@@ -166,8 +154,6 @@ def build_settings_choose_image_model_keyboard(language_code: LanguageCode) -> I
                 text=get_localization(language_code).FACE_SWAP,
                 callback_data=f'settings_choose_image_model:{Model.FACE_SWAP}'
             ),
-        ],
-        [
             InlineKeyboardButton(
                 text=get_localization(language_code).PHOTOSHOP_AI,
                 callback_data=f'settings_choose_image_model:{Model.PHOTOSHOP_AI}'
@@ -175,7 +161,7 @@ def build_settings_choose_image_model_keyboard(language_code: LanguageCode) -> I
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).ACTION_BACK,
+                text=get_localization(language_code).ACTION_TO_OTHER_TYPE_MODELS,
                 callback_data='settings_choose_image_model:back'
             ),
         ],
@@ -191,8 +177,6 @@ def build_settings_choose_music_model_keyboard(language_code: LanguageCode) -> I
                 text=get_localization(language_code).MUSIC_GEN,
                 callback_data=f'settings_choose_music_model:{Model.MUSIC_GEN}'
             ),
-        ],
-        [
             InlineKeyboardButton(
                 text=get_localization(language_code).SUNO,
                 callback_data=f'settings_choose_music_model:{Model.SUNO}'
@@ -200,7 +184,7 @@ def build_settings_choose_music_model_keyboard(language_code: LanguageCode) -> I
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).ACTION_BACK,
+                text=get_localization(language_code).ACTION_TO_OTHER_TYPE_MODELS,
                 callback_data='settings_choose_music_model:back'
             ),
         ],
@@ -216,8 +200,6 @@ def build_settings_choose_video_model_keyboard(language_code: LanguageCode) -> I
                 text=get_localization(language_code).KLING,
                 callback_data=f'settings_choose_video_model:{Model.KLING}'
             ),
-        ],
-        [
             InlineKeyboardButton(
                 text=get_localization(language_code).RUNWAY,
                 callback_data=f'settings_choose_video_model:{Model.RUNWAY}'
@@ -226,13 +208,17 @@ def build_settings_choose_video_model_keyboard(language_code: LanguageCode) -> I
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).LUMA_RAY,
-                callback_data=f'settings_choose_image_model:{Model.LUMA_PHOTON}'
+                callback_data=f'settings_choose_video_model:{Model.LUMA_PHOTON}'
+            ),
+            InlineKeyboardButton(
+                text=get_localization(language_code).PIKA,
+                callback_data=f'settings_choose_video_model:{Model.PIKA}'
             ),
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).ACTION_BACK,
-                callback_data='settings_choose_music_model:back'
+                text=get_localization(language_code).ACTION_TO_OTHER_TYPE_MODELS,
+                callback_data='settings_choose_video_model:back'
             ),
         ],
     ]
@@ -310,7 +296,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_FOCUS,
+                    text=get_localization(language_code).SETTINGS_FOCUS.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -344,7 +330,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_FORMAT,
+                    text=get_localization(language_code).SETTINGS_FORMAT.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -364,7 +350,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_AMOUNT,
+                    text=get_localization(language_code).SETTINGS_AMOUNT.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -407,7 +393,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_SEND_TYPE,
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -427,7 +413,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO,
+                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -453,7 +439,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_QUALITY,
+                    text=get_localization(language_code).SETTINGS_QUALITY.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -484,7 +470,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_SEND_TYPE,
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -504,7 +490,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO,
+                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -582,7 +568,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_VERSION,
+                    text=get_localization(language_code).SETTINGS_VERSION.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -612,7 +598,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_SEND_TYPE,
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -632,7 +618,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO,
+                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -721,7 +707,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_SEND_TYPE,
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -741,7 +727,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO,
+                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -807,7 +793,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_PROMPT_SAFETY,
+                    text=get_localization(language_code).SETTINGS_PROMPT_SAFETY.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -847,7 +833,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_SEND_TYPE,
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -867,7 +853,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_GENDER,
+                    text=get_localization(language_code).SETTINGS_GENDER.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -897,7 +883,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_SEND_TYPE,
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -917,7 +903,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO,
+                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -970,6 +956,103 @@ def build_settings_keyboard(
                 ),
             ],
         ]
+    elif model == Model.RECRAFT:
+        buttons = [
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).SETTINGS_SHOW_USAGE_QUOTA_IN_MESSAGES + (
+                        ' ✅' if settings[model][UserSettings.SHOW_USAGE_QUOTA] else ' ❌'
+                    ),
+                    callback_data=f'setting:{UserSettings.SHOW_USAGE_QUOTA}:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE.upper(),
+                    callback_data=f'setting:nothing:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE_IMAGE + (
+                        ' ✅' if settings[model][UserSettings.SEND_TYPE] == SendType.IMAGE else ''
+                    ),
+                    callback_data=f'setting:{SendType.IMAGE}:{model}'
+                ),
+                InlineKeyboardButton(
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE_DOCUMENT + (
+                        ' ✅' if settings[model][UserSettings.SEND_TYPE] == SendType.DOCUMENT else ''
+                    ),
+                    callback_data=f'setting:{SendType.DOCUMENT}:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO.upper(),
+                    callback_data=f'setting:nothing:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=AspectRatio.SQUARE + (
+                        ' ✅' if settings[model][UserSettings.ASPECT_RATIO] == AspectRatio.SQUARE else ''
+                    ),
+                    callback_data=f'setting:SQUARE:{model}'
+                ),
+                InlineKeyboardButton(
+                    text=AspectRatio.LANDSCAPE + (
+                        ' ✅' if settings[model][UserSettings.ASPECT_RATIO] == AspectRatio.LANDSCAPE else ''
+                    ),
+                    callback_data=f'setting:LANDSCAPE:{model}'
+                ),
+                InlineKeyboardButton(
+                    text=AspectRatio.PORTRAIT + (
+                        ' ✅' if settings[model][UserSettings.ASPECT_RATIO] == AspectRatio.PORTRAIT else ''
+                    ),
+                    callback_data=f'setting:PORTRAIT:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=AspectRatio.STANDARD_HORIZONTAL + (
+                        ' ✅' if settings[model][UserSettings.ASPECT_RATIO] == AspectRatio.STANDARD_HORIZONTAL else ''
+                    ),
+                    callback_data=f'setting:STANDARD_HORIZONTAL:{model}'
+                ),
+                InlineKeyboardButton(
+                    text=AspectRatio.STANDARD_VERTICAL + (
+                        ' ✅' if settings[model][UserSettings.ASPECT_RATIO] == AspectRatio.STANDARD_VERTICAL else ''
+                    ),
+                    callback_data=f'setting:STANDARD_VERTICAL:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=AspectRatio.BANNER_HORIZONTAL + (
+                        ' ✅' if settings[model][UserSettings.ASPECT_RATIO] == AspectRatio.BANNER_HORIZONTAL else ''
+                    ),
+                    callback_data=f'setting:BANNER_HORIZONTAL:{model}'
+                ),
+                InlineKeyboardButton(
+                    text=AspectRatio.BANNER_VERTICAL + (
+                        ' ✅' if settings[model][UserSettings.ASPECT_RATIO] == AspectRatio.BANNER_VERTICAL else ''
+                    ),
+                    callback_data=f'setting:BANNER_VERTICAL:{model}'
+                ),
+                InlineKeyboardButton(
+                    text=AspectRatio.CLASSIC_HORIZONTAL + (
+                        ' ✅' if settings[model][UserSettings.ASPECT_RATIO] == AspectRatio.CLASSIC_HORIZONTAL else ''
+                    ),
+                    callback_data=f'setting:CLASSIC_HORIZONTAL:{model}'
+                ),
+                InlineKeyboardButton(
+                    text=AspectRatio.CLASSIC_VERTICAL + (
+                        ' ✅' if settings[model][UserSettings.ASPECT_RATIO] == AspectRatio.CLASSIC_VERTICAL else ''
+                    ),
+                    callback_data=f'setting:CLASSIC_VERTICAL:{model}'
+                ),
+            ],
+        ]
     elif model == Model.PHOTOSHOP_AI:
         buttons = [
             [
@@ -981,7 +1064,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_SEND_TYPE,
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -1021,7 +1104,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_SEND_TYPE,
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -1041,7 +1124,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_VERSION,
+                    text=get_localization(language_code).SETTINGS_VERSION.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -1052,14 +1135,6 @@ def build_settings_keyboard(
                     ),
                     callback_data=f'setting:{SunoVersion.V3}:{model}'
                 ),
-                InlineKeyboardButton(
-                    text=SunoVersion.V3_5 + (
-                        ' ✅' if settings[model][UserSettings.VERSION] == SunoVersion.V3_5 else ''
-                    ),
-                    callback_data=f'setting:{SunoVersion.V3_5}:{model}'
-                ),
-            ],
-            [
                 InlineKeyboardButton(
                     text=SunoVersion.V4 + (
                         ' ✅' if settings[model][UserSettings.VERSION] == SunoVersion.V4 else ''
@@ -1079,7 +1154,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_SEND_TYPE,
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -1099,7 +1174,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO,
+                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -1125,7 +1200,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_DURATION,
+                    text=get_localization(language_code).SETTINGS_DURATION.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -1145,7 +1220,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_MODE,
+                    text=get_localization(language_code).SETTINGS_MODE.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -1175,7 +1250,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_SEND_TYPE,
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -1195,7 +1270,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO,
+                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -1215,7 +1290,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_DURATION,
+                    text=get_localization(language_code).SETTINGS_DURATION.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -1245,7 +1320,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_SEND_TYPE,
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -1265,7 +1340,7 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
-                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO,
+                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
             ],
@@ -1318,11 +1393,81 @@ def build_settings_keyboard(
                 ),
             ],
         ]
+    elif model == Model.PIKA:
+        buttons = [
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).SETTINGS_SHOW_USAGE_QUOTA_IN_MESSAGES + (
+                        ' ✅' if settings[model][UserSettings.SHOW_USAGE_QUOTA] else ' ❌'),
+                    callback_data=f'setting:{UserSettings.SHOW_USAGE_QUOTA}:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE.upper(),
+                    callback_data=f'setting:nothing:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE_VIDEO + (
+                        ' ✅' if settings[model][UserSettings.SEND_TYPE] == SendType.VIDEO else ''
+                    ),
+                    callback_data=f'setting:{SendType.VIDEO}:{model}'
+                ),
+                InlineKeyboardButton(
+                    text=get_localization(language_code).SETTINGS_SEND_TYPE_DOCUMENT + (
+                        ' ✅' if settings[model][UserSettings.SEND_TYPE] == SendType.DOCUMENT else ''
+                    ),
+                    callback_data=f'setting:{SendType.DOCUMENT}:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).SETTINGS_ASPECT_RATIO.upper(),
+                    callback_data=f'setting:nothing:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=AspectRatio.SQUARE + (
+                        ' ✅' if settings[model][UserSettings.ASPECT_RATIO] == AspectRatio.SQUARE else ''
+                    ),
+                    callback_data=f'setting:SQUARE:{model}'
+                ),
+                InlineKeyboardButton(
+                    text=AspectRatio.LANDSCAPE + (
+                        ' ✅' if settings[model][UserSettings.ASPECT_RATIO] == AspectRatio.LANDSCAPE else ''
+                    ),
+                    callback_data=f'setting:LANDSCAPE:{model}'
+                ),
+                InlineKeyboardButton(
+                    text=AspectRatio.PORTRAIT + (
+                        ' ✅' if settings[model][UserSettings.ASPECT_RATIO] == AspectRatio.PORTRAIT else ''
+                    ),
+                    callback_data=f'setting:PORTRAIT:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=AspectRatio.BANNER_VERTICAL + (
+                        ' ✅' if settings[model][UserSettings.ASPECT_RATIO] == AspectRatio.BANNER_VERTICAL else ''
+                    ),
+                    callback_data=f'setting:BANNER_VERTICAL:{model}'
+                ),
+                InlineKeyboardButton(
+                    text=AspectRatio.CLASSIC_HORIZONTAL + (
+                        ' ✅' if settings[model][UserSettings.ASPECT_RATIO] == AspectRatio.CLASSIC_HORIZONTAL else ''
+                    ),
+                    callback_data=f'setting:CLASSIC_HORIZONTAL:{model}'
+                ),
+            ],
+        ]
 
     buttons.append(
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).SETTINGS_TO_OTHER_MODELS,
+                text=get_localization(language_code).ACTION_TO_OTHER_MODELS,
                 callback_data=f'setting:back:{model_type}'
             )
         ],

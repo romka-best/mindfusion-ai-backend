@@ -44,8 +44,8 @@ from bot.locales.types import LanguageCode
 
 claude_router = Router()
 
-PRICE_CLAUDE_3_HAIKU_INPUT = 0.000001
-PRICE_CLAUDE_3_HAIKU_OUTPUT = 0.000005
+PRICE_CLAUDE_3_HAIKU_INPUT = 0.0000008
+PRICE_CLAUDE_3_HAIKU_OUTPUT = 0.000004
 PRICE_CLAUDE_3_SONNET_INPUT = 0.000003
 PRICE_CLAUDE_3_SONNET_OUTPUT = 0.000015
 PRICE_CLAUDE_3_OPUS_INPUT = 0.000015
@@ -189,7 +189,8 @@ async def handle_claude(
     if single_mode:
         sorted_messages = [sorted_messages[-1]]
 
-    system_prompt = role.translated_instructions.get(user_language_code, LanguageCode.EN)
+    system_prompt = role.translated_instructions.get(user_language_code) or \
+                    role.translated_instructions.get(LanguageCode.EN)
     history = []
     for sorted_message in sorted_messages:
         content = []
@@ -270,7 +271,6 @@ async def handle_claude(
             product = await get_product_by_quota(user_quota)
 
             total_price = round(input_price + output_price, 6)
-            print(total_price)
             message_role, message_content = 'assistant', response_message
             await write_transaction(
                 user_id=user.id,
@@ -306,7 +306,7 @@ async def handle_claude(
                 chat_info = f'💬 {chat.title}\n' if (
                     user.settings[user.current_model][UserSettings.SHOW_THE_NAME_OF_THE_CHATS]
                 ) else ''
-                role_info = f'{role.translated_names.get(user_language_code, "en")}\n' if (
+                role_info = f'{role.translated_names.get(user_language_code) or role.translated_names.get(LanguageCode.EN)}\n' if (
                     user.settings[user.current_model][UserSettings.SHOW_THE_NAME_OF_THE_ROLES]
                 ) else ''
                 header_text = f'{chat_info}{role_info}\n' if chat_info or role_info else ''

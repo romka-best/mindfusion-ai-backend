@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, URLInputFile, User as TelegramUser
 
 from bot.database.main import firebase
-from bot.database.models.common import Model, Currency
+from bot.database.models.common import Model
 from bot.database.models.subscription import SubscriptionStatus, SUBSCRIPTION_FREE_LIMITS
 from bot.database.models.user import UserGender, UserSettings
 from bot.database.operations.product.getters import get_product, get_product_by_quota
@@ -30,6 +30,7 @@ from bot.keyboards.common.profile import (
     build_profile_quota_keyboard,
 )
 from bot.locales.main import get_localization, get_user_language
+from bot.locales.types import LanguageCode
 from bot.states.common.profile import Profile
 
 profile_router = Router()
@@ -77,7 +78,6 @@ async def handle_profile(message: Message, state: FSMContext, telegram_user: Tel
         subscription_name,
         subscription.status if subscription else SubscriptionStatus.ACTIVE,
         user_current_model.names.get(user_language_code),
-        user.currency,
         renewal_date,
     )
 
@@ -131,73 +131,65 @@ async def handle_profile_selection(callback_query: CallbackQuery, state: FSMCont
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
-    user_language_code = await get_user_language(user_id, state.storage)
 
     action = callback_query.data.split(':')[1]
 
     if action == 'open_settings':
-        await handle_settings(callback_query.message, str(callback_query.from_user.id), state)
+        await handle_settings(callback_query.message, user_id, state)
     elif action == 'show_quota':
-        user = await get_user(user_id)
+        await handle_profile_show_quota(callback_query.message, user_id, state)
+    elif action == 'change_photo':
+        await handle_profile_change_photo(callback_query.message, user_id, state)
+    elif action == 'open_bonus_info':
+        await handle_bonus(callback_query.message, user_id, state)
+    elif action == 'open_buy_subscriptions_info':
+        await handle_subscribe(callback_query.message, user_id, state)
+    elif action == 'open_buy_packages_info':
+        await handle_package(callback_query.message, user_id, state)
+    elif action == 'cancel_subscription':
+        await handle_cancel_subscription(callback_query.message, user_id, state)
+    elif action == 'renew_subscription':
+        await handle_renew_subscription(callback_query.message, user_id, state)
 
+
+async def handle_profile_show_quota(message: Message, user_id: str, state: FSMContext):
+    user = await get_user(user_id)
+    user_language_code = await get_user_language(user_id, state.storage)
+
+    if user.subscription_id:
         user_subscription = await get_subscription(user.subscription_id)
-        if user_subscription:
-            product_subscription = await get_product(user_subscription.product_id)
-            limits = product_subscription.details.get('limits')
-        else:
-            limits = SUBSCRIPTION_FREE_LIMITS
-        text = get_localization(user_language_code).profile_quota(
+        product_subscription = await get_product(user_subscription.product_id)
+        limits = product_subscription.details.get('limits', SUBSCRIPTION_FREE_LIMITS)
+    else:
+        limits = SUBSCRIPTION_FREE_LIMITS
+
+    await message.reply(
+        text=get_localization(user_language_code).profile_quota(
             limits,
             user.daily_limits,
             user.additional_usage_quota,
-        )
-        reply_markup = build_profile_quota_keyboard(user_language_code)
-        await callback_query.message.reply(
-            text=text,
-            reply_markup=reply_markup,
-            allow_sending_without_reply=True,
-        )
-    elif action == 'change_photo':
-        photo_path = 'users/avatars/example.png'
-        photo = await firebase.bucket.get_blob(photo_path)
-        photo_link = firebase.get_public_url(photo.name)
+        ),
+        reply_markup=build_profile_quota_keyboard(user_language_code),
+        allow_sending_without_reply=True,
+    )
 
-        reply_markup = build_cancel_keyboard(user_language_code)
-        await callback_query.message.reply_photo(
-            photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
-            caption=get_localization(user_language_code).PROFILE_SEND_ME_YOUR_PICTURE,
-            reply_markup=reply_markup,
-            allow_sending_without_reply=True,
-        )
 
-        await state.set_state(Profile.waiting_for_photo)
-    elif action == 'change_currency':
-        user = await get_user(user_id)
+async def handle_profile_change_photo(message: Message, user_id: str, state: FSMContext):
+    user_language_code = await get_user_language(user_id, state.storage)
 
-        if user.currency == Currency.RUB:
-            user.currency = Currency.USD
-        elif user.currency == Currency.USD:
-            user.currency = Currency.XTR
-        else:
-            user.currency = Currency.RUB
-        await update_user(
-            user_id,
-            {
-                'currency': user.currency,
-            }
-        )
+    photo_path = 'users/avatars/example.png'
+    photo = await firebase.bucket.get_blob(photo_path)
+    photo_link = firebase.get_public_url(photo.name)
 
-        await handle_profile(callback_query.message, state, callback_query.from_user, True)
-    elif action == 'open_bonus_info':
-        await handle_bonus(callback_query.message, str(callback_query.from_user.id), state)
-    elif action == 'open_buy_subscriptions_info':
-        await handle_subscribe(callback_query.message, str(callback_query.from_user.id), state)
-    elif action == 'open_buy_packages_info':
-        await handle_package(callback_query.message, str(callback_query.from_user.id), state)
-    elif action == 'cancel_subscription':
-        await handle_cancel_subscription(callback_query.message, str(callback_query.from_user.id), state)
-    elif action == 'renew_subscription':
-        await handle_renew_subscription(callback_query.message, str(callback_query.from_user.id), state)
+    reply_markup = build_cancel_keyboard(user_language_code)
+    await message.reply_photo(
+        photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
+        caption=get_localization(user_language_code).PROFILE_SEND_ME_YOUR_PICTURE,
+        reply_markup=reply_markup,
+        allow_sending_without_reply=True,
+    )
+
+    await state.set_state(Profile.waiting_for_photo)
 
 
 @profile_router.callback_query(lambda c: c.data.startswith('profile_gender:'))

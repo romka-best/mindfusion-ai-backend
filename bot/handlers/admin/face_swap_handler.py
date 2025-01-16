@@ -23,7 +23,7 @@ from bot.database.operations.product.getters import get_product_by_quota
 from bot.database.operations.request.writers import write_request
 from bot.keyboards.admin.admin import build_admin_keyboard
 from bot.locales.translate_text import translate_text
-from bot.integrations.replicateAI import create_face_swap_image
+from bot.integrations.replicate_ai import create_face_swap_image
 from bot.keyboards.admin.face_swap import (
     build_manage_face_swap_keyboard,
     build_manage_face_swap_create_keyboard,
@@ -46,10 +46,9 @@ admin_face_swap_router = Router()
 async def handle_manage_face_swap(message: Message, user_id: str, state: FSMContext):
     user_language_code = await get_user_language(str(user_id), state.storage)
 
-    reply_markup = build_manage_face_swap_keyboard(user_language_code)
     await message.edit_text(
         text=get_localization(user_language_code).ADMIN_FACE_SWAP_INFO,
-        reply_markup=reply_markup,
+        reply_markup=build_manage_face_swap_keyboard(user_language_code),
     )
 
 
