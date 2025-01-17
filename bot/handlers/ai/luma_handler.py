@@ -2,6 +2,7 @@ import asyncio
 from typing import Optional
 
 from aiogram import Router
+from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
@@ -71,8 +72,11 @@ async def luma_photon(message: Message, state: FSMContext):
             message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
         )
 
-        await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
-        await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+        try:
+            await message.bot.unpin_chat_message(user.telegram_chat_id)
+            await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+        except (TelegramBadRequest, TelegramRetryAfter):
+            pass
 
 
 async def handle_luma_photon(
@@ -233,8 +237,11 @@ async def luma_ray(message: Message, state: FSMContext):
             message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
         )
 
-        await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
-        await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+        try:
+            await message.bot.unpin_chat_message(user.telegram_chat_id)
+            await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+        except (TelegramBadRequest, TelegramRetryAfter):
+            pass
 
 
 async def handle_luma_ray(

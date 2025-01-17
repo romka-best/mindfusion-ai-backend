@@ -1,4 +1,5 @@
 from aiogram import Router, Bot
+from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, URLInputFile, InputMediaPhoto
@@ -56,8 +57,11 @@ async def photoshop_ai(message: Message, state: FSMContext):
             message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
         )
 
-        await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
-        await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+        try:
+            await message.bot.unpin_chat_message(user.telegram_chat_id)
+            await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+        except (TelegramBadRequest, TelegramRetryAfter):
+            pass
 
     await handle_photoshop_ai(message.bot, user.telegram_chat_id, state, user_id)
 

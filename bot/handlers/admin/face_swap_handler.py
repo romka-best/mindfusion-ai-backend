@@ -178,8 +178,9 @@ async def handle_face_swap_manage_create_confirmation_selection(callback_query: 
             status=FaceSwapPackageStatus.PRIVATE,
         )
 
-        await callback_query.message.answer(text=get_localization(user_language_code).ADMIN_FACE_SWAP_CREATE_PACKAGE_SUCCESS)
-        await handle_manage_face_swap(callback_query.message, str(callback_query.from_user.id), state)
+        answered_message = await callback_query.message.answer(
+            text=get_localization(user_language_code).ADMIN_FACE_SWAP_CREATE_PACKAGE_SUCCESS)
+        await handle_manage_face_swap(answered_message, str(callback_query.from_user.id), state)
 
         await callback_query.message.delete()
         await state.clear()
@@ -372,10 +373,8 @@ async def handle_face_swap_manage_edit_picture_selection(callback_query: Callbac
             break
 
     if action == 'change_status':
-        reply_markup = build_manage_face_swap_edit_picture_change_status_keyboard(user_language_code, file_status)
-        await callback_query.message.edit_caption(
-            caption=get_localization(user_language_code).ADMIN_FACE_SWAP_CHANGE_STATUS,
-            reply_markup=reply_markup,
+        await callback_query.message.edit_reply_markup(
+            reply_markup=build_manage_face_swap_edit_picture_change_status_keyboard(user_language_code, file_status),
         )
         await state.update_data(file_name=file_name)
     elif action == 'example_picture':
@@ -434,8 +433,9 @@ async def handle_face_swap_manage_edit_picture_change_status_selection(
 
     status = cast(FaceSwapPackageStatus, callback_query.data.split(':')[1])
     if status == 'back':
-        reply_markup = build_manage_face_swap_edit_picture_keyboard(user_language_code, user_data['file_name'])
-        await callback_query.message.edit_reply_markup(reply_markup=reply_markup)
+        await callback_query.message.edit_reply_markup(
+            reply_markup=build_manage_face_swap_edit_picture_keyboard(user_language_code, user_data['file_name'])
+        )
         return
 
     face_swap_package = await get_face_swap_package(user_data['face_swap_package_id'])

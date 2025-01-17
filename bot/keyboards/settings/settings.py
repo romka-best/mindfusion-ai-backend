@@ -138,15 +138,19 @@ def build_settings_choose_image_model_keyboard(language_code: LanguageCode) -> I
                 text=get_localization(language_code).STABLE_DIFFUSION,
                 callback_data=f'settings_choose_image_model:{Model.STABLE_DIFFUSION}'
             ),
-        ],
-        [
             InlineKeyboardButton(
                 text=get_localization(language_code).FLUX,
                 callback_data=f'settings_choose_image_model:{Model.FLUX}'
             ),
+        ],
+        [
             InlineKeyboardButton(
                 text=get_localization(language_code).LUMA_PHOTON,
                 callback_data=f'settings_choose_image_model:{Model.LUMA_PHOTON}'
+            ),
+            InlineKeyboardButton(
+                text=get_localization(language_code).RECRAFT,
+                callback_data=f'settings_choose_image_model:{Model.RECRAFT}'
             ),
         ],
         [
@@ -208,7 +212,7 @@ def build_settings_choose_video_model_keyboard(language_code: LanguageCode) -> I
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).LUMA_RAY,
-                callback_data=f'settings_choose_video_model:{Model.LUMA_PHOTON}'
+                callback_data=f'settings_choose_video_model:{Model.LUMA_RAY}'
             ),
             InlineKeyboardButton(
                 text=get_localization(language_code).PIKA,

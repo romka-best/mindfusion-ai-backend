@@ -184,6 +184,12 @@ class Texts(Protocol):
     # FaceSwap
     FACE_SWAP = '📷️ FaceSwap'
     FACE_SWAP_INFO: str
+    FACE_SWAP_CHOOSE_PHOTO: str
+    FACE_SWAP_CHOOSE_PHOTO_INFO: str
+    FACE_SWAP_CHOOSE_PROMPT: str
+    FACE_SWAP_CHOOSE_PROMPT_INFO: str
+    FACE_SWAP_CHOOSE_PACKAGE: str
+    FACE_SWAP_CHOOSE_PACKAGE_INFO: str
     FACE_SWAP_GENERATIONS_IN_PACKAGES_ENDED: str
     FACE_SWAP_MIN_ERROR: str
     FACE_SWAP_MAX_ERROR: str
@@ -553,7 +559,16 @@ class Texts(Protocol):
     # Shopping cart
     SHOPPING_CART: str
     SHOPPING_CART_ADD: str
-    SHOPPING_CART_ADD_OR_BUY_NOW: str
+
+    @staticmethod
+    def shopping_cart_add_or_buy_now(
+        product: Product,
+        product_quantity: int,
+        product_price: float,
+        currency: Currency,
+    ):
+        raise NotImplementedError
+
     SHOPPING_CART_BUY_NOW: str
     SHOPPING_CART_REMOVE: str
     SHOPPING_CART_GO_TO: str
@@ -581,6 +596,7 @@ class Texts(Protocol):
 
     # Subscription
     SUBSCRIPTION: str
+    SUBSCRIPTIONS: str
     SUBSCRIPTION_MONTH_1: str
     SUBSCRIPTION_MONTHS_3: str
     SUBSCRIPTION_MONTHS_6: str

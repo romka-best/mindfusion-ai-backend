@@ -31,7 +31,22 @@ async def document(message: Message, state: FSMContext, album: list[Message]):
     elif message.document.mime_type.startswith('image') and message.document.thumbnail:
         photo_file = await message.bot.get_file(message.document.file_id)
         await handle_photo(message, state, photo_file)
-    elif message.document.mime_type == 'application/pdf':
+    elif (
+        message.document.mime_type == 'application/pdf' or
+        message.document.mime_type == 'application/x-javascript' or
+        message.document.mime_type == 'text/javascript' or
+        message.document.mime_type == 'text/ecmascript' or
+        message.document.mime_type == 'application/x-python' or
+        message.document.mime_type == 'text/x-python' or
+        message.document.mime_type == 'text/x-script.phyton' or
+        message.document.mime_type == 'text/plain' or
+        message.document.mime_type == 'text/html' or
+        message.document.mime_type == 'text/css' or
+        message.document.mime_type == 'text/md' or
+        message.document.mime_type == 'text/csv' or
+        message.document.mime_type == 'text/xml' or
+        message.document.mime_type == 'text/rtf'
+    ):
         document_file = await message.bot.get_file(message.document.file_id)
         await handle_document(message, state, document_file)
     else:
@@ -81,6 +96,13 @@ async def handle_document(message: Message, state: FSMContext, document_file: Fi
         document_data_io = await message.bot.download_file(document_file.file_path, timeout=300)
         document_data = await asyncio.to_thread(document_data_io.read)
         document_extension = document_file.file_path.split('.')[-1]
+
+        if quota in [Quota.CLAUDE_3_SONNET] and document_extension != 'pdf':
+            await message.reply(
+                text=get_localization(user_language_code).ERROR_DOCUMENT_FORBIDDEN,
+                allow_sending_without_reply=True,
+            )
+            return
 
         document_vision_filename = f'{uuid.uuid4()}.{document_extension}'
         document_vision_path = f'users/vision/{user_id}/{document_vision_filename}'

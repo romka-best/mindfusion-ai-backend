@@ -1,6 +1,7 @@
 import asyncio
 
 from aiogram import Router
+from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command, CommandStart, ChatMemberUpdatedFilter, KICKED, MEMBER
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, ChatMemberUpdated
@@ -109,7 +110,7 @@ async def start(message: Message, state: FSMContext):
                     if campaign:
                         user_utm = campaign.utm
                         user_discount = campaign.discount
-                elif sub_param_key == 'model' and sub_param_value in [
+                elif sub_param_key == 'm' and sub_param_value in [
                     'chatgpt4omnimini',
                     'chatgpt4omni',
                     'chatgpto1mini',
@@ -261,8 +262,11 @@ async def start(message: Message, state: FSMContext):
         message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
     )
 
-    await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
-    await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+    try:
+        await message.bot.unpin_chat_message(user.telegram_chat_id)
+        await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+    except (TelegramBadRequest, TelegramRetryAfter):
+        pass
 
     await handle_model_info(
         bot=message.bot,

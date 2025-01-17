@@ -559,7 +559,7 @@ async def handle_get_statistics(language_code: LanguageCode, period: str):
         count_subscription_users_before[subscription] = count_before
 
     subscription_products = {
-        'Бесплатные 🆓': [ServiceType.FREE],
+        '🆓 Бесплатные': [ServiceType.FREE],
     }
     for product in products:
         if product.type == ProductType.SUBSCRIPTION:

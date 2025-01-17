@@ -452,20 +452,47 @@ Please try again with a numeric value 🔢
 
     # FaceSwap
     FACE_SWAP_INFO = """
-📷 <b>FaceSwap: Choose One of the Options</b>
+📷 <b>FaceSwap: Choose one of the 3 options</b>
 
-👤 <b>Send a Photo</b> — I’ll swap the face with yours
-✍️ <b>Write a Prompt</b> — I’ll create an image with your face
-Or <b>select a ready-made package</b> below 👇
+👤 Send a photo — I will swap the face on your image
+
+✍️ Write a prompt — I will create an image with your face based on the description
+
+🤹‍♂️ Choose a ready-made package — I will swap faces on pre-made images
+"""
+    FACE_SWAP_CHOOSE_PHOTO = "👤 Send Photo"
+    FACE_SWAP_CHOOSE_PHOTO_INFO = """
+👤 <b>Send a photo</b>
+
+1️⃣ Upload a photo where your face is clearly visible
+2️⃣ I will swap the face in your photo while keeping the rest unchanged
+
+💡 The better the quality, the better the result!
+"""
+    FACE_SWAP_CHOOSE_PROMPT = "✍️ Write Prompt"
+    FACE_SWAP_CHOOSE_PROMPT_INFO = """
+✍️ <b>Write a prompt</b>
+
+1️⃣ Describe in detail the image you want to generate
+2️⃣ I will create an image with your face based on your description
+
+💡 The more details you provide, the better the result!
+"""
+    FACE_SWAP_CHOOSE_PACKAGE = "🤹‍♂️ Choose Package"
+    FACE_SWAP_CHOOSE_PACKAGE_INFO = """
+🤹‍♂️ <b>Choose a package</b>
+
+1️⃣ Select one of the ready-made image sets
+2️⃣ I will swap faces on all the images at once
+
+💡 Quick and easy!
 """
     FACE_SWAP_GENERATIONS_IN_PACKAGES_ENDED = """
 📷 <b>Wow! All Generations in the Packages Have Been Used!</b>
 
 <b>What’s Next?</b>
-📸 Send a photo with a face — I’ll swap it with yours
+👤 Send a photo with a face — I’ll swap it with yours
 ✍️ Write a prompt — I’ll create an image with your likeness
-
-Or <b>switch the model</b> by clicking the button below 👇
 """
     FACE_SWAP_MIN_ERROR = """
 🤨 <b>Hold On!</b>
@@ -1643,7 +1670,7 @@ The entered number exceeds what you can purchase
             cost = f"{cost}{Currency.SYMBOLS[currency]}"
 
         return f"""
-🛍 <b>Shopping Zone</b>
+🛍 <b>Packages</b>
 
 <b>1 coin 🪙 = {cost}</b>
 
@@ -1653,11 +1680,9 @@ To select a package, click the button:
     @staticmethod
     def package_choose_min(name: str) -> str:
         return f"""
-🚀 <b>Great!</b>
-
 You’ve selected the <b>{name}</b> package
 
-<b>Enter the quantity</b> you’d like to purchase
+<b>Choose or enter the quantity</b> you’d like to purchase
 """
 
     @staticmethod
@@ -1694,7 +1719,7 @@ To continue, check out my offers by clicking the button below:
     PAYMENT_BUY = """
 🛒 <b>Store</b>
 
-🌟 <b>Subscriptions</b>
+💳 <b>Subscriptions</b>
 Gain full access to all AI models and tools. Communication, images, music, video, and much more — all included!
 
 🛍 <b>Packages</b>
@@ -2018,7 +2043,18 @@ Below are the voice response settings for all text models 🎙
     # Shopping cart
     SHOPPING_CART = "🛒 Cart"
     SHOPPING_CART_ADD = "➕ Add to Cart"
-    SHOPPING_CART_ADD_OR_BUY_NOW = "Buy now or add to cart?"
+
+    @staticmethod
+    def shopping_cart_add_or_buy_now(
+        product: Product,
+        product_quantity: int,
+        product_price: float,
+        currency: Currency,
+    ):
+        return f"""
+<b>{product_quantity} package(-s) {product.names.get(LanguageCode.EN)} – {format_number(product_price)}{Currency.SYMBOLS[currency]}</b>
+"""
+
     SHOPPING_CART_BUY_NOW = "🛍 Buy Now"
     SHOPPING_CART_REMOVE = "➖ Remove from Cart"
     SHOPPING_CART_GO_TO = "🛒 Go to Cart"
@@ -2173,6 +2209,7 @@ To pay {total_sum}
 
     # Subscription
     SUBSCRIPTION = "💳 Subscription"
+    SUBSCRIPTIONS = "💳 Subscriptions"
     SUBSCRIPTION_MONTH_1 = "1 month"
     SUBSCRIPTION_MONTHS_3 = "3 months"
     SUBSCRIPTION_MONTHS_6 = "6 months"
@@ -2250,7 +2287,7 @@ You can continue exploring the universe of AI models and regain access by clicki
                 else:
                     text_subscriptions += f'{is_trial_info}{left_part_price}{subscription_price}{right_part_price} {per_period}\n'
         return f"""
-🤖 Here's what's on the menu:
+💳 <b>Subscriptions</b>
 
 {text_subscriptions}
 To subscribe, pick your potion and hit the button below:
@@ -2595,7 +2632,7 @@ How about another unique name?
     ADMIN_FACE_SWAP_CREATE_PACKAGE_NAME = """
 🚀 <b>Package Name</b>
 
-Now write a unique name for the package in Russian. Don’t forget to add an emoji at the end, for example, "Movie Characters 🎥" or "Magical Worlds 🌌"
+Now write a unique name for the package in Russian. Don’t forget to add an emoji at the start, for example, "🎥 Movies" or "🌌 Space"
 """
     ADMIN_FACE_SWAP_CREATE_PACKAGE_SUCCESS = """
 🎉 <b>The new FaceSwap package is ready</b>
