@@ -22,7 +22,7 @@ commands_en = [
     ),
     BotCommand(
         command='buy',
-        description='💎 Subscriptions and Packages',
+        description='💎 Subscriptions/Packages',
     ),
     BotCommand(
         command='text',

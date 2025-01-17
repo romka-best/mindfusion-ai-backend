@@ -346,7 +346,11 @@ async def handle_replicate_face_swap(
         )
         await state.clear()
 
-        if total_result == len(request_generations) and user.current_model == Model.FACE_SWAP:
+        if (
+            user.current_model == Model.FACE_SWAP and
+            total_result == len(request_generations) and
+            not request.details.get('is_test', False)
+        ):
             await handle_face_swap(bot, user.telegram_chat_id, state, user.id)
 
         for processing_message_id in request.processing_message_ids:

@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 import stripe
 from aiogram import Bot, Dispatcher
+from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import StorageKey
 
@@ -159,8 +160,11 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
                 )
 
-                await bot.unpin_all_chat_messages(user.telegram_chat_id)
-                await bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+                try:
+                    await bot.unpin_chat_message(user.telegram_chat_id)
+                    await bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+                except (TelegramBadRequest, TelegramRetryAfter):
+                    pass
 
                 state = FSMContext(
                     storage=dp.storage,
@@ -451,8 +455,11 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
                 )
 
-                await bot.unpin_all_chat_messages(user.telegram_chat_id)
-                await bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+                try:
+                    await bot.unpin_chat_message(user.telegram_chat_id)
+                    await bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+                except (TelegramBadRequest, TelegramRetryAfter):
+                    pass
 
                 state = FSMContext(
                     storage=dp.storage,
@@ -583,8 +590,11 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
                 )
 
-                await bot.unpin_all_chat_messages(user.telegram_chat_id)
-                await bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+                try:
+                    await bot.unpin_chat_message(user.telegram_chat_id)
+                    await bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+                except (TelegramBadRequest, TelegramRetryAfter):
+                    pass
 
                 state = FSMContext(
                     storage=dp.storage,

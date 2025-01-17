@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 import httpx
 from aiogram import Router
+from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
@@ -132,8 +133,11 @@ async def handle_gemini_choose_selection(callback_query: CallbackQuery, state: F
                 message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
             )
 
-            await callback_query.bot.unpin_all_chat_messages(user.telegram_chat_id)
-            await callback_query.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+            try:
+                await callback_query.bot.unpin_chat_message(user.telegram_chat_id)
+                await callback_query.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+            except (TelegramBadRequest, TelegramRetryAfter):
+                pass
         else:
             text = get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL
             await callback_query.message.answer(
@@ -211,7 +215,11 @@ async def handle_gemini(
                 if kind:
                     media_type = kind.mime
                 else:
-                    media_type = 'image/jpeg'
+                    try:
+                        response_content.decode('utf-8')
+                        media_type = 'text/plain'
+                    except UnicodeDecodeError:
+                        media_type = 'image/jpeg'
 
                 if not media_type.startswith('image') and not single_mode:
                     continue

@@ -455,20 +455,47 @@ Por favor, inténtalo de nuevo con un valor numérico 🔢
 
     # FaceSwap
     FACE_SWAP_INFO = """
-📷 <b>FaceSwap: Elige una de las opciones</b>
+📷 <b>FaceSwap: Elige una de las 3 opciones</b>
 
-👤 <b>Envía una foto</b> — reemplazaré el rostro con el tuyo
-✍️ <b>Escribe un prompt</b> — crearé una imagen con tu cara
-O <b>elige un paquete listo</b> abajo 👇
+👤 <b>Enviar foto</b> — Reemplazaré la cara en tu imagen
+
+✍️ <b>Escribir un prompt</b> — Crearé una imagen con tu cara según la descripción
+
+🤹‍♂️ <b>Elegir un paquete predefinido</b> — Reemplazaré las caras en imágenes listas
+"""
+    FACE_SWAP_CHOOSE_PHOTO = "👤 Enviar foto"
+    FACE_SWAP_CHOOSE_PHOTO_INFO = """
+👤 <b>Envía una foto</b>
+
+1️⃣ Envía una foto donde tu rostro sea claramente visible
+2️⃣ Reemplazaré la cara en tu foto manteniendo el resto igual
+
+💡 ¡Cuanto mejor sea la calidad, mejor será el resultado!
+"""
+    FACE_SWAP_CHOOSE_PROMPT = "✍️ Escribir un prompt"
+    FACE_SWAP_CHOOSE_PROMPT_INFO = """
+✍️ <b>Escribe un prompt</b>
+
+1️⃣ Describe en detalle la imagen que quieres obtener
+2️⃣ Crearé una imagen con tu cara basada en tu descripción
+
+💡 ¡Cuantos más detalles, más preciso será el resultado!
+"""
+    FACE_SWAP_CHOOSE_PACKAGE = "🤹‍♂️ Elegir un paquete"
+    FACE_SWAP_CHOOSE_PACKAGE_INFO = """
+🤹‍♂️ <b>Elige un paquete</b>
+
+1️⃣ Selecciona uno de los paquetes de imágenes predefinidos
+2️⃣ Reemplazaré las caras en todas las imágenes a la vez
+
+💡 ¡Rápido y fácil!
 """
     FACE_SWAP_GENERATIONS_IN_PACKAGES_ENDED = """
 📷 <b>¡Vaya! ¡Se han usado todas las generaciones en los paquetes!</b>
 
 <b>¿Qué sigue?</b>
-📸 Envía una foto con un rostro — lo reemplazaré con el tuyo
+👤 Envía una foto con un rostro — lo reemplazaré con el tuyo
 ✍️ Escribe un prompt — crearé una imagen con tu cara
-
-O <b>cambia de modelo</b> presionando el botón abajo 👇
 """
     FACE_SWAP_MIN_ERROR = """
 🤨 <b>¡Espera!</b>
@@ -1675,7 +1702,7 @@ El número ingresado supera lo que puedes adquirir.
             cost = f"{cost}{Currency.SYMBOLS[currency]}"
 
         return f"""
-🛍 <b>Zona de compras</b>
+🛍 <b>Paquetes</b>
 
 <b>1 moneda 🪙 = {cost}</b>
 
@@ -1685,11 +1712,9 @@ Para seleccionar un paquete, presiona el botón:
     @staticmethod
     def package_choose_min(name: str) -> str:
         return f"""
-🚀 <b>¡Maravilloso!</b>
-
 Has seleccionado el paquete <b>{name}</b>
 
-<b>Ingresa la cantidad</b> que deseas comprar
+<b>Elige o ingresa la cantidad</b> que deseas comprar
 """
 
     @staticmethod
@@ -1726,7 +1751,7 @@ Para continuar, revisa mis ofertas presionando el botón de abajo:
     PAYMENT_BUY = """
 🛒 <b>Tienda</b>
 
-🌟 <b>Suscripciones</b>
+💳 <b>Suscripciones</b>
 Obtén acceso completo a todas las redes neuronales y herramientas. Comunicación, imágenes, música, videos y mucho más, ¡todo incluido!
 
 🛍 <b>Paquetes</b>
@@ -2050,7 +2075,18 @@ A continuación, encontrarás la configuración para respuestas de voz en todos 
     # Shopping cart
     SHOPPING_CART = "🛒 Carrito"
     SHOPPING_CART_ADD = "➕ Agregar al carrito"
-    SHOPPING_CART_ADD_OR_BUY_NOW = "¿Comprar ahora o agregar al carrito?"
+
+    @staticmethod
+    def shopping_cart_add_or_buy_now(
+        product: Product,
+        product_quantity: int,
+        product_price: float,
+        currency: Currency,
+    ):
+        return f"""
+<b>{product_quantity} paquete(s) {product.names.get(LanguageCode.ES)} – {format_number(product_price)}{Currency.SYMBOLS[currency]}</b>
+"""
+
     SHOPPING_CART_BUY_NOW = "🛍 Comprar ahora"
     SHOPPING_CART_REMOVE = "➖ Eliminar del carrito"
     SHOPPING_CART_GO_TO = "🛒 Ir al carrito"
@@ -2205,6 +2241,7 @@ Total a pagar: {total_sum}
 
     # Subscription
     SUBSCRIPTION = "💳 Suscripción"
+    SUBSCRIPTIONS = "💳 Suscripciones"
     SUBSCRIPTION_MONTH_1 = "1 mes"
     SUBSCRIPTION_MONTHS_3 = "3 meses"
     SUBSCRIPTION_MONTHS_6 = "6 meses"
@@ -2283,7 +2320,7 @@ Puedes continuar explorando el universo de las redes neuronales y reactivar tu a
                     text_subscriptions += f'{is_trial_info}{left_part_price}{subscription_price}{right_part_price} {per_period}\n'
 
         return f"""
-🤖 Aquí tienes lo que ofrezco:
+💳 <b>Suscripciones</b>
 
 {text_subscriptions}
 Selecciona tu opción y presiona el botón de abajo para suscribirte:

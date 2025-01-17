@@ -1,5 +1,6 @@
 import openai
 from aiogram import Router
+from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
@@ -71,8 +72,11 @@ async def perplexity(message: Message, state: FSMContext):
             message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
         )
 
-        await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
-        await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+        try:
+            await message.bot.unpin_chat_message(user.telegram_chat_id)
+            await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+        except (TelegramBadRequest, TelegramRetryAfter):
+            pass
 
 
 async def handle_perplexity(message: Message, state: FSMContext, user: User, photo_filenames=None):

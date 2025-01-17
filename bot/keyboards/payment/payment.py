@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from bot.database.models.common import PaymentType, PaymentMethod, Currency
-from bot.database.models.product import Product, ProductCategory
+from bot.database.models.product import Product, ProductType, ProductCategory, ProductCategorySymbols
 from bot.locales.main import get_localization
 from bot.locales.types import LanguageCode
 
@@ -10,7 +10,7 @@ def build_buy_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).SUBSCRIPTION,
+                text=get_localization(language_code).SUBSCRIPTIONS,
                 callback_data=f'buy:{PaymentType.SUBSCRIPTION}'
             ),
             InlineKeyboardButton(
@@ -147,7 +147,13 @@ def build_cancel_subscription_keyboard(language_code: LanguageCode) -> InlineKey
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def build_packages_keyboard(language_code: LanguageCode, products: list[Product], page=0) -> InlineKeyboardMarkup:
+def build_packages_keyboard(
+    language_code: LanguageCode,
+    products: list[Product],
+    currency: Currency,
+    discount: int,
+    page=0,
+) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
@@ -164,31 +170,6 @@ def build_packages_keyboard(language_code: LanguageCode, products: list[Product]
                 callback_data=f'package:{ProductCategory.TEXT}',
             ),
         ])
-        for product in products:
-            buttons.append(
-                [
-                    InlineKeyboardButton(
-                        text=product.names.get(language_code),
-                        callback_data=f'package:{product.id}'
-                    ),
-                ],
-            )
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text='⬅️',
-                    callback_data='package:prev:5'
-                ),
-                InlineKeyboardButton(
-                    text='1/6',
-                    callback_data='package:page:0'
-                ),
-                InlineKeyboardButton(
-                    text='➡️',
-                    callback_data='package:next:1'
-                ),
-            ]
-        )
     elif page == 1:
         buttons.append([
             InlineKeyboardButton(
@@ -196,31 +177,6 @@ def build_packages_keyboard(language_code: LanguageCode, products: list[Product]
                 callback_data=f'package:{ProductCategory.SUMMARY}',
             ),
         ])
-        for product in products:
-            buttons.append(
-                [
-                    InlineKeyboardButton(
-                        text=product.names.get(language_code),
-                        callback_data=f'package:{product.id}'
-                    ),
-                ],
-            )
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text='⬅️',
-                    callback_data='package:prev:0'
-                ),
-                InlineKeyboardButton(
-                    text='2/6',
-                    callback_data='package:page:1'
-                ),
-                InlineKeyboardButton(
-                    text='➡️',
-                    callback_data='package:next:2'
-                ),
-            ]
-        )
     elif page == 2:
         buttons.append([
             InlineKeyboardButton(
@@ -228,65 +184,13 @@ def build_packages_keyboard(language_code: LanguageCode, products: list[Product]
                 callback_data=f'package:{ProductCategory.IMAGE}',
             ),
         ])
-        for product in products:
-            buttons.append(
-                [
-                    InlineKeyboardButton(
-                        text=product.names.get(language_code),
-                        callback_data=f'package:{product.id}'
-                    ),
-                ],
-            )
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text='⬅️',
-                    callback_data='package:prev:1'
-                ),
-                InlineKeyboardButton(
-                    text='3/6',
-                    callback_data='package:page:2'
-                ),
-                InlineKeyboardButton(
-                    text='➡️',
-                    callback_data='package:next:3'
-                ),
-            ]
-        )
     elif page == 3:
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text=get_localization(language_code).MODELS_MUSIC.upper(),
-                    callback_data=f'package:{ProductCategory.MUSIC}',
-                ),
-            ],
-        )
-        for product in products:
-            buttons.append(
-                [
-                    InlineKeyboardButton(
-                        text=product.names.get(language_code),
-                        callback_data=f'package:{product.id}'
-                    ),
-                ],
-            )
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text='⬅️',
-                    callback_data='package:prev:2'
-                ),
-                InlineKeyboardButton(
-                    text='4/6',
-                    callback_data='package:page:3'
-                ),
-                InlineKeyboardButton(
-                    text='➡️',
-                    callback_data='package:next:4'
-                ),
-            ]
-        )
+        buttons.append([
+            InlineKeyboardButton(
+                text=get_localization(language_code).MODELS_MUSIC.upper(),
+                callback_data=f'package:{ProductCategory.MUSIC}',
+            ),
+        ])
     elif page == 4:
         buttons.append(
             [
@@ -296,58 +200,38 @@ def build_packages_keyboard(language_code: LanguageCode, products: list[Product]
                 ),
             ],
         )
-        for product in products:
-            buttons.append(
-                [
-                    InlineKeyboardButton(
-                        text=product.names.get(language_code),
-                        callback_data=f'package:{product.id}'
-                    ),
-                ],
-            )
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text='⬅️',
-                    callback_data='package:prev:3'
-                ),
-                InlineKeyboardButton(
-                    text='5/6',
-                    callback_data='package:page:4'
-                ),
-                InlineKeyboardButton(
-                    text='➡️',
-                    callback_data='package:next:5'
-                ),
-            ]
+
+    for product in products:
+        product_price = Product.get_discount_price(
+            ProductType.PACKAGE,
+            1,
+            product.prices.get(currency),
+            currency,
+            discount,
         )
-    elif page == 5:
-        for product in products:
-            buttons.append(
-                [
-                    InlineKeyboardButton(
-                        text=product.names.get(language_code),
-                        callback_data=f'package:{product.id}'
-                    ),
-                ],
-            )
         buttons.append(
             [
                 InlineKeyboardButton(
-                    text='⬅️',
-                    callback_data='package:prev:4'
+                    text=f'{product.names.get(language_code)} – {product_price}{Currency.SYMBOLS[currency]}',
+                    callback_data=f'package:{product.id}'
                 ),
-                InlineKeyboardButton(
-                    text='6/6',
-                    callback_data='package:page:5'
-                ),
-                InlineKeyboardButton(
-                    text='➡️',
-                    callback_data='package:next:0'
-                ),
-            ]
+            ],
         )
 
+    buttons.append([
+        InlineKeyboardButton(
+            text='⬅️',
+            callback_data=f'package:prev:{page - 1 if page != 0 else 5}'
+        ),
+        InlineKeyboardButton(
+            text=f'{page + 1}/6',
+            callback_data=f'package:page:{page}'
+        ),
+        InlineKeyboardButton(
+            text='➡️',
+            callback_data=f'package:next:{page + 1 if page != 5 else 0}'
+        ),
+    ])
     buttons.extend(
         [
             [
@@ -368,15 +252,49 @@ def build_packages_keyboard(language_code: LanguageCode, products: list[Product]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def build_package_selection_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
-    buttons = [
-        [
+def build_package_selection_keyboard(
+    language_code: LanguageCode,
+    product: Product,
+    currency: Currency,
+    discount: int,
+) -> InlineKeyboardMarkup:
+    buttons = []
+    quantities = []
+    if (
+        product.category == ProductCategory.TEXT or
+        product.category == ProductCategory.SUMMARY or
+        product.category == ProductCategory.IMAGE
+    ):
+        quantities = [50, 100, 250, 500, 1000]
+    elif (
+        product.category == ProductCategory.MUSIC or
+        product.category == ProductCategory.VIDEO
+    ):
+        quantities = [5, 10, 25, 50, 100]
+    elif product.category == ProductCategory.OTHER:
+        quantities = [1, 3, 6, 9, 12]
+
+    for quantity in quantities:
+        product_price = Product.get_discount_price(
+            ProductType.PACKAGE,
+            quantity,
+            product.prices.get(currency),
+            currency,
+            discount,
+        )
+        buttons.append([
             InlineKeyboardButton(
-                text=get_localization(language_code).ACTION_BACK,
-                callback_data='package_selection:back'
+                text=f'{ProductCategorySymbols[product.category]} {quantity} – {product_price}{Currency.SYMBOLS[currency]}',
+                callback_data=f'package_selection:{quantity}'
             )
-        ],
-    ]
+        ])
+
+    buttons.append([
+        InlineKeyboardButton(
+            text=get_localization(language_code).ACTION_BACK,
+            callback_data=f'package_selection:back:{product.category}'
+        )
+    ])
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -387,13 +305,17 @@ def build_package_quantity_sent_keyboard(language_code: LanguageCode) -> InlineK
             InlineKeyboardButton(
                 text=get_localization(language_code).SHOPPING_CART_ADD,
                 callback_data='package_quantity_sent:add_to_cart'
-            )
-        ],
-        [
+            ),
             InlineKeyboardButton(
                 text=get_localization(language_code).SHOPPING_CART_BUY_NOW,
                 callback_data='package_quantity_sent:buy_now'
-            )
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).ACTION_BACK,
+                callback_data='package_quantity_sent:back'
+            ),
         ],
     ]
 

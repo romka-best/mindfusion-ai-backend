@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 import anthropic
 import httpx
 from aiogram import Router
+from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
@@ -132,8 +133,12 @@ async def handle_claude_choose_selection(callback_query: CallbackQuery, state: F
                 reply_markup=reply_markup,
                 message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
             )
-            await callback_query.bot.unpin_all_chat_messages(user.telegram_chat_id)
-            await callback_query.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+
+            try:
+                await callback_query.bot.unpin_chat_message(user.telegram_chat_id)
+                await callback_query.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+            except (TelegramBadRequest, TelegramRetryAfter):
+                pass
         else:
             await callback_query.message.answer(
                 text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,

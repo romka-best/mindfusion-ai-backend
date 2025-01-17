@@ -26,6 +26,14 @@ class ProductCategory(StrEnum):
     OTHER = 'OTHER'
 
 
+class ProductCategorySymbols(StrEnum):
+    TEXT = '✉️'
+    SUMMARY = '📝'
+    IMAGE = '🖼'
+    MUSIC = '🎵'
+    VIDEO = '📹'
+
+
 class Product(BaseModel):
     COLLECTION_NAME: ClassVar[str] = 'products'
 
@@ -68,7 +76,7 @@ class Product(BaseModel):
                 price - (price * (price_discount[subscription_period] / 100.0)),
                 2,
             )
-            if currency == Currency.XTR:
+            if currency == Currency.RUB or currency == Currency.XTR:
                 price_with_discount = int(price_with_discount)
         else:
             price_with_discount = round(
