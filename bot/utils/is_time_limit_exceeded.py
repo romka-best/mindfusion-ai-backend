@@ -56,11 +56,9 @@ async def is_time_limit_exceeded(message: Message, state: FSMContext, user: User
     else:
         await state.update_data(additional_request_made=True)
 
-        text = get_localization(user_language_code).model_wait_for_another_request(remaining_time)
-        reply_markup = build_time_limit_exceeded_keyboard(user_language_code)
         await message.reply(
-            text=text,
-            reply_markup=reply_markup,
+            text=get_localization(user_language_code).model_wait_for_another_request(remaining_time),
+            reply_markup=build_time_limit_exceeded_keyboard(user_language_code),
             allow_sending_without_reply=True,
         )
         asyncio.create_task(

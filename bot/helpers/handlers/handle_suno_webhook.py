@@ -215,11 +215,10 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
         user_language_code = await get_user_language(str(user.id), state.storage)
 
         if user.current_model == Model.SUNO:
-            reply_markup = build_suno_keyboard(user_language_code)
             await bot.send_message(
                 chat_id=user.telegram_chat_id,
                 text=get_localization(user_language_code).SUNO_INFO,
-                reply_markup=reply_markup,
+                reply_markup=build_suno_keyboard(user_language_code),
             )
         for processing_message_id in request.processing_message_ids:
             try:

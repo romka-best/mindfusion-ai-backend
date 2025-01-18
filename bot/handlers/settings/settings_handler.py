@@ -433,7 +433,7 @@ async def handle_setting_selection(callback_query: CallbackQuery, state: FSMCont
                 elif (
                     callback_data == MidjourneyVersion.V5 or callback_data == MidjourneyVersion.V6
                 ) or (
-                    callback_data == SunoVersion.V3 or callback_data == SunoVersion.V3_5 or callback_data == SunoVersion.V4
+                    callback_data == SunoVersion.V3 or callback_data == SunoVersion.V4
                 ):
                     text = text.replace(' ✅', '')
             elif what_changed == UserSettings.FOCUS:

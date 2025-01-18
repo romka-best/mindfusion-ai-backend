@@ -52,10 +52,9 @@ async def suno(message: Message, state: FSMContext):
     user_language_code = await get_user_language(user_id, state.storage)
 
     if user.current_model == Model.SUNO:
-        reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.SUNO)
         await message.answer(
             text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
-            reply_markup=reply_markup,
+            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.SUNO),
         )
     else:
         user.current_model = Model.SUNO
@@ -68,10 +67,9 @@ async def suno(message: Message, state: FSMContext):
             get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
             user_language_code,
         )
-        reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.SUNO)
         answered_message = await message.answer(
             text=text,
-            reply_markup=reply_markup,
+            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.SUNO),
             message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
         )
 
@@ -87,11 +85,10 @@ async def suno(message: Message, state: FSMContext):
 async def handle_suno(bot: Bot, chat_id: str, state: FSMContext, user_id: str):
     user_language_code = await get_user_language(str(user_id), state.storage)
 
-    reply_markup = build_suno_keyboard(user_language_code)
     await bot.send_message(
         chat_id=chat_id,
         text=get_localization(user_language_code).SUNO_INFO,
-        reply_markup=reply_markup,
+        reply_markup=build_suno_keyboard(user_language_code),
     )
 
 
@@ -105,18 +102,16 @@ async def handle_suno_selection(callback_query: CallbackQuery, state: FSMContext
     mode = callback_query.data.split(':')[1]
 
     if mode == SunoMode.SIMPLE:
-        reply_markup = build_suno_simple_mode_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).SUNO_SIMPLE_MODE_PROMPT,
-            reply_markup=reply_markup,
+            reply_markup=build_suno_simple_mode_keyboard(user_language_code),
         )
 
         await state.set_state(Suno.waiting_for_prompt)
     elif mode == SunoMode.CUSTOM:
-        reply_markup = build_suno_custom_mode_lyrics_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).SUNO_CUSTOM_MODE_LYRICS,
-            reply_markup=reply_markup,
+            reply_markup=build_suno_custom_mode_lyrics_keyboard(user_language_code),
         )
 
         await state.set_state(Suno.waiting_for_lyrics)
@@ -134,10 +129,9 @@ async def handle_suno_simple_mode_selection(callback_query: CallbackQuery, state
     action = callback_query.data.split(':')[1]
 
     if action == 'back':
-        reply_markup = build_suno_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).SUNO_INFO,
-            reply_markup=reply_markup,
+            reply_markup=build_suno_keyboard(user_language_code),
         )
 
         await state.clear()
@@ -179,10 +173,9 @@ async def suno_prompt_sent(message: Message, state: FSMContext):
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
             )
 
-            reply_markup = build_model_limit_exceeded_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).model_reached_usage_limit(),
-                reply_markup=reply_markup,
+                reply_markup=build_model_limit_exceeded_keyboard(user_language_code),
             )
 
             await processing_sticker.delete()
@@ -261,10 +254,9 @@ async def suno_prompt_sent(message: Message, state: FSMContext):
                         sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
                     )
 
-                    reply_markup = build_error_keyboard(user_language_code)
                     await message.answer(
                         text=get_localization(user_language_code).ERROR,
-                        reply_markup=reply_markup,
+                        reply_markup=build_error_keyboard(user_language_code),
                     )
 
                     await send_error_info(
@@ -305,19 +297,17 @@ async def handle_suno_custom_mode_lyrics_selection(callback_query: CallbackQuery
     action = callback_query.data.split(':')[1]
 
     if action == 'skip':
-        reply_markup = build_suno_custom_mode_genres_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).SUNO_CUSTOM_MODE_GENRES,
-            reply_markup=reply_markup,
+            reply_markup=build_suno_custom_mode_genres_keyboard(user_language_code),
         )
 
         await state.update_data(suno_lyrics='')
         await state.set_state(Suno.waiting_for_genres)
     elif action == 'back':
-        reply_markup = build_suno_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).SUNO_INFO,
-            reply_markup=reply_markup,
+            reply_markup=build_suno_keyboard(user_language_code),
         )
 
         await state.clear()
@@ -336,10 +326,9 @@ async def suno_lyrics_sent(message: Message, state: FSMContext):
         )
         return
 
-    reply_markup = build_suno_custom_mode_genres_keyboard(user_language_code)
     await message.reply(
         text=get_localization(user_language_code).SUNO_CUSTOM_MODE_GENRES,
-        reply_markup=reply_markup,
+        reply_markup=build_suno_custom_mode_genres_keyboard(user_language_code),
         allow_sending_without_reply=True,
     )
 
@@ -357,10 +346,9 @@ async def handle_suno_custom_mode_genres_selection(callback_query: CallbackQuery
     action = callback_query.data.split(':')[1]
 
     if action == 'start_again':
-        reply_markup = build_suno_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).SUNO_INFO,
-            reply_markup=reply_markup,
+            reply_markup=build_suno_keyboard(user_language_code),
         )
 
         await state.clear()
@@ -398,10 +386,9 @@ async def suno_genres_sent(message: Message, state: FSMContext):
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
             )
 
-            reply_markup = build_model_limit_exceeded_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).model_reached_usage_limit(),
-                reply_markup=reply_markup,
+                reply_markup=build_model_limit_exceeded_keyboard(user_language_code),
             )
 
             await processing_sticker.delete()
@@ -502,10 +489,9 @@ async def suno_genres_sent(message: Message, state: FSMContext):
                         sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
                     )
 
-                    reply_markup = build_error_keyboard(user_language_code)
                     await message.answer(
                         text=get_localization(user_language_code).ERROR,
-                        reply_markup=reply_markup,
+                        reply_markup=build_error_keyboard(user_language_code),
                     )
 
                     await send_error_info(

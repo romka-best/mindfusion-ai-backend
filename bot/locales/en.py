@@ -842,6 +842,35 @@ For any questions, you can also contact technical support:
 • MATH: 90.0%
 • HumanEval: 92.4%
 """
+    INFO_CHAT_GPT_O_1 = f"""
+<b>{Texts.CHAT_GPT_O_1}</b>
+
+<b>Creator:</b> OpenAI
+
+💡 <b>Use Cases:</b>
+• Content generation
+• Explaining complex concepts
+• Answering questions
+• Translating between languages
+• Learning assistance
+• Problem-solving
+• Text processing
+• Coding assistance
+
+🚦 <b>Ratings:</b>
+• Vision: Yes 🟢
+• Answer Quality: High 🟢
+• Response Speed: Moderate 🟡
+
+📊 <b>Benchmarks:</b>
+• MMLU: 92.3%
+• GPQA: 75.7%
+• MGSM: 89.3%
+• MATH: 96.4%
+• HumanEval: 92.4%
+• MMMU: 78.2%
+• MathVista: 73.9%
+"""
     INFO_CLAUDE = "🤖 <b>Select the Claude model</b> you want to learn more about:"
     INFO_CLAUDE_3_HAIKU = f"""
 <b>{Texts.CLAUDE_3_HAIKU}</b>
@@ -2230,6 +2259,13 @@ Let’s create some magic 🪄
 Hello, traveler in the world of AI! 👋
 
 Your subscription has been successfully renewed! Let’s make this month even better 💪
+"""
+    SUBSCRIPTION_RETRY = """
+❗️ <b>Subscription renewal failed</b>
+
+Today's payment was unsuccessful. Another attempt will be made tomorrow
+
+If it fails again, the subscription will end
 """
     SUBSCRIPTION_END = """
 🛑 <b>Subscription Expired!</b>

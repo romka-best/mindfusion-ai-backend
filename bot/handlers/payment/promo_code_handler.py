@@ -111,7 +111,7 @@ async def promo_code_sent(message: Message, state: FSMContext):
                             allow_sending_without_reply=True,
                         )
                 elif typed_promo_code.type == PromoCodeType.PACKAGE:
-                    package_id = typed_promo_code.details['package_id']
+                    package_id = typed_promo_code.details['product_id']
                     package_quantity = typed_promo_code.details['package_quantity']
 
                     product = await get_product(package_id)

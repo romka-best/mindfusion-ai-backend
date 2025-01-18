@@ -152,11 +152,10 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
                     user_language_code,
                 )
-                reply_markup = build_switched_to_ai_keyboard(user_language_code, user.current_model)
                 answered_message = await bot.send_message(
                     chat_id=subscription.user_id,
                     text=text,
-                    reply_markup=reply_markup,
+                    reply_markup=build_switched_to_ai_keyboard(user_language_code, user.current_model),
                     message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
                 )
 
@@ -447,11 +446,10 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
                     user_language_code,
                 )
-                reply_markup = build_switched_to_ai_keyboard(user_language_code, user.current_model)
                 answered_message = await bot.send_message(
                     chat_id=package.user_id,
                     text=text,
-                    reply_markup=reply_markup,
+                    reply_markup=build_switched_to_ai_keyboard(user_language_code, user.current_model),
                     message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
                 )
 
@@ -582,11 +580,10 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
                     user_language_code,
                 )
-                reply_markup = build_switched_to_ai_keyboard(user_language_code, user.current_model)
                 answered_message = await bot.send_message(
                     chat_id=user.id,
                     text=text,
-                    reply_markup=reply_markup,
+                    reply_markup=build_switched_to_ai_keyboard(user_language_code, user.current_model),
                     message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
                 )
 

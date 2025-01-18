@@ -2263,6 +2263,13 @@ Esto es lo que te espera a continuación:
 
 Tu suscripción ha sido renovada con éxito. ¡Hagamos que este mes sea aún mejor! 💪
 """
+    SUBSCRIPTION_RETRY = """
+❗️ <b>No se pudo renovar la suscripción</b>
+
+El pago de hoy no se realizó con éxito. Se intentará nuevamente mañana
+
+Si vuelve a fallar, la suscripción finalizará
+"""
     SUBSCRIPTION_END = """
 🛑 <b>¡Tu suscripción ha expirado!</b>
 

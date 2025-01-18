@@ -117,7 +117,6 @@ async def handle_midjourney_result(
             )
         else:
             if not is_suggestion:
-                reply_markup = build_error_keyboard(user_language_code)
                 await bot.send_sticker(
                     chat_id=user.telegram_chat_id,
                     sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
@@ -125,7 +124,7 @@ async def handle_midjourney_result(
                 await bot.send_message(
                     chat_id=user.telegram_chat_id,
                     text=get_localization(user_language_code).ERROR,
-                    reply_markup=reply_markup,
+                    reply_markup=build_error_keyboard(user_language_code),
                 )
             await send_error_info(
                 bot=bot,

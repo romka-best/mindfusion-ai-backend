@@ -63,12 +63,10 @@ async def notify_admins_about_error(bot: Bot, telegram_update: Update, dp: Dispa
                 )
                 user_language_code = await get_user_language(user_id, dp.storage)
 
-                greeting = get_localization(user_language_code).START_INFO
-                reply_markup = build_start_keyboard(user_language_code)
                 await bot.send_message(
                     chat_id=chat_id,
-                    text=greeting,
-                    reply_markup=reply_markup,
+                    text=get_localization(user_language_code).START_INFO,
+                    reply_markup=build_start_keyboard(user_language_code),
                 )
             else:
                 await bot.send_sticker(
@@ -76,11 +74,10 @@ async def notify_admins_about_error(bot: Bot, telegram_update: Update, dp: Dispa
                     sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
                 )
 
-                reply_markup = build_error_keyboard(user.interface_language_code)
                 await bot.send_message(
                     chat_id=user.telegram_chat_id,
                     text=get_localization(user.interface_language_code).ERROR,
-                    reply_markup=reply_markup,
+                    reply_markup=build_error_keyboard(user.interface_language_code),
                 )
 
                 await send_error_info(
