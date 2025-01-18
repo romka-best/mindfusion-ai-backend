@@ -49,14 +49,13 @@ async def flux(message: Message, state: FSMContext):
     user = await get_user(user_id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    reply_markup = build_flux_keyboard(
-        user_language_code,
-        user.current_model,
-        user.settings[Model.FLUX][UserSettings.VERSION],
-    )
     await message.answer(
         text=get_localization(user_language_code).MODEL_CHOOSE_FLUX,
-        reply_markup=reply_markup,
+        reply_markup=build_flux_keyboard(
+            user_language_code,
+            user.current_model,
+            user.settings[Model.FLUX][UserSettings.VERSION],
+        ),
     )
 
 
@@ -74,10 +73,9 @@ async def flux_choose_selection(callback_query: CallbackQuery, state: FSMContext
         user.current_model == Model.FLUX and
         chosen_version == user.settings[Model.FLUX][UserSettings.VERSION]
     ):
-        reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.FLUX)
         await callback_query.message.answer(
             text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
-            reply_markup=reply_markup,
+            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.FLUX),
         )
     else:
         keyboard = callback_query.message.reply_markup.inline_keyboard
@@ -219,10 +217,9 @@ async def handle_flux(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
             )
 
-            reply_markup = build_error_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).ERROR,
-                reply_markup=reply_markup,
+                reply_markup=build_error_keyboard(user_language_code),
             )
             await send_error_info(
                 bot=message.bot,

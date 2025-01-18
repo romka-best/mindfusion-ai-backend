@@ -26,10 +26,9 @@ async def handle_manage_catalog(message: Message, user_id: str, state: FSMContex
 
     roles = await get_roles()
 
-    reply_markup = build_manage_catalog_keyboard(user_language_code, roles)
     await message.edit_text(
         text=get_localization(user_language_code).ADMIN_CATALOG,
-        reply_markup=reply_markup,
+        reply_markup=build_manage_catalog_keyboard(user_language_code, roles),
     )
 
 

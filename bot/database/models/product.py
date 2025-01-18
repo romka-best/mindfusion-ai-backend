@@ -32,6 +32,7 @@ class ProductCategorySymbols(StrEnum):
     IMAGE = '🖼'
     MUSIC = '🎵'
     VIDEO = '📹'
+    OTHER = '🗓'
 
 
 class Product(BaseModel):

@@ -34,10 +34,9 @@ async def photoshop_ai(message: Message, state: FSMContext):
     user_language_code = await get_user_language(user_id, state.storage)
 
     if user.current_model == Model.PHOTOSHOP_AI:
-        reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.PHOTOSHOP_AI)
         await message.answer(
             text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
-            reply_markup=reply_markup,
+            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.PHOTOSHOP_AI),
         )
     else:
         user.current_model = Model.PHOTOSHOP_AI
@@ -50,10 +49,9 @@ async def photoshop_ai(message: Message, state: FSMContext):
             get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
             user_language_code,
         )
-        reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.PHOTOSHOP_AI)
         answered_message = await message.answer(
             text=text,
-            reply_markup=reply_markup,
+            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.PHOTOSHOP_AI),
             message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
         )
 

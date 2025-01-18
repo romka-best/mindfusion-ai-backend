@@ -88,10 +88,9 @@ async def face_swap(message: Message, state: FSMContext):
     user_language_code = await get_user_language(user_id, state.storage)
 
     if user.current_model == Model.FACE_SWAP:
-        reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.FACE_SWAP)
         await message.answer(
             text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
-            reply_markup=reply_markup,
+            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.FACE_SWAP),
         )
     else:
         user.current_model = Model.FACE_SWAP
@@ -124,11 +123,10 @@ async def handle_face_swap(bot: Bot, chat_id: str, state: FSMContext, user_id: s
     user_language_code = await get_user_language(str(user_id), state.storage)
 
     if user.settings[Model.FACE_SWAP][UserSettings.GENDER] == UserGender.UNSPECIFIED:
-        reply_markup = build_profile_gender_keyboard(user_language_code)
         await bot.send_message(
             chat_id=chat_id,
             text=get_localization(user_language_code).PROFILE_TELL_ME_YOUR_GENDER,
-            reply_markup=reply_markup,
+            reply_markup=build_profile_gender_keyboard(user_language_code),
         )
     else:
         try:
@@ -154,12 +152,11 @@ async def handle_face_swap(bot: Bot, chat_id: str, state: FSMContext, user_id: s
             photo = await firebase.bucket.get_blob(photo_path)
             photo_link = firebase.get_public_url(photo.name)
 
-            reply_markup = build_cancel_keyboard(user_language_code)
             await bot.send_photo(
                 chat_id=chat_id,
                 photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
                 caption=get_localization(user_language_code).PROFILE_SEND_ME_YOUR_PICTURE,
-                reply_markup=reply_markup
+                reply_markup=build_cancel_keyboard(user_language_code),
             )
             await state.set_state(Profile.waiting_for_photo)
 
@@ -308,11 +305,10 @@ async def handle_face_swap_prompt(
             photo = await firebase.bucket.get_blob(photo_path)
             photo_link = firebase.get_public_url(photo.name)
 
-            reply_markup = build_cancel_keyboard(user_language_code)
             await message.answer_photo(
                 photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
                 caption=get_localization(user_language_code).PROFILE_SEND_ME_YOUR_PICTURE,
-                reply_markup=reply_markup
+                reply_markup=build_cancel_keyboard(user_language_code),
             )
             await state.set_state(Profile.waiting_for_photo)
 
@@ -323,10 +319,9 @@ async def handle_face_swap_prompt(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
             )
 
-            reply_markup = build_error_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).ERROR,
-                reply_markup=reply_markup,
+                reply_markup=build_error_keyboard(user_language_code),
             )
             await send_error_info(
                 bot=message.bot,
@@ -401,11 +396,10 @@ async def handle_face_swap_video(
             photo = await firebase.bucket.get_blob(photo_path)
             photo_link = firebase.get_public_url(photo.name)
 
-            reply_markup = build_cancel_keyboard(user_language_code)
             await message.answer_photo(
                 photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
                 caption=get_localization(user_language_code).PROFILE_SEND_ME_YOUR_PICTURE,
-                reply_markup=reply_markup
+                reply_markup=build_cancel_keyboard(user_language_code),
             )
             await state.set_state(Profile.waiting_for_photo)
 
@@ -497,10 +491,9 @@ async def handle_face_swap_video(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
             )
 
-            reply_markup = build_error_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).ERROR,
-                reply_markup=reply_markup,
+                reply_markup=build_error_keyboard(user_language_code),
             )
             await send_error_info(
                 bot=message.bot,
@@ -651,10 +644,9 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
     try:
         quantity = int(chosen_quantity)
     except (TypeError, ValueError):
-        reply_markup = build_cancel_keyboard(user_language_code)
         await message.reply(
             text=get_localization(user_language_code).ERROR_IS_NOT_NUMBER,
-            reply_markup=reply_markup,
+            reply_markup=build_cancel_keyboard(user_language_code),
             allow_sending_without_reply=True,
         )
 
@@ -686,22 +678,19 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
         )
 
         if quota < quantity:
-            reply_markup = build_cancel_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).face_swap_package_forbidden_error(quota),
-                reply_markup=reply_markup,
+                reply_markup=build_cancel_keyboard(user_language_code),
             )
         elif quantity < 1:
-            reply_markup = build_cancel_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).FACE_SWAP_MIN_ERROR,
-                reply_markup=reply_markup,
+                reply_markup=build_cancel_keyboard(user_language_code),
             )
         elif face_swap_package_quantity < quantity:
-            reply_markup = build_cancel_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).FACE_SWAP_MAX_ERROR,
-                reply_markup=reply_markup,
+                reply_markup=build_cancel_keyboard(user_language_code),
             )
         else:
             product = await get_product_by_quota(Quota.FACE_SWAP)
@@ -769,10 +758,9 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
                     sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
                 )
 
-                reply_markup = build_error_keyboard(user_language_code)
                 await message.answer(
                     text=get_localization(user_language_code).ERROR,
-                    reply_markup=reply_markup,
+                    reply_markup=build_error_keyboard(user_language_code),
                 )
 
                 await send_error_info(

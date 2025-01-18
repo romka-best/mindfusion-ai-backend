@@ -49,14 +49,13 @@ async def stable_diffusion(message: Message, state: FSMContext):
     user = await get_user(user_id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    reply_markup = build_stable_diffusion_keyboard(
-        user_language_code,
-        user.current_model,
-        user.settings[Model.STABLE_DIFFUSION][UserSettings.VERSION],
-    )
     await message.answer(
         text=get_localization(user_language_code).MODEL_CHOOSE_STABLE_DIFFUSION,
-        reply_markup=reply_markup,
+        reply_markup=build_stable_diffusion_keyboard(
+            user_language_code,
+            user.current_model,
+            user.settings[Model.STABLE_DIFFUSION][UserSettings.VERSION],
+        ),
     )
 
 
@@ -74,10 +73,9 @@ async def stable_diffusion_choose_selection(callback_query: CallbackQuery, state
         user.current_model == Model.STABLE_DIFFUSION and
         chosen_version == user.settings[Model.STABLE_DIFFUSION][UserSettings.VERSION]
     ):
-        reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.STABLE_DIFFUSION)
         await callback_query.message.answer(
             text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
-            reply_markup=reply_markup,
+            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.STABLE_DIFFUSION),
         )
     else:
         keyboard = callback_query.message.reply_markup.inline_keyboard
@@ -218,10 +216,9 @@ async def handle_stable_diffusion(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
             )
 
-            reply_markup = build_error_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).ERROR,
-                reply_markup=reply_markup,
+                reply_markup=build_error_keyboard(user_language_code),
             )
             await send_error_info(
                 bot=message.bot,

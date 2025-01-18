@@ -268,15 +268,14 @@ async def handle_switched_to_ai_selection(callback_query: CallbackQuery, state: 
                 user.settings[Model.RUNWAY][UserSettings.DURATION],
             )
         human_model = get_human_model(model, user_language_code)
-        reply_markup = build_settings_keyboard(
-            language_code=user_language_code,
-            model=model,
-            model_type=get_model_type(model),
-            settings=user.settings,
-        )
         await callback_query.message.answer(
             text=get_localization(user_language_code).settings_info(human_model, model, generation_cost),
-            reply_markup=reply_markup,
+            reply_markup=build_settings_keyboard(
+                language_code=user_language_code,
+                model=model,
+                model_type=get_model_type(model),
+                settings=user.settings,
+            ),
         )
     elif action == 'info':
         user = await get_user(user_id)

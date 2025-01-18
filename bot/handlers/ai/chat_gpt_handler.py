@@ -59,14 +59,13 @@ async def chatgpt(message: Message, state: FSMContext):
     user = await get_user(user_id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    reply_markup = build_chat_gpt_keyboard(
-        user_language_code,
-        user.current_model,
-        user.settings[Model.CHAT_GPT][UserSettings.VERSION],
-    )
     await message.answer(
         text=get_localization(user_language_code).MODEL_CHOOSE_CHAT_GPT,
-        reply_markup=reply_markup,
+        reply_markup=build_chat_gpt_keyboard(
+            user_language_code,
+            user.current_model,
+            user.settings[Model.CHAT_GPT][UserSettings.VERSION],
+        ),
     )
 
 
@@ -81,10 +80,9 @@ async def handle_chat_gpt_choose_selection(callback_query: CallbackQuery, state:
     chosen_version = callback_query.data.split(':')[1]
 
     if user.current_model == Model.CHAT_GPT and chosen_version == user.settings[Model.CHAT_GPT][UserSettings.VERSION]:
-        reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.CHAT_GPT)
         await callback_query.message.answer(
             text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
-            reply_markup=reply_markup,
+            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.CHAT_GPT),
         )
     else:
         keyboard = callback_query.message.reply_markup.inline_keyboard
@@ -317,10 +315,9 @@ async def handle_chatgpt(message: Message, state: FSMContext, user: User, user_q
                     sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
                 )
 
-                reply_markup = build_error_keyboard(user_language_code)
                 await message.answer(
                     text=get_localization(user_language_code).ERROR,
-                    reply_markup=reply_markup,
+                    reply_markup=build_error_keyboard(user_language_code),
                 )
 
                 await send_error_info(
@@ -334,10 +331,9 @@ async def handle_chatgpt(message: Message, state: FSMContext, user: User, user_q
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
             )
 
-            reply_markup = build_error_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).ERROR,
-                reply_markup=reply_markup,
+                reply_markup=build_error_keyboard(user_language_code),
             )
             await send_error_info(
                 bot=message.bot,
@@ -407,11 +403,10 @@ async def handle_chatgpt4_example(
             header_text = f'{get_localization(user_language_code).example_text_model(get_localization(user_language_code).CHAT_GPT_4_OMNI)}\n\n'
             footer_text = f'\n\n{get_localization(user_language_code).EXAMPLE_INFO}'
             full_text = f'{header_text}{message_content}{footer_text}'
-            reply_markup = build_buy_motivation_keyboard(user_language_code)
             await send_ai_message(
                 message=message,
                 text=full_text,
-                reply_markup=reply_markup,
+                reply_markup=build_buy_motivation_keyboard(user_language_code),
             )
     except Exception as e:
         await send_error_info(

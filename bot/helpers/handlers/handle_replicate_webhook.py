@@ -166,11 +166,10 @@ async def handle_replicate_photoshop_ai(
             sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
         )
 
-        reply_markup = build_error_keyboard(user_language_code)
         await bot.send_message(
             chat_id=user.telegram_chat_id,
             text=get_localization(user_language_code).ERROR,
-            reply_markup=reply_markup,
+            reply_markup=build_error_keyboard(user_language_code),
         )
 
     if request.status != RequestStatus.FINISHED:
@@ -391,11 +390,10 @@ async def handle_replicate_music_gen(
             sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
         )
 
-        reply_markup = build_error_keyboard(user_language_code)
         await bot.send_message(
             chat_id=user.telegram_chat_id,
             text=get_localization(user_language_code).ERROR,
-            reply_markup=reply_markup,
+            reply_markup=build_error_keyboard(user_language_code),
         )
 
     if request.status != RequestStatus.FINISHED:
@@ -592,11 +590,10 @@ async def handle_replicate_flux(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
             )
 
-            reply_markup = build_error_keyboard(user_language_code)
             await bot.send_message(
                 chat_id=user.telegram_chat_id,
                 text=get_localization(user_language_code).ERROR,
-                reply_markup=reply_markup,
+                reply_markup=build_error_keyboard(user_language_code),
             )
 
     if request.status != RequestStatus.FINISHED:

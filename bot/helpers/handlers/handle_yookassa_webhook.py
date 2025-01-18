@@ -108,11 +108,10 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
                     user_language_code,
                 )
-                reply_markup = build_switched_to_ai_keyboard(user_language_code, user.current_model)
                 answered_message = await bot.send_message(
                     chat_id=subscription.user_id,
                     text=text,
-                    reply_markup=reply_markup,
+                    reply_markup=build_switched_to_ai_keyboard(user_language_code, user.current_model),
                     message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
                 )
 
@@ -284,6 +283,21 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                 elif payment.status == 'canceled':
                     current_date = datetime.now(timezone.utc)
 
+                    if (current_date - old_subscription.end_date).days < 2:
+                        await bot.send_sticker(
+                            chat_id=user.telegram_chat_id,
+                            sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
+                            disable_notification=True,
+                        )
+
+                        await bot.send_message(
+                            chat_id=user.telegram_chat_id,
+                            text=get_localization(user.interface_language_code).SUBSCRIPTION_RETRY,
+                            reply_markup=build_buy_motivation_keyboard(user.interface_language_code),
+                            disable_notification=True,
+                        )
+                        return
+
                     activated_subscriptions = await get_activated_subscriptions_by_user_id(user.id, current_date)
                     for activated_subscription in activated_subscriptions:
                         if activated_subscription.id != old_subscription.id:
@@ -403,11 +417,10 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
                     user_language_code,
                 )
-                reply_markup = build_switched_to_ai_keyboard(user_language_code, user.current_model)
                 answered_message = await bot.send_message(
                     chat_id=package.user_id,
                     text=text,
-                    reply_markup=reply_markup,
+                    reply_markup=build_switched_to_ai_keyboard(user_language_code, user.current_model),
                     message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
                 )
 
@@ -538,11 +551,10 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
                     user_language_code,
                 )
-                reply_markup = build_switched_to_ai_keyboard(user_language_code, user.current_model)
                 answered_message = await bot.send_message(
                     chat_id=user.id,
                     text=text,
-                    reply_markup=reply_markup,
+                    reply_markup=build_switched_to_ai_keyboard(user_language_code, user.current_model),
                     message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
                 )
 
