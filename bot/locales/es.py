@@ -38,6 +38,19 @@ class Spanish(Texts):
     ACTION_TO_OTHER_MODELS = "◀️ A otros modelos"
     ACTION_TO_OTHER_TYPE_MODELS = "◀️ A otros tipos de modelos"
 
+    # Additional Bot
+    @staticmethod
+    def additional_bot_info(link: str) -> str:
+        return f"""
+👋 <b>¡Hola!</b>
+
+⚠️ <b>Este bot no procesa solicitudes. Solo te redirige a nuestro asistente de IA principal</b>
+
+🏆 Nuestra misión es brindar acceso a los mejores modelos de IA para todos.
+
+👉 {link}
+"""
+
     # Bonus
     @staticmethod
     def bonus_info(balance: int) -> str:
@@ -1695,16 +1708,22 @@ El número ingresado supera lo que puedes adquirir.
 """
 
     @staticmethod
-    def package_info(currency: Currency, cost: str) -> str:
+    def package_info(currency: Currency, cost: str, gift_packages: list[Product]) -> str:
         if currency == Currency.USD:
             cost = f"{Currency.SYMBOLS[currency]}{cost}"
+            gift_packages_sum = f"{Currency.SYMBOLS[currency]}5"
         else:
             cost = f"{cost}{Currency.SYMBOLS[currency]}"
+            gift_packages_sum = f"500{Currency.SYMBOLS[currency]}"
+
+        gift_packages_info = f"\n\n🎁 <i>Gasta {gift_packages_sum} o más — recibe estos paquetes de regalo:</i>"
+        for gift_package in gift_packages:
+            gift_packages_info += f"\n<i>{gift_package.names.get(LanguageCode.ES)}</i>"
 
         return f"""
 🛍 <b>Paquetes</b>
 
-<b>1 moneda 🪙 = {cost}</b>
+<b>1 moneda 🪙 = {cost}</b>{gift_packages_info if len(gift_packages) > 0 else ''}
 
 Para seleccionar un paquete, presiona el botón:
 """
@@ -2427,4 +2446,14 @@ Por favor, envíame un valor diferente.
 ¡Tu voz se ha perdido en el espacio de la IA!
 
 Para <b>desbloquear la magia de la conversión de voz a texto</b>, simplemente utiliza la magia de los botones a continuación:
+"""
+
+    # Work with files
+    WORK_WITH_FILES = "📷 Trabajo con fotos/documentos"
+    WORK_WITH_FILES_FORBIDDEN_ERROR = """
+🔒 <b>¡Has ingresado a la zona VIP!</b>
+
+Por ahora, no tienes acceso para trabajar con fotos y documentos.
+
+Puedes obtener acceso haciendo clic en el botón de abajo:
 """

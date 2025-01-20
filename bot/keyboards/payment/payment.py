@@ -1,7 +1,10 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from stripe import Subscription
 
 from bot.database.models.common import PaymentType, PaymentMethod, Currency
 from bot.database.models.product import Product, ProductType, ProductCategory, ProductCategorySymbols
+from bot.database.models.subscription import SubscriptionPeriod
+from bot.helpers.getters.get_user_discount import get_user_discount
 from bot.locales.main import get_localization
 from bot.locales.types import LanguageCode
 
@@ -33,6 +36,7 @@ def build_subscriptions_keyboard(
     subscriptions: list[Product],
     category: ProductCategory,
     currency: Currency,
+    user_discount: int,
     language_code: LanguageCode,
 ) -> InlineKeyboardMarkup:
     buttons = []
@@ -54,14 +58,22 @@ def build_subscriptions_keyboard(
         ])
 
     for subscription in subscriptions:
-        subscription_id = subscription.id
-        subscription_name = subscription.names.get(language_code)
+        discount = get_user_discount(user_discount, 0, subscription.discount)
+        subscription_price = Product.get_discount_price(
+            ProductType.SUBSCRIPTION,
+            1,
+            subscription.prices.get(currency),
+            currency,
+            discount,
+            SubscriptionPeriod.MONTH1 if category == ProductCategory.MONTHLY else SubscriptionPeriod.MONTHS12,
+        )
         buttons.append([
             InlineKeyboardButton(
-                text=subscription_name,
-                callback_data=f'subscription:{subscription_id}'
+                text=f'{subscription.names.get(language_code)} – {subscription_price}{Currency.SYMBOLS[currency]}',
+                callback_data=f'subscription:{subscription.id}'
             ),
         ])
+
     buttons.extend([
         [
             InlineKeyboardButton(

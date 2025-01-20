@@ -22,10 +22,9 @@ async def language(message: Message, state: FSMContext):
 
     user_language_code = await get_user_language(str(message.from_user.id), state.storage)
 
-    reply_markup = build_language_keyboard(user_language_code)
     await message.answer(
         text=get_localization(user_language_code).LANGUAGE,
-        reply_markup=reply_markup,
+        reply_markup=build_language_keyboard(user_language_code),
     )
 
 

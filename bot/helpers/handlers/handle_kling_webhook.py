@@ -17,11 +17,11 @@ from bot.database.operations.request.getters import get_request
 from bot.database.operations.request.updaters import update_request
 from bot.database.operations.transaction.writers import write_transaction
 from bot.database.operations.user.getters import get_user
-from bot.handlers.ai.kling_handler import PRICE_KLING
 from bot.helpers.senders.send_document import send_document
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.senders.send_video import send_video
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
+from bot.integrations.kling import Kling
 from bot.keyboards.common.common import build_reaction_keyboard, build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.types import LanguageCode
@@ -119,11 +119,10 @@ async def handle_kling(
             sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
         )
 
-        reply_markup = build_error_keyboard(user_language_code)
         await bot.send_message(
             chat_id=user.telegram_chat_id,
             text=get_localization(user_language_code).ERROR,
-            reply_markup=reply_markup,
+            reply_markup=build_error_keyboard(user_language_code),
         )
 
     if request.status != RequestStatus.FINISHED:
@@ -132,7 +131,7 @@ async def handle_kling(
             'status': request.status
         })
 
-        total_price = PRICE_KLING
+        total_price = Kling.get_price_for_video(generation.details.get('mode'), generation.details.get('duration'))
         update_tasks = [
             write_transaction(
                 user_id=user.id,

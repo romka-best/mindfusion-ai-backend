@@ -96,21 +96,19 @@ async def handle_settings(message: Message, user_id: str, state: FSMContext, adv
                 user.settings[Model.RUNWAY][UserSettings.DURATION],
             )
         human_model = get_human_model(user.current_model, user_language_code)
-        reply_markup = build_settings_keyboard(
-            language_code=user_language_code,
-            model=user.current_model,
-            model_type=get_model_type(user.current_model),
-            settings=user.settings,
-        )
         await message.answer(
             text=get_localization(user_language_code).settings_info(human_model, user.current_model, generation_cost),
-            reply_markup=reply_markup,
+            reply_markup=build_settings_keyboard(
+                language_code=user_language_code,
+                model=user.current_model,
+                model_type=get_model_type(user.current_model),
+                settings=user.settings,
+            ),
         )
     else:
-        reply_markup = build_settings_choose_model_type_keyboard(user_language_code)
         await message.answer(
             text=get_localization(user_language_code).SETTINGS_CHOOSE_MODEL_TYPE,
-            reply_markup=reply_markup,
+            reply_markup=build_settings_choose_model_type_keyboard(user_language_code),
         )
 
 
@@ -150,18 +148,16 @@ async def handle_settings_choose_text_model_selection(callback_query: CallbackQu
 
     chosen_model = cast(Model, callback_query.data.split(':')[1])
     if chosen_model == 'back':
-        reply_markup = build_settings_choose_model_type_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).SETTINGS_CHOOSE_MODEL_TYPE,
-            reply_markup=reply_markup,
+            reply_markup=build_settings_choose_model_type_keyboard(user_language_code),
         )
         return
 
     human_model = get_human_model(chosen_model, user_language_code)
-    reply_markup = build_settings_keyboard(user_language_code, chosen_model, ModelType.TEXT, user.settings)
     await callback_query.message.edit_text(
         text=get_localization(user_language_code).settings_info(human_model, chosen_model),
-        reply_markup=reply_markup,
+        reply_markup=build_settings_keyboard(user_language_code, chosen_model, ModelType.TEXT, user.settings),
     )
 
 
@@ -175,18 +171,16 @@ async def handle_settings_choose_summary_model_selection(callback_query: Callbac
 
     chosen_model = cast(Model, callback_query.data.split(':')[1])
     if chosen_model == 'back':
-        reply_markup = build_settings_choose_model_type_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).SETTINGS_CHOOSE_MODEL_TYPE,
-            reply_markup=reply_markup,
+            reply_markup=build_settings_choose_model_type_keyboard(user_language_code),
         )
         return
 
     human_model = get_human_model(chosen_model, user_language_code)
-    reply_markup = build_settings_keyboard(user_language_code, chosen_model, ModelType.SUMMARY, user.settings)
     await callback_query.message.edit_text(
         text=get_localization(user_language_code).settings_info(human_model, chosen_model),
-        reply_markup=reply_markup,
+        reply_markup=build_settings_keyboard(user_language_code, chosen_model, ModelType.SUMMARY, user.settings),
     )
 
 
@@ -201,10 +195,9 @@ async def handle_settings_choose_image_model_selection(callback_query: CallbackQ
     generation_cost = 1
     chosen_model = cast(Model, callback_query.data.split(':')[1])
     if chosen_model == 'back':
-        reply_markup = build_settings_choose_model_type_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).SETTINGS_CHOOSE_MODEL_TYPE,
-            reply_markup=reply_markup,
+            reply_markup=build_settings_choose_model_type_keyboard(user_language_code),
         )
         return
     elif chosen_model == Model.DALL_E:
@@ -214,10 +207,9 @@ async def handle_settings_choose_image_model_selection(callback_query: CallbackQ
         )
 
     human_model = get_human_model(chosen_model, user_language_code)
-    reply_markup = build_settings_keyboard(user_language_code, chosen_model, ModelType.IMAGE, user.settings)
     await callback_query.message.edit_text(
         text=get_localization(user_language_code).settings_info(human_model, chosen_model, generation_cost),
-        reply_markup=reply_markup,
+        reply_markup=build_settings_keyboard(user_language_code, chosen_model, ModelType.IMAGE, user.settings),
     )
 
 
@@ -231,18 +223,16 @@ async def handle_settings_choose_music_model_selection(callback_query: CallbackQ
 
     chosen_model = cast(Model, callback_query.data.split(':')[1])
     if chosen_model == 'back':
-        reply_markup = build_settings_choose_model_type_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).SETTINGS_CHOOSE_MODEL_TYPE,
-            reply_markup=reply_markup,
+            reply_markup=build_settings_choose_model_type_keyboard(user_language_code),
         )
         return
 
     human_model = get_human_model(chosen_model, user_language_code)
-    reply_markup = build_settings_keyboard(user_language_code, chosen_model, ModelType.MUSIC, user.settings)
     await callback_query.message.edit_text(
         text=get_localization(user_language_code).settings_info(human_model, chosen_model),
-        reply_markup=reply_markup,
+        reply_markup=build_settings_keyboard(user_language_code, chosen_model, ModelType.MUSIC, user.settings),
     )
 
 
@@ -257,10 +247,9 @@ async def handle_settings_choose_video_model_selection(callback_query: CallbackQ
     generation_cost = 1
     chosen_model = cast(Model, callback_query.data.split(':')[1])
     if chosen_model == 'back':
-        reply_markup = build_settings_choose_model_type_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).SETTINGS_CHOOSE_MODEL_TYPE,
-            reply_markup=reply_markup,
+            reply_markup=build_settings_choose_model_type_keyboard(user_language_code),
         )
         return
     elif chosen_model == Model.KLING:
@@ -274,10 +263,9 @@ async def handle_settings_choose_video_model_selection(callback_query: CallbackQ
         )
 
     human_model = get_human_model(chosen_model, user_language_code)
-    reply_markup = build_settings_keyboard(user_language_code, chosen_model, ModelType.VIDEO, user.settings)
     await callback_query.message.edit_text(
         text=get_localization(user_language_code).settings_info(human_model, chosen_model, generation_cost),
-        reply_markup=reply_markup,
+        reply_markup=build_settings_keyboard(user_language_code, chosen_model, ModelType.VIDEO, user.settings),
     )
 
 
@@ -592,10 +580,9 @@ async def handle_voice_messages(message: Message, user_id: str, state: FSMContex
     user = await get_user(user_id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    reply_markup = build_voice_messages_settings_keyboard(user_language_code, user.settings, model)
     await message.edit_text(
         text=get_localization(user_language_code).SETTINGS_VOICE_MESSAGES,
-        reply_markup=reply_markup,
+        reply_markup=build_voice_messages_settings_keyboard(user_language_code, user.settings, model),
     )
 
 
@@ -613,21 +600,19 @@ async def handle_voice_messages_setting_selection(callback_query: CallbackQuery,
         if len(callback_query.data.split(':')) == 3:
             chosen_model = cast(Model, callback_query.data.split(':')[2])
             human_model = get_human_model(chosen_model, user_language_code)
-            reply_markup = build_settings_keyboard(
-                language_code=user_language_code,
-                model=chosen_model,
-                model_type=get_model_type(chosen_model),
-                settings=user.settings,
-            )
             await callback_query.message.edit_text(
                 text=get_localization(user_language_code).settings_info(human_model, chosen_model),
-                reply_markup=reply_markup,
+                reply_markup=build_settings_keyboard(
+                    language_code=user_language_code,
+                    model=chosen_model,
+                    model_type=get_model_type(chosen_model),
+                    settings=user.settings,
+                ),
             )
         else:
-            reply_markup = build_settings_choose_text_model_keyboard(user_language_code)
             await callback_query.message.edit_text(
                 text=get_localization(user_language_code).SETTINGS_CHOOSE_MODEL,
-                reply_markup=reply_markup,
+                reply_markup=build_settings_choose_text_model_keyboard(user_language_code),
             )
 
         return
@@ -723,14 +708,12 @@ async def handle_chats(message: Message, user_id: str, state: FSMContext, model:
     all_chats = await get_chats_by_user_id(user_id)
     current_chat = await get_chat_by_user_id(user_id)
 
-    text = get_localization(user_language_code).chat_info(
-        current_chat.title,
-        len(all_chats),
-    )
-    reply_markup = build_chats_keyboard(user_language_code, model)
     await message.edit_text(
-        text=text,
-        reply_markup=reply_markup,
+        text=get_localization(user_language_code).chat_info(
+            current_chat.title,
+            len(all_chats),
+        ),
+        reply_markup=build_chats_keyboard(user_language_code, model),
     )
 
 
@@ -748,21 +731,19 @@ async def handle_chat_selection(callback_query: CallbackQuery, state: FSMContext
         if len(callback_query.data.split(':')) == 3:
             chosen_model = cast(Model, callback_query.data.split(':')[2])
             human_model = get_human_model(chosen_model, user_language_code)
-            reply_markup = build_settings_keyboard(
-                language_code=user_language_code,
-                model=chosen_model,
-                model_type=get_model_type(chosen_model),
-                settings=user.settings,
-            )
             await callback_query.message.edit_text(
                 text=get_localization(user_language_code).settings_info(human_model, chosen_model),
-                reply_markup=reply_markup,
+                reply_markup=build_settings_keyboard(
+                    language_code=user_language_code,
+                    model=chosen_model,
+                    model_type=get_model_type(chosen_model),
+                    settings=user.settings,
+                ),
             )
         else:
-            reply_markup = build_settings_choose_text_model_keyboard(user_language_code)
             await callback_query.message.edit_text(
                 text=get_localization(user_language_code).SETTINGS_CHOOSE_MODEL,
-                reply_markup=reply_markup,
+                reply_markup=build_settings_choose_text_model_keyboard(user_language_code),
             )
         return
     elif action == 'show':
@@ -773,11 +754,9 @@ async def handle_chat_selection(callback_query: CallbackQuery, state: FSMContext
 
         await callback_query.message.answer(text=text)
     elif action == 'create':
-        reply_markup = build_create_chat_keyboard(user_language_code)
-
         await callback_query.message.answer(
             text=get_localization(user_language_code).CHAT_TYPE_TITLE,
-            reply_markup=reply_markup,
+            reply_markup=build_create_chat_keyboard(user_language_code),
         )
 
         await state.set_state(Chats.waiting_for_chat_name)
@@ -786,11 +765,10 @@ async def handle_chat_selection(callback_query: CallbackQuery, state: FSMContext
 
         if len(all_chats) > 1:
             current_chat = await get_chat_by_user_id(user_id)
-            reply_markup = build_switch_chat_keyboard(user_language_code, current_chat.id, all_chats)
 
             await callback_query.message.answer(
                 text=get_localization(user_language_code).CHAT_SWITCH,
-                reply_markup=reply_markup,
+                reply_markup=build_switch_chat_keyboard(user_language_code, current_chat.id, all_chats),
             )
         else:
             text = get_localization(user_language_code).CHAT_SWITCH_FORBIDDEN_ERROR

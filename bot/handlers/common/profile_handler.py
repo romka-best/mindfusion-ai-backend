@@ -181,11 +181,10 @@ async def handle_profile_change_photo(message: Message, user_id: str, state: FSM
     photo = await firebase.bucket.get_blob(photo_path)
     photo_link = firebase.get_public_url(photo.name)
 
-    reply_markup = build_cancel_keyboard(user_language_code)
     await message.reply_photo(
         photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
         caption=get_localization(user_language_code).PROFILE_SEND_ME_YOUR_PICTURE,
-        reply_markup=reply_markup,
+        reply_markup=build_cancel_keyboard(user_language_code),
         allow_sending_without_reply=True,
     )
 

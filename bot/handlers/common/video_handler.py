@@ -65,11 +65,9 @@ async def handle_video(message: Message, state: FSMContext, video_file: Video):
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
             )
 
-            text = get_localization(user_language_code).model_reached_usage_limit()
-            reply_markup = build_model_limit_exceeded_keyboard(user_language_code)
             await message.reply(
-                text=text,
-                reply_markup=reply_markup,
+                text=get_localization(user_language_code).model_reached_usage_limit(),
+                reply_markup=build_model_limit_exceeded_keyboard(user_language_code),
                 allow_sending_without_reply=True,
             )
             return

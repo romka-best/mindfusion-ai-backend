@@ -34,10 +34,9 @@ async def handle_promo_code(message: Message, user_id: str, state: FSMContext):
 
     user_language_code = await get_user_language(str(user_id), state.storage)
 
-    reply_markup = build_cancel_keyboard(user_language_code)
     await message.answer(
         text=get_localization(user_language_code).PROMO_CODE_INFO,
-        reply_markup=reply_markup,
+        reply_markup=build_cancel_keyboard(user_language_code),
     )
 
     await state.set_state(PromoCode.waiting_for_promo_code)
@@ -60,11 +59,9 @@ async def promo_code_sent(message: Message, state: FSMContext):
         if current_date <= typed_promo_code.until:
             used_promo_code = await get_used_promo_code_by_user_id_and_promo_code_id(user_id, typed_promo_code.id)
             if used_promo_code:
-                text = get_localization(user_language_code).PROMO_CODE_ALREADY_USED_ERROR
-                reply_markup = build_buy_motivation_keyboard(user_language_code)
                 await message.reply(
-                    text=text,
-                    reply_markup=reply_markup,
+                    text=get_localization(user_language_code).PROMO_CODE_ALREADY_USED_ERROR,
+                    reply_markup=build_buy_motivation_keyboard(user_language_code),
                     allow_sending_without_reply=True,
                 )
 
@@ -104,10 +101,9 @@ async def promo_code_sent(message: Message, state: FSMContext):
 
                         await state.clear()
                     else:
-                        reply_markup = build_cancel_keyboard(user_language_code)
                         await message.reply(
                             text=get_localization(user_language_code).PROMO_CODE_ALREADY_HAVE_SUBSCRIPTION,
-                            reply_markup=reply_markup,
+                            reply_markup=build_cancel_keyboard(user_language_code),
                             allow_sending_without_reply=True,
                         )
                 elif typed_promo_code.type == PromoCodeType.PACKAGE:
@@ -165,19 +161,16 @@ async def promo_code_sent(message: Message, state: FSMContext):
 
                     await state.clear()
         else:
-            text = get_localization(user_language_code).PROMO_CODE_EXPIRED_ERROR
-            reply_markup = build_buy_motivation_keyboard(user_language_code)
             await message.reply(
-                text=text,
-                reply_markup=reply_markup,
+                text=get_localization(user_language_code).PROMO_CODE_EXPIRED_ERROR,
+                reply_markup=build_buy_motivation_keyboard(user_language_code),
                 allow_sending_without_reply=True,
             )
 
             await state.clear()
     else:
-        reply_markup = build_cancel_keyboard(user_language_code)
         await message.reply(
             text=get_localization(user_language_code).PROMO_CODE_NOT_FOUND_ERROR,
-            reply_markup=reply_markup,
+            reply_markup=build_cancel_keyboard(user_language_code),
             allow_sending_without_reply=True,
         )

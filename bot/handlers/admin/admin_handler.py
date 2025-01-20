@@ -24,10 +24,9 @@ async def admin(message: Message, state: FSMContext):
     if is_admin(str(message.chat.id)):
         user_language_code = await get_user_language(str(message.chat.id), state.storage)
 
-        reply_markup = build_admin_keyboard(user_language_code)
         await message.answer(
             text=get_localization(user_language_code).ADMIN_INFO,
-            reply_markup=reply_markup,
+            reply_markup=build_admin_keyboard(user_language_code),
         )
 
 

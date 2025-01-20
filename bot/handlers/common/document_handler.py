@@ -14,6 +14,7 @@ from bot.database.operations.user.getters import get_user
 from bot.handlers.ai.claude_handler import handle_claude
 from bot.handlers.ai.gemini_handler import handle_gemini
 from bot.handlers.common.photo_handler import handle_photo, handle_album
+from bot.keyboards.common.common import build_buy_motivation_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.middlewares.AlbumMiddleware import AlbumMiddleware
 from bot.utils.is_already_processing import is_already_processing
@@ -70,6 +71,13 @@ async def handle_document(message: Message, state: FSMContext, document_file: Fi
         user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Pro or
         user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Ultra
     ):
+        if not (user.daily_limits[Quota.WORK_WITH_FILES] or user.additional_usage_quota[Quota.WORK_WITH_FILES]):
+            await message.answer(
+                text=get_localization(user_language_code).WORK_WITH_FILES_FORBIDDEN_ERROR,
+                reply_markup=build_buy_motivation_keyboard(user_language_code),
+            )
+            return
+
         if user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Sonnet:
             quota = Quota.CLAUDE_3_SONNET
         elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V2_Flash:

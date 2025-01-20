@@ -131,6 +131,7 @@ class User:
         Quota.RUNWAY: 0,
         Quota.LUMA_RAY: 0,
         Quota.PIKA: 0,
+        Quota.WORK_WITH_FILES: False,
         Quota.FAST_MESSAGES: False,
         Quota.VOICE_MESSAGES: False,
         Quota.ACCESS_TO_CATALOG: False,

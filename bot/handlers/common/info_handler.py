@@ -228,18 +228,15 @@ async def info_music_models_selection(callback_query: CallbackQuery, state: FSMC
 
     model = cast(Model, callback_query.data.split(':')[1])
     info_text = get_info_by_model(model, None, user_language_code)
-    reply_keyboard = build_info_chosen_model_type_keyboard(user_language_code, ModelType.MUSIC)
     if info_text:
         await callback_query.message.edit_text(
             text=info_text,
-            reply_markup=reply_keyboard,
+            reply_markup=build_info_chosen_model_type_keyboard(user_language_code, ModelType.MUSIC),
         )
     else:
-        text = get_localization(user_language_code).INFO
-        reply_markup = build_info_keyboard(user_language_code)
         await callback_query.message.edit_text(
-            text=text,
-            reply_markup=reply_markup,
+            text=get_localization(user_language_code).INFO,
+            reply_markup=build_info_keyboard(user_language_code),
         )
 
 
@@ -252,18 +249,15 @@ async def info_video_models_selection(callback_query: CallbackQuery, state: FSMC
 
     model = cast(Model, callback_query.data.split(':')[1])
     info_text = get_info_by_model(model, None, user_language_code)
-    reply_keyboard = build_info_chosen_model_type_keyboard(user_language_code, ModelType.VIDEO)
     if info_text:
         await callback_query.message.edit_text(
             text=info_text,
-            reply_markup=reply_keyboard,
+            reply_markup=build_info_chosen_model_type_keyboard(user_language_code, ModelType.VIDEO),
         )
     else:
-        text = get_localization(user_language_code).INFO
-        reply_markup = build_info_keyboard(user_language_code)
         await callback_query.message.edit_text(
-            text=text,
-            reply_markup=reply_markup,
+            text=get_localization(user_language_code).INFO,
+            reply_markup=build_info_keyboard(user_language_code),
         )
 
 

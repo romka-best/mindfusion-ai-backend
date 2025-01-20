@@ -117,87 +117,86 @@ async def handle_voice(message: Message, state: FSMContext):
     user = await get_user(user_id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    if user.daily_limits[Quota.VOICE_MESSAGES] or user.additional_usage_quota[Quota.VOICE_MESSAGES]:
-        current_time = time.time()
-
-        user_quota = get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION])
-        if not user_quota:
-            raise NotImplementedError(
-                f'User Model Is Not Found: {user.current_model}, {user.settings[user.current_model][UserSettings.VERSION]}'
-            )
-
-        need_exit = (
-            await is_already_processing(message, state, current_time) or
-            await is_messages_limit_exceeded(message, state, user, user_quota) or
-            await is_time_limit_exceeded(message, state, user, current_time)
-        )
-        if need_exit:
-            return
-
-        if message.voice:
-            voice_file = await message.bot.get_file(message.voice.file_id)
-        elif message.video_note:
-            voice_file = await message.bot.get_file(message.video_note.file_id)
-        else:
-            voice_file = await message.bot.get_file(message.audio.file_id)
-
-        text = await process_voice_message(message.bot, voice_file, user, user_language_code)
-        if not text:
-            return
-
-        await state.update_data(recognized_text=text)
-        if user.current_model == Model.CHAT_GPT:
-            await handle_chatgpt(message, state, user, user_quota)
-        elif user.current_model == Model.CLAUDE:
-            await handle_claude(message, state, user, user_quota)
-        elif user.current_model == Model.GEMINI:
-            await handle_gemini(message, state, user, user_quota)
-        elif user.current_model == Model.GROK:
-            await handle_grok(message, state, user)
-        elif user.current_model == Model.PERPLEXITY:
-            await handle_perplexity(message, state, user)
-        elif user.current_model == Model.EIGHTIFY:
-            await handle_eightify(message, state, user)
-        elif user.current_model == Model.GEMINI_VIDEO:
-            await handle_gemini_video(message, state, user, text)
-        elif user.current_model == Model.DALL_E:
-            await handle_dall_e(message, state, user)
-        elif user.current_model == Model.MIDJOURNEY:
-            await handle_midjourney(message, state, user, text, MidjourneyAction.IMAGINE)
-        elif user.current_model == Model.STABLE_DIFFUSION:
-            await handle_stable_diffusion(message, state, user, user_quota)
-        elif user.current_model == Model.FLUX:
-            await handle_flux(message, state, user, user_quota)
-        elif user.current_model == Model.LUMA_PHOTON:
-            await handle_luma_photon(message, state, user)
-        elif user.current_model == Model.RECRAFT:
-            await handle_recraft(message, state, user)
-        elif user.current_model == Model.FACE_SWAP:
-            await handle_face_swap_prompt(message, state, user)
-        elif user.current_model == Model.PHOTOSHOP_AI:
-            await handle_photoshop_ai(message.bot, str(message.chat.id), state, user_id)
-        elif user.current_model == Model.MUSIC_GEN:
-            await handle_music_gen(message.bot, str(message.chat.id), state, user_id, text)
-        elif user.current_model == Model.SUNO:
-            await handle_suno(message.bot, str(message.chat.id), state, user_id)
-        elif user.current_model == Model.KLING:
-            await handle_kling(message, state, user)
-        elif user.current_model == Model.RUNWAY:
-            await handle_runway(message, state, user)
-        elif user.current_model == Model.LUMA_RAY:
-            await handle_luma_ray(message, state, user)
-        elif user.current_model == Model.PIKA:
-            await handle_pika(message, state, user)
-        else:
-            raise NotImplementedError(
-                f'User model is not found: {user.current_model}'
-            )
-
-        await state.update_data(recognized_text=None)
-    else:
-        text = get_localization(user_language_code).VOICE_MESSAGES_FORBIDDEN_ERROR
-        reply_markup = build_buy_motivation_keyboard(user_language_code)
+    if not (user.daily_limits[Quota.VOICE_MESSAGES] or user.additional_usage_quota[Quota.VOICE_MESSAGES]):
         await message.answer(
-            text=text,
-            reply_markup=reply_markup,
+            text=get_localization(user_language_code).VOICE_MESSAGES_FORBIDDEN_ERROR,
+            reply_markup=build_buy_motivation_keyboard(user_language_code),
         )
+        return
+
+    current_time = time.time()
+
+    user_quota = get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION])
+    if not user_quota:
+        raise NotImplementedError(
+            f'User Model Is Not Found: {user.current_model}, {user.settings[user.current_model][UserSettings.VERSION]}'
+        )
+
+    need_exit = (
+        await is_already_processing(message, state, current_time) or
+        await is_messages_limit_exceeded(message, state, user, user_quota) or
+        await is_time_limit_exceeded(message, state, user, current_time)
+    )
+    if need_exit:
+        return
+
+    if message.voice:
+        voice_file = await message.bot.get_file(message.voice.file_id)
+    elif message.video_note:
+        voice_file = await message.bot.get_file(message.video_note.file_id)
+    else:
+        voice_file = await message.bot.get_file(message.audio.file_id)
+
+    text = await process_voice_message(message.bot, voice_file, user, user_language_code)
+    if not text:
+        return
+
+    await state.update_data(recognized_text=text)
+    if user.current_model == Model.CHAT_GPT:
+        await handle_chatgpt(message, state, user, user_quota)
+    elif user.current_model == Model.CLAUDE:
+        await handle_claude(message, state, user, user_quota)
+    elif user.current_model == Model.GEMINI:
+        await handle_gemini(message, state, user, user_quota)
+    elif user.current_model == Model.GROK:
+        await handle_grok(message, state, user)
+    elif user.current_model == Model.PERPLEXITY:
+        await handle_perplexity(message, state, user)
+    elif user.current_model == Model.EIGHTIFY:
+        await handle_eightify(message, state, user)
+    elif user.current_model == Model.GEMINI_VIDEO:
+        await handle_gemini_video(message, state, user, text)
+    elif user.current_model == Model.DALL_E:
+        await handle_dall_e(message, state, user)
+    elif user.current_model == Model.MIDJOURNEY:
+        await handle_midjourney(message, state, user, text, MidjourneyAction.IMAGINE)
+    elif user.current_model == Model.STABLE_DIFFUSION:
+        await handle_stable_diffusion(message, state, user, user_quota)
+    elif user.current_model == Model.FLUX:
+        await handle_flux(message, state, user, user_quota)
+    elif user.current_model == Model.LUMA_PHOTON:
+        await handle_luma_photon(message, state, user)
+    elif user.current_model == Model.RECRAFT:
+        await handle_recraft(message, state, user)
+    elif user.current_model == Model.FACE_SWAP:
+        await handle_face_swap_prompt(message, state, user)
+    elif user.current_model == Model.PHOTOSHOP_AI:
+        await handle_photoshop_ai(message.bot, str(message.chat.id), state, user_id)
+    elif user.current_model == Model.MUSIC_GEN:
+        await handle_music_gen(message.bot, str(message.chat.id), state, user_id, text)
+    elif user.current_model == Model.SUNO:
+        await handle_suno(message.bot, str(message.chat.id), state, user_id)
+    elif user.current_model == Model.KLING:
+        await handle_kling(message, state, user)
+    elif user.current_model == Model.RUNWAY:
+        await handle_runway(message, state, user)
+    elif user.current_model == Model.LUMA_RAY:
+        await handle_luma_ray(message, state, user)
+    elif user.current_model == Model.PIKA:
+        await handle_pika(message, state, user)
+    else:
+        raise NotImplementedError(
+            f'User model is not found: {user.current_model}'
+        )
+
+    await state.update_data(recognized_text=None)

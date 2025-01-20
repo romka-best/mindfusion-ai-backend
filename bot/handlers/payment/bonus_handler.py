@@ -31,6 +31,7 @@ from bot.keyboards.payment.bonus import (
     build_bonus_play_game_keyboard,
     build_bonus_play_game_chosen_keyboard,
     build_bonus_spend_keyboard,
+    build_bonus_spend_selection_keyboard,
     build_bonus_suggestion_keyboard,
 )
 from bot.keyboards.common.common import build_cancel_keyboard
@@ -205,11 +206,10 @@ async def send_game_status_after_timeout(
     text = get_localization(language_code).BONUS_PLAY_GAME_WON \
         if won \
         else get_localization(language_code).BONUS_PLAY_GAME_LOST
-    reply_markup = build_bonus_suggestion_keyboard(language_code)
     await bot.send_message(
         chat_id=chat_id,
         text=text,
-        reply_markup=reply_markup,
+        reply_markup=build_bonus_suggestion_keyboard(language_code),
         reply_to_message_id=reply_to_message_id,
         allow_sending_without_reply=True,
         message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.CONGRATS) if won else None,
@@ -225,10 +225,9 @@ async def handle_bonus_play_game_chosen_selection(callback_query: CallbackQuery,
 
     game_type = cast(GameType, callback_query.data.split(':')[1])
     if game_type == 'back':
-        reply_markup = build_bonus_play_game_keyboard(user_language_code)
         await callback_query.message.edit_caption(
             caption=get_localization(user_language_code).BONUS_PLAY_GAME_CHOOSE,
-            reply_markup=reply_markup,
+            reply_markup=build_bonus_play_game_keyboard(user_language_code),
         )
         return
 
@@ -321,11 +320,9 @@ async def handle_bonus_spend(message: Message, user_id: str, state: FSMContext, 
         product_category,
     )
 
-    text = get_localization(user_language_code).bonus_info_spend(user.balance)
-    reply_markup = build_bonus_spend_keyboard(user_language_code, products, page)
     await message.edit_caption(
-        caption=text,
-        reply_markup=reply_markup,
+        caption=get_localization(user_language_code).bonus_info_spend(user.balance),
+        reply_markup=build_bonus_spend_keyboard(user_language_code, products, page),
     )
 
 
@@ -353,20 +350,17 @@ async def handle_bonus_spend_selection(callback_query: CallbackQuery, state: FSM
     elif product_id == 'back':
         user = await get_user(user_id)
 
-        text = get_localization(user_language_code).bonus_info(
-            user.balance,
-        )
-        reply_markup = build_bonus_keyboard(user_language_code)
         await callback_query.message.edit_caption(
-            caption=text,
-            reply_markup=reply_markup,
+            caption=get_localization(user_language_code).bonus_info(user.balance),
+            reply_markup=build_bonus_keyboard(user_language_code),
         )
     else:
         product = await get_product(product_id)
-        message = get_localization(user_language_code).package_choose_min(product.names.get(user_language_code))
 
-        reply_markup = build_cancel_keyboard(user_language_code)
-        await callback_query.message.edit_caption(caption=message, reply_markup=reply_markup)
+        await callback_query.message.edit_caption(
+            caption=get_localization(user_language_code).package_choose_min(product.names.get(user_language_code)),
+            reply_markup=build_bonus_spend_selection_keyboard(user_language_code, product),
+        )
 
         await state.update_data(product_id=product_id)
         await state.set_state(Bonus.waiting_for_package_quantity)
@@ -393,10 +387,9 @@ async def quantity_of_bonus_package_sent(message: Message, state: FSMContext):
             0,
         ))
         if price > user.balance:
-            reply_markup = build_cancel_keyboard(user_language_code)
             await message.reply(
                 text=get_localization(user_language_code).PACKAGE_QUANTITY_MAX_ERROR,
-                reply_markup=reply_markup,
+                reply_markup=build_cancel_keyboard(user_language_code),
                 allow_sending_without_reply=True,
             )
         else:
@@ -442,17 +435,111 @@ async def quantity_of_bonus_package_sent(message: Message, state: FSMContext):
 
             await message.reply(
                 text=get_localization(user_language_code).BONUS_ACTIVATED_SUCCESSFUL,
+                reply_markup=build_bonus_suggestion_keyboard(user_language_code),
                 allow_sending_without_reply=True,
             )
 
             await state.clear()
     except (TypeError, ValueError):
-        reply_markup = build_cancel_keyboard(user_language_code)
         await message.reply(
             text=get_localization(user_language_code).ERROR_IS_NOT_NUMBER,
-            reply_markup=reply_markup,
+            reply_markup=build_cancel_keyboard(user_language_code),
             allow_sending_without_reply=True,
         )
+
+
+@bonus_router.callback_query(lambda c: c.data.startswith('bonus_spend_selection:'))
+async def bonus_spend_selection(callback_query: CallbackQuery, state: FSMContext):
+    await callback_query.answer()
+
+    user_id = str(callback_query.from_user.id)
+
+    action = callback_query.data.split(':')[1]
+    if action == 'back':
+        product_category = callback_query.data.split(':')[2]
+        if product_category == ProductCategory.TEXT:
+            page = 0
+        elif product_category == ProductCategory.SUMMARY:
+            page = 1
+        elif product_category == ProductCategory.IMAGE:
+            page = 2
+        elif product_category == ProductCategory.MUSIC:
+            page = 3
+        elif product_category == ProductCategory.VIDEO:
+            page = 4
+        else:
+            page = 5
+
+        await handle_bonus_spend(callback_query.message, user_id, state, page)
+        await state.set_state(None)
+    else:
+        user = await get_user(user_id)
+        user_data = await state.get_data()
+        user_language_code = await get_user_language(user_id, state.storage)
+
+        package_product_id = user_data['product_id']
+        package_product_quantity = int(action)
+
+        product = await get_product(package_product_id)
+
+        price = float(Product.get_discount_price(
+            ProductType.PACKAGE,
+            package_product_quantity,
+            product.prices.get(Currency.XTR),
+            Currency.XTR,
+            0,
+        ))
+        if price > user.balance:
+            await callback_query.message.edit_caption(
+                caption=get_localization(user_language_code).PACKAGE_QUANTITY_MAX_ERROR,
+            )
+        else:
+            user.balance -= price
+            user.additional_usage_quota[product.details.get('quota')] += package_product_quantity
+            until_at = None
+            if product.details.get('is_recurring', False):
+                current_date = datetime.now(timezone.utc)
+                until_at = current_date + timedelta(days=30 * package_product_quantity)
+            package = await write_package(
+                None,
+                user_id,
+                product.id,
+                PackageStatus.SUCCESS,
+                user.currency,
+                0,
+                0,
+                package_product_quantity,
+                PaymentMethod.GIFT,
+                None,
+                until_at,
+            )
+
+            await write_transaction(
+                user_id=user_id,
+                type=TransactionType.INCOME,
+                product_id=package.product_id,
+                amount=0,
+                clear_amount=0,
+                currency=user.currency,
+                quantity=package_product_quantity,
+                details={
+                    'payment_method': PaymentMethod.GIFT,
+                    'package_id': package.id,
+                    'provider_payment_charge_id': '',
+                    'is_bonus': True,
+                },
+            )
+            await update_user(user_id, {
+                'balance': user.balance,
+                'additional_usage_quota': user.additional_usage_quota,
+            })
+
+            await callback_query.message.edit_caption(
+                caption=get_localization(user_language_code).BONUS_ACTIVATED_SUCCESSFUL,
+                reply_markup=build_bonus_suggestion_keyboard(user_language_code),
+            )
+
+            await state.clear()
 
 
 @bonus_router.callback_query(lambda c: c.data.startswith('bonus_suggestion:'))

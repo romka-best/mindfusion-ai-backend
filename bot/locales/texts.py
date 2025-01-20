@@ -26,6 +26,11 @@ class Texts(Protocol):
     ACTION_TO_OTHER_MODELS: str
     ACTION_TO_OTHER_TYPE_MODELS: str
 
+    # Additional Bot
+    @staticmethod
+    def additional_bot_info(link: str) -> str:
+        raise NotImplementedError
+
     # Bonus
     @staticmethod
     def bonus_info(balance: int) -> str:
@@ -418,7 +423,7 @@ class Texts(Protocol):
     PACKAGE_QUANTITY_MAX_ERROR: str
 
     @staticmethod
-    def package_info(currency: Currency, cost: str) -> str:
+    def package_info(currency: Currency, cost: str, gift_products: list[Product]) -> str:
         raise NotImplementedError
 
     @staticmethod
@@ -668,6 +673,10 @@ class Texts(Protocol):
     # Voice
     VOICE_MESSAGES: str
     VOICE_MESSAGES_FORBIDDEN_ERROR: str
+
+    # Work with files
+    WORK_WITH_FILES: str
+    WORK_WITH_FILES_FORBIDDEN_ERROR: str
 
     # Admin
     ADMIN_INFO: str

@@ -7,7 +7,7 @@ from aiogram.types import Message, CallbackQuery
 
 from bot.config import config
 from bot.database.main import firebase
-from bot.database.models.common import UTM
+from bot.database.models.common import UTM, Currency
 from bot.database.models.product import ProductCategory
 from bot.database.models.transaction import Transaction, TransactionType
 from bot.database.operations.campaign.getters import get_campaign, get_campaign_by_name
@@ -224,15 +224,27 @@ async def handle_ads_create_selection(callback_query: CallbackQuery, state: FSMC
 async def ads_link_sent(message: Message, state: FSMContext):
     parsed_url = urlparse(message.text)
     params = parse_qs(parsed_url.query)
-    start_param = params.get('start', [''])[0]
-    campaign_id = start_param.split('_')[0].split('-')[1]
 
-    campaign = await get_campaign(campaign_id)
-    if not campaign:
-        campaign = await get_campaign_by_name(campaign_id)
+    utm = [value for key, value in vars(UTM).items() if not key.startswith('__')]
+    link_utm = {}
+
+    start_param = params.get('start', [''])[0]
+    sub_params = start_param.split('_')
+    for sub_param in sub_params:
+        if '-' not in sub_param:
+            continue
+
+        sub_param_key, sub_param_value = sub_param.split('-')
+        if sub_param_key == 'c':
+            campaign = await get_campaign(sub_param_value)
+            if not campaign:
+                campaign = await get_campaign_by_name(sub_param_value)
+            link_utm = campaign.utm
+        elif sub_param_key in utm:
+            link_utm[sub_param_key] = sub_param_value.lower()
 
     users = await get_users(
-        utm=campaign.utm,
+        utm=link_utm,
     )
 
     product_cache = {}
@@ -246,6 +258,7 @@ async def ads_link_sent(message: Message, state: FSMContext):
     text_and_image_users = 0
     all_ai_users = 0
     clients = 0
+    clients_income = 0
     for user in users:
         has_text_requests = False
         has_summary_requests = False
@@ -276,6 +289,12 @@ async def ads_link_sent(message: Message, state: FSMContext):
 
                 if transaction.type == TransactionType.INCOME:
                     has_purchases = True
+                    if transaction.currency == Currency.USD:
+                        clients_income += transaction.clear_amount * 100
+                    elif transaction.currency == Currency.XTR:
+                        clients_income += transaction.clear_amount * 2
+                    else:
+                        clients_income += transaction.clear_amount
                 elif transaction.type == TransactionType.EXPENSE:
                     if transaction.product_id not in product_cache:
                         transaction_product = await get_product(transaction.product_id)
@@ -327,7 +346,7 @@ async def ads_link_sent(message: Message, state: FSMContext):
 • <b>{summary_and_image_users}</b> - Сделали запрос в резюме и графической моделях
 • <b>{text_and_image_users}</b> - Сделали запрос в текстовой и графической моделях
 • <b>{all_ai_users}</b> - Сделали запрос во всех моделях
-• <b>{clients}</b> - Купили что-то
+• <b>{clients}</b> - Купили на сумму {clients_income}₽
 ''')
 
     await state.clear()

@@ -60,26 +60,23 @@ async def handle_face_swap_manage_selection(callback_query: CallbackQuery, state
 
     action = callback_query.data.split(':')[1]
     if action == 'back':
-        reply_markup = build_admin_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_INFO,
-            reply_markup=reply_markup,
+            reply_markup=build_admin_keyboard(user_language_code),
         )
 
         return
     elif action == 'create':
-        reply_markup = build_manage_face_swap_create_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_FACE_SWAP_CREATE,
-            reply_markup=reply_markup,
+            reply_markup=build_manage_face_swap_create_keyboard(user_language_code),
         )
 
         await state.set_state(FaceSwap.waiting_for_face_swap_system_package_name)
     elif action == 'edit':
-        reply_markup = build_manage_face_swap_edit_choose_gender_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_FACE_SWAP_EDIT_CHOOSE_GENDER,
-            reply_markup=reply_markup,
+            reply_markup=build_manage_face_swap_edit_choose_gender_keyboard(user_language_code),
         )
 
 
@@ -115,10 +112,9 @@ async def face_swap_manage_system_name_sent(message: Message, state: FSMContext)
             text=get_localization(user_language_code).ADMIN_FACE_SWAP_CREATE_PACKAGE_ALREADY_EXISTS_ERROR,
         )
     else:
-        reply_markup = build_cancel_keyboard(user_language_code)
         await message.answer(
             text=get_localization(user_language_code).ADMIN_FACE_SWAP_CREATE_PACKAGE_NAME,
-            reply_markup=reply_markup,
+            reply_markup=build_cancel_keyboard(user_language_code),
         )
 
         await state.update_data(system_face_swap_package_name=system_face_swap_package_name)
@@ -141,13 +137,12 @@ async def face_swap_manage_name_sent(message: Message, state: FSMContext):
             else:
                 face_swap_package_names[language_code] = message.text
 
-    reply_markup = build_manage_face_swap_create_confirmation_keyboard(user_language_code)
     await message.answer(
         text=get_localization(user_language_code).admin_face_swap_create_package_confirmation(
             package_system_name=user_data['system_face_swap_package_name'],
             package_names=face_swap_package_names,
         ),
-        reply_markup=reply_markup,
+        reply_markup=build_manage_face_swap_create_confirmation_keyboard(user_language_code),
     )
 
     await state.update_data(face_swap_package_names=face_swap_package_names)
@@ -195,10 +190,9 @@ async def handle_face_swap_manage_edit_choose_gender_selection(callback_query: C
     gender = cast(UserGender, callback_query.data.split(':')[1])
 
     face_swap_packages = await get_face_swap_packages_by_gender(gender)
-    reply_markup = build_manage_face_swap_edit_choose_package_keyboard(user_language_code, face_swap_packages)
     await callback_query.message.edit_text(
         text=get_localization(user_language_code).ADMIN_FACE_SWAP_EDIT_CHOOSE_PACKAGE,
-        reply_markup=reply_markup,
+        reply_markup=build_manage_face_swap_edit_choose_package_keyboard(user_language_code, face_swap_packages),
     )
 
     await state.update_data(gender=gender)
@@ -213,10 +207,9 @@ async def handle_face_swap_manage_edit_choose_package_selection(callback_query: 
 
     package_name = user_data.get('package_name', callback_query.data.split(':')[1])
 
-    reply_markup = build_manage_face_swap_edit_keyboard(user_language_code)
     await callback_query.message.edit_text(
         text=get_localization(user_language_code).ADMIN_FACE_SWAP_EDIT,
-        reply_markup=reply_markup,
+        reply_markup=build_manage_face_swap_edit_keyboard(user_language_code),
     )
 
     await state.update_data(package_name=package_name)
@@ -230,8 +223,6 @@ async def show_picture(
 ):
     file_name, file_status = file.get('name'), file.get('status')
     try:
-        reply_markup = build_manage_face_swap_edit_picture_keyboard(language_code, file_name)
-
         photo_path = f'face_swap/{face_swap_package.gender.lower()}/{face_swap_package.name.lower()}/{file_name}'
         photo = await firebase.bucket.get_blob(photo_path)
         photo_link = firebase.get_public_url(photo.name)
@@ -239,7 +230,7 @@ async def show_picture(
         await callback_query.message.answer_photo(
             photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
             caption=f'<b>{file_name}</b>\n\n{file_status}',
-            reply_markup=reply_markup,
+            reply_markup=build_manage_face_swap_edit_picture_keyboard(language_code, file_name),
         )
     except Exception as e:
         await callback_query.message.answer(
@@ -282,21 +273,19 @@ async def handle_face_swap_manage_edit_selection(callback_query: CallbackQuery, 
         await state.update_data(face_swap_package_id=face_swap_package.id)
 
         if action == 'change_status':
-            reply_markup = build_manage_face_swap_edit_package_change_status_keyboard(
-                user_language_code,
-                face_swap_package.status,
-            )
             await callback_query.message.edit_text(
                 text=get_localization(user_language_code).ADMIN_FACE_SWAP_CHANGE_STATUS,
-                reply_markup=reply_markup
+                reply_markup=build_manage_face_swap_edit_package_change_status_keyboard(
+                    user_language_code,
+                    face_swap_package.status,
+                )
             )
         elif action == 'show_pictures':
             await show_pictures(face_swap_package, user_language_code, callback_query)
         elif action == 'add_new_picture':
-            reply_markup = build_cancel_keyboard(user_language_code)
             await callback_query.message.edit_text(
                 text=get_localization(user_language_code).ADMIN_FACE_SWAP_ADD_NEW_PICTURE_NAME,
-                reply_markup=reply_markup,
+                reply_markup=build_cancel_keyboard(user_language_code),
             )
             await state.set_state(FaceSwap.waiting_for_face_swap_picture_name)
 
@@ -305,10 +294,9 @@ async def handle_face_swap_manage_edit_selection(callback_query: CallbackQuery, 
 async def face_swap_manage_picture_name_sent(message: Message, state: FSMContext):
     user_language_code = await get_user_language(str(message.from_user.id), state.storage)
 
-    reply_markup = build_cancel_keyboard(user_language_code)
     await message.answer(
         text=get_localization(user_language_code).ADMIN_FACE_SWAP_ADD_NEW_PICTURE_IMAGE,
-        reply_markup=reply_markup,
+        reply_markup=build_cancel_keyboard(user_language_code),
     )
 
     await state.update_data(face_swap_picture_name=message.text.title())
