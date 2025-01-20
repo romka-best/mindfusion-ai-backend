@@ -224,15 +224,27 @@ async def handle_ads_create_selection(callback_query: CallbackQuery, state: FSMC
 async def ads_link_sent(message: Message, state: FSMContext):
     parsed_url = urlparse(message.text)
     params = parse_qs(parsed_url.query)
-    start_param = params.get('start', [''])[0]
-    campaign_id = start_param.split('_')[0].split('-')[1]
 
-    campaign = await get_campaign(campaign_id)
-    if not campaign:
-        campaign = await get_campaign_by_name(campaign_id)
+    utm = [value for key, value in vars(UTM).items() if not key.startswith('__')]
+    link_utm = {}
+
+    start_param = params.get('start', [''])[0]
+    sub_params = start_param.split('_')
+    for sub_param in sub_params:
+        if '-' not in sub_param:
+            continue
+
+        sub_param_key, sub_param_value = sub_param.split('-')
+        if sub_param_key == 'c':
+            campaign = await get_campaign(sub_param_value)
+            if not campaign:
+                campaign = await get_campaign_by_name(sub_param_value)
+            link_utm = campaign.utm
+        elif sub_param_key in utm:
+            link_utm[sub_param_key] = sub_param_value.lower()
 
     users = await get_users(
-        utm=campaign.utm,
+        utm=link_utm,
     )
 
     product_cache = {}

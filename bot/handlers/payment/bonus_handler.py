@@ -31,7 +31,8 @@ from bot.keyboards.payment.bonus import (
     build_bonus_play_game_keyboard,
     build_bonus_play_game_chosen_keyboard,
     build_bonus_spend_keyboard,
-    build_bonus_suggestion_keyboard, build_bonus_spend_selection_keyboard,
+    build_bonus_spend_selection_keyboard,
+    build_bonus_suggestion_keyboard,
 )
 from bot.keyboards.common.common import build_cancel_keyboard
 from bot.locales.main import get_localization, get_user_language

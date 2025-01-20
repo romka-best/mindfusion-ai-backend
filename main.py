@@ -215,10 +215,6 @@ async def lifespan(_: FastAPI):
     dp.callback_query.middleware(AuthCallbackQueryMiddleware())
 
     await firebase.init()
-    # await bot.refund_star_payment(
-    #     354543567,
-    #     'stxrsk7FGZXpH0gvRqt3CRspV5OdUMmUQY-0HTU56ZLDaV5VT6bY0ieP6lwMAsyJFjLYMCHuTlWiX58CjeiLc2zTLkMTjMuo60X-dE-cqcAwM-9FLKWz5QiNN3anzHzm33J',
-    # )
     yield
     await bot.session.close()
     await storage.close()
