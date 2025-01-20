@@ -7,7 +7,7 @@ from aiogram.types import Message, CallbackQuery
 
 from bot.config import config
 from bot.database.main import firebase
-from bot.database.models.common import UTM
+from bot.database.models.common import UTM, Currency
 from bot.database.models.product import ProductCategory
 from bot.database.models.transaction import Transaction, TransactionType
 from bot.database.operations.campaign.getters import get_campaign, get_campaign_by_name
@@ -246,6 +246,7 @@ async def ads_link_sent(message: Message, state: FSMContext):
     text_and_image_users = 0
     all_ai_users = 0
     clients = 0
+    clients_income = 0
     for user in users:
         has_text_requests = False
         has_summary_requests = False
@@ -276,6 +277,12 @@ async def ads_link_sent(message: Message, state: FSMContext):
 
                 if transaction.type == TransactionType.INCOME:
                     has_purchases = True
+                    if transaction.currency == Currency.USD:
+                        clients_income += transaction.clear_amount * 100
+                    elif transaction.currency == Currency.XTR:
+                        clients_income += transaction.clear_amount * 2
+                    else:
+                        clients_income += transaction.clear_amount
                 elif transaction.type == TransactionType.EXPENSE:
                     if transaction.product_id not in product_cache:
                         transaction_product = await get_product(transaction.product_id)
@@ -327,7 +334,7 @@ async def ads_link_sent(message: Message, state: FSMContext):
 • <b>{summary_and_image_users}</b> - Сделали запрос в резюме и графической моделях
 • <b>{text_and_image_users}</b> - Сделали запрос в текстовой и графической моделях
 • <b>{all_ai_users}</b> - Сделали запрос во всех моделях
-• <b>{clients}</b> - Купили что-то
+• <b>{clients}</b> - Купили на сумму {clients_income}₽
 ''')
 
     await state.clear()

@@ -49,7 +49,7 @@ from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.integrations.replicate_ai import create_face_swap_image, create_photoshop_ai_image
 from bot.keyboards.admin.catalog import build_manage_catalog_create_role_confirmation_keyboard
 from bot.keyboards.ai.model import build_model_limit_exceeded_keyboard
-from bot.keyboards.common.common import build_cancel_keyboard, build_suggestions_keyboard
+from bot.keyboards.common.common import build_cancel_keyboard, build_suggestions_keyboard, build_buy_motivation_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.middlewares.AlbumMiddleware import AlbumMiddleware
 from bot.states.common.catalog import Catalog
@@ -122,14 +122,13 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
         photo_blob = firebase.bucket.new_blob(photo_path)
         await photo_blob.upload(photo_data)
 
-        reply_markup = build_manage_catalog_create_role_confirmation_keyboard(user_language_code)
         await message.answer(
             text=get_localization(user_language_code).admin_catalog_create_role_confirmation(
                 role_names=user_data.get('role_names', {}),
                 role_descriptions=user_data.get('role_descriptions', {}),
                 role_instructions=user_data.get('role_instructions', {}),
             ),
-            reply_markup=reply_markup,
+            reply_markup=build_manage_catalog_create_role_confirmation_keyboard(user_language_code),
         )
     elif current_state == FaceSwap.waiting_for_face_swap_picture_image.state:
         user_data = await state.get_data()
@@ -166,10 +165,9 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
             )
 
-            reply_markup = build_model_limit_exceeded_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).model_reached_usage_limit(),
-                reply_markup=reply_markup,
+                reply_markup=build_model_limit_exceeded_keyboard(user_language_code),
             )
             return
 
@@ -244,6 +242,13 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
         user.current_model == Model.GEMINI or
         user.current_model == Model.GROK
     ):
+        if not (user.daily_limits[Quota.WORK_WITH_FILES] or user.additional_usage_quota[Quota.WORK_WITH_FILES]):
+            await message.answer(
+                text=get_localization(user_language_code).WORK_WITH_FILES_FORBIDDEN_ERROR,
+                reply_markup=build_buy_motivation_keyboard(user_language_code),
+            )
+            return
+
         if user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_Omni_Mini:
             quota = Quota.CHAT_GPT4_OMNI_MINI
         elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_Omni:
@@ -299,6 +304,13 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
         user.current_model == Model.FLUX or
         user.current_model == Model.LUMA_PHOTON
     ):
+        if not (user.daily_limits[Quota.WORK_WITH_FILES] or user.additional_usage_quota[Quota.WORK_WITH_FILES]):
+            await message.answer(
+                text=get_localization(user_language_code).WORK_WITH_FILES_FORBIDDEN_ERROR,
+                reply_markup=build_buy_motivation_keyboard(user_language_code),
+            )
+            return
+
         current_time = time.time()
 
         user_quota = get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION])
@@ -394,11 +406,10 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
                     example_photo = await firebase.bucket.get_blob(photo_path)
                     photo_link = firebase.get_public_url(example_photo.name)
 
-                    reply_markup = build_cancel_keyboard(user_language_code)
                     await message.answer_photo(
                         photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
                         caption=get_localization(user_language_code).PROFILE_SEND_ME_YOUR_PICTURE,
-                        reply_markup=reply_markup
+                        reply_markup=build_cancel_keyboard(user_language_code)
                     )
                     await state.set_state(Profile.waiting_for_photo)
     elif (
@@ -458,6 +469,13 @@ async def handle_album(message: Message, state: FSMContext, album: list[Message]
         user.current_model == Model.GEMINI or
         user.current_model == Model.GROK
     ):
+        if not (user.daily_limits[Quota.WORK_WITH_FILES] or user.additional_usage_quota[Quota.WORK_WITH_FILES]):
+            await message.answer(
+                text=get_localization(user_language_code).WORK_WITH_FILES_FORBIDDEN_ERROR,
+                reply_markup=build_buy_motivation_keyboard(user_language_code),
+            )
+            return
+
         if user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_Omni_Mini:
             quota = Quota.CHAT_GPT4_OMNI_MINI
         elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_Omni:

@@ -41,6 +41,19 @@ class Kling:
 
         return 1
 
+    @staticmethod
+    def get_price_for_video(mode: KlingMode, duration: KlingDuration):
+        if mode == KlingMode.PRO and duration == KlingDuration.SECONDS_10:
+            return 0.92
+        elif mode == KlingMode.PRO and duration == KlingDuration.SECONDS_5:
+            return 0.46
+        elif mode == KlingMode.STANDARD and duration == KlingDuration.SECONDS_10:
+            return 0.26
+        elif mode == KlingMode.STANDARD and duration == KlingDuration.SECONDS_5:
+            return 0.13
+
+        return 0
+
 
 class APIResource:
     def __init__(self, client: Kling) -> None:

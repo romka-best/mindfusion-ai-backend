@@ -50,6 +50,19 @@ class Russian(Texts):
     ACTION_TO_OTHER_MODELS = "◀️ К другим моделям"
     ACTION_TO_OTHER_TYPE_MODELS = "◀️ К другим типам моделей"
 
+    # Additional Bot
+    @staticmethod
+    def additional_bot_info(link: str) -> str:
+        return f"""
+👋 <b>Привет!</b>
+
+⚠️ <b>Этот бот не обрабатывает запросы, а лишь перенаправляет вас в нашего основного помощника по нейросетям</b>
+
+🏆 Миссия нашего бота — предоставить каждому доступ к лучшим нейросетям
+
+👉 {link}
+"""
+
     # Bonus
     @staticmethod
     def bonus_info(balance: int) -> str:
@@ -1726,16 +1739,22 @@ class Russian(Texts):
 """
 
     @staticmethod
-    def package_info(currency: Currency, cost: str) -> str:
+    def package_info(currency: Currency, cost: str, gift_packages: list[Product]) -> str:
         if currency == Currency.USD:
             cost = f"{Currency.SYMBOLS[currency]}{cost}"
+            gift_packages_sum = f"{Currency.SYMBOLS[currency]}5"
         else:
             cost = f"{cost}{Currency.SYMBOLS[currency]}"
+            gift_packages_sum = f"500{Currency.SYMBOLS[currency]}"
+
+        gift_packages_info = f"\n\n🎁 <i>Купите на {gift_packages_sum} или больше — получите эти пакеты в подарок:</i>"
+        for gift_package in gift_packages:
+            gift_packages_info += f"\n<i>{gift_package.names.get(LanguageCode.RU)}</i>"
 
         return f"""
 🛍 <b>Пакеты</b>
 
-<b>1 монета 🪙 = {cost}</b>
+<b>1 монета 🪙 = {cost}</b>{gift_packages_info if len(gift_packages) > 0 else ''}
 
 Чтобы выбрать пакет, нажмите кнопку:
 """
@@ -2466,6 +2485,16 @@ class Russian(Texts):
 Ваш голос потерялся в AI-пространстве!
 
 Чтобы <b>разблокировать чудо преобразования голоса в текст</b>, просто воспользуйтесь волшебством кнопок ниже:
+"""
+
+    # Work with files
+    WORK_WITH_FILES = "📷 Работа с фото/документами"
+    WORK_WITH_FILES_FORBIDDEN_ERROR = """
+🔒 <b>Вы попали в зону VIP!</b>
+
+У вас пока нет доступа к работе с фото и документами
+
+Вы можете получить доступ, нажав на кнопку ниже:
 """
 
     # Admin

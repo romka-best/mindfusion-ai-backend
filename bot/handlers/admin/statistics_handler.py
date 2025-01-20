@@ -50,18 +50,16 @@ statistics_router = Router()
 async def handle_statistics(message: Message, user_id: str, state: FSMContext):
     user_language_code = await get_user_language(str(user_id), state.storage)
 
-    reply_markup = build_statistics_keyboard(user_language_code, is_admin(str(user_id)))
     await message.edit_text(
         text=get_localization(user_language_code).ADMIN_STATISTICS_INFO,
-        reply_markup=reply_markup,
+        reply_markup=build_statistics_keyboard(user_language_code, is_admin(str(user_id))),
     )
 
 
 async def handle_write_transaction(callback_query: CallbackQuery, language_code: LanguageCode):
-    reply_markup = build_statistics_write_transaction_keyboard(language_code)
     await callback_query.message.edit_text(
         text=get_localization(language_code).ADMIN_STATISTICS_WRITE_TRANSACTION,
-        reply_markup=reply_markup,
+        reply_markup=build_statistics_write_transaction_keyboard(language_code),
     )
 
 
@@ -926,10 +924,9 @@ async def handle_statistics_selection(callback_query: CallbackQuery, state: FSMC
 
     period = callback_query.data.split(':')[1]
     if period == 'back':
-        reply_markup = build_admin_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_INFO,
-            reply_markup=reply_markup,
+            reply_markup=build_admin_keyboard(user_language_code),
         )
 
         return
@@ -972,10 +969,9 @@ async def handle_statistics_write_transaction_selection(callback_query: Callback
         user_language_code = await get_user_language(str(callback_query.from_user.id), state.storage)
 
         products = await get_products()
-        reply_markup = build_statistics_choose_service_keyboard(user_language_code, products, transaction_type)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_STATISTICS_CHOOSE_SERVICE,
-            reply_markup=reply_markup
+            reply_markup=build_statistics_choose_service_keyboard(user_language_code, products, transaction_type)
         )
 
         await state.update_data(transaction_type=transaction_type)
@@ -988,10 +984,9 @@ async def handle_statistics_choose_service_selection(callback_query: CallbackQue
     service_id = callback_query.data.split(':')[1]
     user_language_code = await get_user_language(str(callback_query.from_user.id), state.storage)
 
-    reply_markup = build_statistics_choose_currency_keyboard(user_language_code)
     await callback_query.message.edit_text(
         text=get_localization(user_language_code).ADMIN_STATISTICS_CHOOSE_CURRENCY,
-        reply_markup=reply_markup
+        reply_markup=build_statistics_choose_currency_keyboard(user_language_code)
     )
 
     await state.set_state(Statistics.waiting_for_statistics_service_quantity)
@@ -1005,10 +1000,9 @@ async def handle_statistics_choose_currency_selection(callback_query: CallbackQu
     currency = callback_query.data.split(':')[1]
     user_language_code = await get_user_language(str(callback_query.from_user.id), state.storage)
 
-    reply_markup = build_cancel_keyboard(user_language_code)
     await callback_query.message.edit_text(
         text=get_localization(user_language_code).ADMIN_STATISTICS_SERVICE_QUANTITY,
-        reply_markup=reply_markup
+        reply_markup=build_cancel_keyboard(user_language_code)
     )
 
     await state.set_state(Statistics.waiting_for_statistics_service_quantity)
@@ -1022,25 +1016,22 @@ async def statistics_service_quantity_sent(message: Message, state: FSMContext):
     try:
         quantity = int(message.text)
         if quantity < 1:
-            reply_markup = build_cancel_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).PACKAGE_QUANTITY_MIN_ERROR,
-                reply_markup=reply_markup,
+                reply_markup=build_cancel_keyboard(user_language_code),
             )
         else:
-            reply_markup = build_cancel_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).ADMIN_STATISTICS_SERVICE_AMOUNT,
-                reply_markup=reply_markup,
+                reply_markup=build_cancel_keyboard(user_language_code),
             )
 
             await state.update_data(service_quantity=quantity)
             await state.set_state(Statistics.waiting_for_statistics_service_amount)
     except (TypeError, ValueError):
-        reply_markup = build_cancel_keyboard(user_language_code)
         await message.reply(
             text=get_localization(user_language_code).ERROR_IS_NOT_NUMBER,
-            reply_markup=reply_markup,
+            reply_markup=build_cancel_keyboard(user_language_code),
             allow_sending_without_reply=True,
         )
 
@@ -1052,25 +1043,22 @@ async def statistics_service_amount_sent(message: Message, state: FSMContext):
     try:
         amount = float(message.text)
         if amount < 0:
-            reply_markup = build_cancel_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).PACKAGE_QUANTITY_MIN_ERROR,
-                reply_markup=reply_markup,
+                reply_markup=build_cancel_keyboard(user_language_code),
             )
         else:
-            reply_markup = build_cancel_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).ADMIN_STATISTICS_SERVICE_DATE,
-                reply_markup=reply_markup,
+                reply_markup=build_cancel_keyboard(user_language_code),
             )
 
             await state.update_data(service_amount=amount)
             await state.set_state(Statistics.waiting_for_statistics_service_date)
     except (TypeError, ValueError):
-        reply_markup = build_cancel_keyboard(user_language_code)
         await message.reply(
             text=get_localization(user_language_code).ERROR_IS_NOT_NUMBER,
-            reply_markup=reply_markup,
+            reply_markup=build_cancel_keyboard(user_language_code),
             allow_sending_without_reply=True,
         )
 
@@ -1103,9 +1091,8 @@ async def statistics_service_date_sent(message: Message, state: FSMContext):
 
         await state.clear()
     except (TypeError, ValueError):
-        reply_markup = build_cancel_keyboard(user_language_code)
         await message.reply(
             text=get_localization(user_language_code).ADMIN_STATISTICS_SERVICE_DATE_VALUE_ERROR,
-            reply_markup=reply_markup,
+            reply_markup=build_cancel_keyboard(user_language_code),
             allow_sending_without_reply=True,
         )

@@ -18,10 +18,9 @@ async def handle_ban(message: Message, user_id: str, state: FSMContext):
 
     user_language_code = await get_user_language(user_id, state.storage)
 
-    reply_markup = build_ban_keyboard(user_language_code)
     await message.edit_text(
         text=get_localization(user_language_code).ADMIN_BAN_INFO,
-        reply_markup=reply_markup,
+        reply_markup=build_ban_keyboard(user_language_code),
     )
 
     await state.set_state(Ban.waiting_for_user_id)
@@ -35,10 +34,9 @@ async def handle_ban_selection(callback_query: CallbackQuery, state: FSMContext)
 
     action = callback_query.data.split(':')[1]
     if action == 'back':
-        reply_markup = build_admin_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_INFO,
-            reply_markup=reply_markup,
+            reply_markup=build_admin_keyboard(user_language_code),
         )
 
         await state.clear()
@@ -71,9 +69,8 @@ async def ban_user_id_sent(message: Message, state: FSMContext):
 
         await state.clear()
     except (TypeError, ValueError):
-        reply_markup = build_cancel_keyboard(user_language_code)
         await message.reply(
             text=get_localization(user_language_code).ERROR_IS_NOT_NUMBER,
-            reply_markup=reply_markup,
+            reply_markup=build_cancel_keyboard(user_language_code),
             allow_sending_without_reply=True,
         )

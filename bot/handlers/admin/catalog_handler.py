@@ -41,18 +41,16 @@ async def handle_catalog_manage_selection(callback_query: CallbackQuery, state: 
     user_language_code = await get_user_language(str(callback_query.from_user.id), state.storage)
 
     if action == 'back':
-        reply_markup = build_admin_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_INFO,
-            reply_markup=reply_markup,
+            reply_markup=build_admin_keyboard(user_language_code),
         )
 
         return
     elif action == 'create':
-        reply_markup = build_manage_catalog_create_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_CATALOG_CREATE,
-            reply_markup=reply_markup,
+            reply_markup=build_manage_catalog_create_keyboard(user_language_code),
         )
 
         await state.set_state(Catalog.waiting_for_system_role_name)
@@ -61,7 +59,6 @@ async def handle_catalog_manage_selection(callback_query: CallbackQuery, state: 
         role_photo = await firebase.bucket.get_blob(role.photo)
         role_photo_link = firebase.get_public_url(role_photo.name)
 
-        reply_markup = build_manage_catalog_edit_keyboard(user_language_code, role.id)
         await callback_query.message.answer_photo(
             photo=URLInputFile(role_photo_link, filename=role.photo, timeout=300),
             caption=get_localization(user_language_code).admin_catalog_edit_role_info(
@@ -69,7 +66,7 @@ async def handle_catalog_manage_selection(callback_query: CallbackQuery, state: 
                 role_descriptions=role.translated_descriptions,
                 role_instructions=role.translated_instructions,
             ),
-            reply_markup=reply_markup,
+            reply_markup=build_manage_catalog_edit_keyboard(user_language_code, role.id),
         )
 
         await callback_query.message.delete()
@@ -117,10 +114,10 @@ async def catalog_manage_create_role_system_name_sent(message: Message, state: F
     user_language_code = await get_user_language(str(message.from_user.id), state.storage)
 
     system_role_name = message.text.upper()
-    reply_markup = build_cancel_keyboard(user_language_code)
+
     await message.answer(
         text=get_localization(user_language_code).ADMIN_CATALOG_CREATE_ROLE_NAME,
-        reply_markup=reply_markup,
+        reply_markup=build_cancel_keyboard(user_language_code),
     )
 
     await state.update_data(system_role_name=system_role_name)
@@ -142,10 +139,9 @@ async def catalog_manage_create_role_name_sent(message: Message, state: FSMConte
             else:
                 role_names[language_code] = message.text
 
-    reply_markup = build_cancel_keyboard(user_language_code)
     await message.answer(
         text=get_localization(user_language_code).ADMIN_CATALOG_CREATE_ROLE_DESCRIPTION,
-        reply_markup=reply_markup,
+        reply_markup=build_cancel_keyboard(user_language_code),
     )
 
     await state.update_data(role_names=role_names)
@@ -167,10 +163,9 @@ async def catalog_manage_create_role_description_sent(message: Message, state: F
             else:
                 role_descriptions[language_code] = message.text
 
-    reply_markup = build_cancel_keyboard(user_language_code)
     await message.answer(
         text=get_localization(user_language_code).ADMIN_CATALOG_CREATE_ROLE_INSTRUCTION,
-        reply_markup=reply_markup,
+        reply_markup=build_cancel_keyboard(user_language_code),
     )
 
     await state.update_data(role_descriptions=role_descriptions)
@@ -192,10 +187,9 @@ async def catalog_manage_create_role_instruction_sent(message: Message, state: F
             else:
                 role_instructions[language_code] = message.text
 
-    reply_markup = build_cancel_keyboard(user_language_code)
     await message.answer(
         text=get_localization(user_language_code).ADMIN_CATALOG_CREATE_ROLE_PHOTO,
-        reply_markup=reply_markup,
+        reply_markup=build_cancel_keyboard(user_language_code),
     )
 
     await state.update_data(role_instructions=role_instructions)
@@ -287,14 +281,13 @@ async def catalog_manage_edit_role_sent(message: Message, state: FSMContext):
         allow_sending_without_reply=True,
     )
 
-    reply_markup = build_manage_catalog_edit_keyboard(user_language_code, role.id)
     await message.answer(
         text=get_localization(user_language_code).admin_catalog_edit_role_info(
             role_names=role.translated_names,
             role_descriptions=role.translated_descriptions,
             role_instructions=role.translated_instructions,
         ),
-        reply_markup=reply_markup,
+        reply_markup=build_manage_catalog_edit_keyboard(user_language_code, role.id),
     )
 
     await state.clear()

@@ -337,11 +337,9 @@ async def handle_help(message: Message, state: FSMContext):
     user_id = str(message.from_user.id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    text = get_localization(user_language_code).HELP_INFO
-    reply_markup = build_error_keyboard(user_language_code)
     await message.answer(
-        text=text,
-        reply_markup=reply_markup,
+        text=get_localization(user_language_code).HELP_INFO,
+        reply_markup=build_error_keyboard(user_language_code),
     )
 
 
@@ -465,11 +463,9 @@ async def time_limit_exceeded_selection(callback_query: CallbackQuery, state: FS
 
     action = callback_query.data.split(':')[1]
     if action == 'remove_restriction':
-        text = get_localization(user_language_code).REMOVE_RESTRICTION_INFO
-        reply_markup = build_time_limit_exceeded_chosen_keyboard(user_language_code)
         await callback_query.message.reply(
-            text=text,
-            reply_markup=reply_markup,
+            text=get_localization(user_language_code).REMOVE_RESTRICTION_INFO,
+            reply_markup=build_time_limit_exceeded_chosen_keyboard(user_language_code),
             allow_sending_without_reply=True,
         )
 

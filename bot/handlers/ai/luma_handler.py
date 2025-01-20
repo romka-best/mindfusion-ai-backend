@@ -49,10 +49,9 @@ async def luma_photon(message: Message, state: FSMContext):
     user_language_code = await get_user_language(user_id, state.storage)
 
     if user.current_model == Model.LUMA_PHOTON:
-        reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.LUMA_PHOTON)
         await message.answer(
             text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
-            reply_markup=reply_markup,
+            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.LUMA_PHOTON),
         )
     else:
         user.current_model = Model.LUMA_PHOTON
@@ -65,10 +64,9 @@ async def luma_photon(message: Message, state: FSMContext):
             get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
             user_language_code,
         )
-        reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.LUMA_PHOTON)
         answered_message = await message.answer(
             text=text,
-            reply_markup=reply_markup,
+            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.LUMA_PHOTON),
             message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
         )
 
@@ -163,10 +161,9 @@ async def handle_luma_photon(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
             )
 
-            reply_markup = build_error_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).ERROR,
-                reply_markup=reply_markup,
+                reply_markup=build_error_keyboard(user_language_code),
             )
             await send_error_info(
                 bot=message.bot,
@@ -214,10 +211,9 @@ async def luma_ray(message: Message, state: FSMContext):
     user_language_code = await get_user_language(user_id, state.storage)
 
     if user.current_model == Model.LUMA_RAY:
-        reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.LUMA_RAY)
         await message.answer(
             text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
-            reply_markup=reply_markup,
+            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.LUMA_RAY),
         )
     else:
         user.current_model = Model.LUMA_RAY
@@ -230,10 +226,9 @@ async def luma_ray(message: Message, state: FSMContext):
             get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
             user_language_code,
         )
-        reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.LUMA_RAY)
         answered_message = await message.answer(
             text=text,
-            reply_markup=reply_markup,
+            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.LUMA_RAY),
             message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
         )
 
@@ -315,10 +310,9 @@ async def handle_luma_ray(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
             )
 
-            reply_markup = build_error_keyboard(user_language_code)
             await message.answer(
                 text=get_localization(user_language_code).ERROR,
-                reply_markup=reply_markup,
+                reply_markup=build_error_keyboard(user_language_code),
             )
             await send_error_info(
                 bot=message.bot,

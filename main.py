@@ -1,9 +1,11 @@
 import asyncio
 import logging
 import os
+import re
 import traceback
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone, timedelta
+from functools import partial
 
 import uvicorn
 from aiogram.client.default import DefaultBotProperties
@@ -95,6 +97,7 @@ from bot.helpers.senders.send_statistics import send_statistics
 from bot.helpers.setters.set_commands import set_commands
 from bot.helpers.setters.set_description import set_description
 from bot.helpers.updaters.update_daily_limits import update_daily_limits
+from bot.locales.main import get_localization
 from bot.middlewares.AuthMiddleware import AuthMessageMiddleware, AuthCallbackQueryMiddleware
 from bot.middlewares.LoggingMiddleware import LoggingMessageMiddleware, LoggingCallbackQueryMiddleware
 from bot.utils.migrate import migrate
@@ -110,7 +113,10 @@ WEBHOOK_LUMA_PATH = config.WEBHOOK_LUMA_PATH
 WEBHOOK_PIKA_PATH = config.WEBHOOK_PIKA_PATH
 
 WEBHOOK_BOT_URL = config.WEBHOOK_URL + WEBHOOK_BOT_PATH
-WEBHOOK_REPLICATE_URL = config.WEBHOOK_URL + config.WEBHOOK_REPLICATE_PATH
+
+WEBHOOK_ADDITIONAL_BOTS_PATHS = [
+    f'/bot/{additional_bot_token.get_secret_value()}' for additional_bot_token in config.ADDITIONAL_BOT_TOKENS
+]
 
 bot = Bot(
     token=config.BOT_TOKEN.get_secret_value(),
@@ -136,6 +142,16 @@ dp = Dispatcher(
     sm_strategy=FSMStrategy.GLOBAL_USER,
     maintenance_mode=False,
 )
+
+additional_bots = [
+    Bot(
+        token=additional_bot_token.get_secret_value(),
+        default=DefaultBotProperties(
+            parse_mode=ParseMode.HTML,
+            allow_sending_without_reply=True,
+        ),
+    ) for additional_bot_token in config.ADDITIONAL_BOT_TOKENS
+]
 
 
 @asynccontextmanager
@@ -199,6 +215,10 @@ async def lifespan(_: FastAPI):
     dp.callback_query.middleware(AuthCallbackQueryMiddleware())
 
     await firebase.init()
+    # await bot.refund_star_payment(
+    #     354543567,
+    #     'stxrsk7FGZXpH0gvRqt3CRspV5OdUMmUQY-0HTU56ZLDaV5VT6bY0ieP6lwMAsyJFjLYMCHuTlWiX58CjeiLc2zTLkMTjMuo60X-dE-cqcAwM-9FLKWz5QiNN3anzHzm33J',
+    # )
     yield
     await bot.session.close()
     await storage.close()
@@ -399,6 +419,38 @@ async def daily_tasks(background_tasks: BackgroundTasks):
 
     return {'code': 200}
 
+
+@app.get('/register-additional-webhooks')
+async def register_additional_webhooks():
+    for additional_bot, webhook_path in zip(additional_bots, WEBHOOK_ADDITIONAL_BOTS_PATHS):
+        webhook_info = await additional_bot.get_webhook_info()
+        webhook_url = config.WEBHOOK_URL + webhook_path
+        if webhook_info.url != webhook_url:
+            await additional_bot.set_webhook(url=webhook_url)
+
+
+async def additional_bot_webhook(bot_instance: Bot, update: dict, background_tasks: BackgroundTasks):
+    telegram_update = types.Update(**update)
+
+    if telegram_update.message:
+        chat_id = telegram_update.message.chat.id
+    else:
+        return JSONResponse(content={'error': 'Invalid update'}, status_code=400)
+
+    bot_description = (await bot_instance.get_my_description()).description
+
+    match = re.search(r'https?://\S+', bot_description)
+    bot_link = match.group() if match else '@GPTsTurboBot'
+
+    background_tasks.add_task(
+        bot_instance.send_message,
+        chat_id,
+        get_localization(telegram_update.message.from_user.language_code).additional_bot_info(bot_link),
+    )
+
+
+for path, additional_bot in zip(WEBHOOK_ADDITIONAL_BOTS_PATHS, additional_bots):
+    app.post(path)(partial(additional_bot_webhook, additional_bot))
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)

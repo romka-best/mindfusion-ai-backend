@@ -25,10 +25,9 @@ async def handle_blast(message: Message, user_id: str, state: FSMContext):
 
     user_language_code = await get_user_language(user_id, state.storage)
 
-    reply_markup = build_blast_keyboard(user_language_code)
     await message.edit_text(
         text=get_localization(user_language_code).ADMIN_BLAST_CHOOSE_USER_TYPE,
-        reply_markup=reply_markup,
+        reply_markup=build_blast_keyboard(user_language_code),
     )
 
 
@@ -40,18 +39,16 @@ async def handle_blast_user_type_selection(callback_query: CallbackQuery, state:
 
     user_type = callback_query.data.split(':')[1]
     if user_type == 'back':
-        reply_markup = build_admin_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_INFO,
-            reply_markup=reply_markup,
+            reply_markup=build_admin_keyboard(user_language_code),
         )
 
         return
     else:
-        reply_markup = build_blast_language_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_BLAST_CHOOSE_USER_TYPE,
-            reply_markup=reply_markup,
+            reply_markup=build_blast_language_keyboard(user_language_code),
         )
 
         await state.update_data(blast_user_type=user_type)
@@ -66,10 +63,9 @@ async def handle_blast_language_selection(callback_query: CallbackQuery, state: 
     language = callback_query.data.split(':')[1]
     reply_markup = build_cancel_keyboard(user_language_code)
     if language == 'back':
-        reply_markup = build_admin_keyboard(user_language_code)
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).ADMIN_INFO,
-            reply_markup=reply_markup,
+            reply_markup=build_admin_keyboard(user_language_code),
         )
 
         return
@@ -108,10 +104,9 @@ async def blast_letter_sent(message: Message, state: FSMContext):
                 else:
                     blast_letters[language_code] = message.text
 
-    reply_markup = build_blast_confirmation_keyboard(user_language_code)
     await message.answer(
         text=get_localization(user_language_code).admin_blast_confirmation(blast_letters),
-        reply_markup=reply_markup,
+        reply_markup=build_blast_confirmation_keyboard(user_language_code),
     )
 
     await state.update_data(blast_letters=blast_letters)

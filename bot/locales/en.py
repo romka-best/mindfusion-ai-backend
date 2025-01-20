@@ -38,6 +38,19 @@ class English(Texts):
     ACTION_TO_OTHER_MODELS = "To Other Models ◀️"
     ACTION_TO_OTHER_TYPE_MODELS = "To Other Models Type ◀️"
 
+    # Additional Bot
+    @staticmethod
+    def additional_bot_info(link: str) -> str:
+        return f"""
+👋 <b>Hi there!</b>
+
+⚠️ <b>This bot does not process requests. It only redirects you to our main AI assistant</b>
+
+🏆 Our mission is to provide everyone with access to the best AI models
+
+👉 {link}
+"""
+
     # Bonus
     @staticmethod
     def bonus_info(balance: int) -> str:
@@ -1692,16 +1705,22 @@ The entered number exceeds what you can purchase
 """
 
     @staticmethod
-    def package_info(currency: Currency, cost: str) -> str:
+    def package_info(currency: Currency, cost: str, gift_packages: list[Product]) -> str:
         if currency == Currency.USD:
             cost = f"{Currency.SYMBOLS[currency]}{cost}"
+            gift_packages_sum = f"{Currency.SYMBOLS[currency]}5"
         else:
             cost = f"{cost}{Currency.SYMBOLS[currency]}"
+            gift_packages_sum = f"500{Currency.SYMBOLS[currency]}"
+
+        gift_packages_info = f"\n\n🎁 <i>Spend {gift_packages_sum} or more — get these packages as a gift:</i>"
+        for gift_package in gift_packages:
+            gift_packages_info += f"\n<i>{gift_package.names.get(LanguageCode.EN)}</i>"
 
         return f"""
 🛍 <b>Packages</b>
 
-<b>1 coin 🪙 = {cost}</b>
+<b>1 coin 🪙 = {cost}</b>{gift_packages_info if len(gift_packages) > 0 else ''}
 
 To select a package, click the button:
 """
@@ -1929,9 +1948,9 @@ Choose action 👇
 ─────────────
 
 📷 <b>Support Photos/Documents</b>: {'✅' if daily_limits[Quota.WORK_WITH_FILES] or additional_usage_quota[Quota.WORK_WITH_FILES] else '❌'}
-🎭 <b>Access to a catalog with digital employees</b>: {'✅' if daily_limits[Quota.ACCESS_TO_CATALOG] or additional_usage_quota[Quota.ACCESS_TO_CATALOG] else '❌'}
-🎙 <b>Voice messages</b>: {'✅' if daily_limits[Quota.VOICE_MESSAGES] or additional_usage_quota[Quota.VOICE_MESSAGES] else '❌'}
-⚡ <b>Fast answers</b>: {'✅' if daily_limits[Quota.FAST_MESSAGES] or additional_usage_quota[Quota.FAST_MESSAGES] else '❌'}
+🎭 <b>Access to a Roles Catalog</b>: {'✅' if daily_limits[Quota.ACCESS_TO_CATALOG] or additional_usage_quota[Quota.ACCESS_TO_CATALOG] else '❌'}
+🎙 <b>Voice Messages</b>: {'✅' if daily_limits[Quota.VOICE_MESSAGES] or additional_usage_quota[Quota.VOICE_MESSAGES] else '❌'}
+⚡ <b>Fast Answers</b>: {'✅' if daily_limits[Quota.FAST_MESSAGES] or additional_usage_quota[Quota.FAST_MESSAGES] else '❌'}
 
 ─────────────
 
@@ -2423,6 +2442,16 @@ Please send a different input
 Your voice got lost in the AI space!
 
 <b>To unlock the magic of voice-to-text conversion</b>, simply use the magic of the buttons below:
+"""
+
+    # Work with files
+    WORK_WITH_FILES = "📷 Working with photos/documents"
+    WORK_WITH_FILES_FORBIDDEN_ERROR = """
+🔒 <b>You’ve Entered the VIP Zone!</b>
+
+You currently don't have access to work with photos and documents
+
+You can gain access by clicking the button below:
 """
 
     # Admin

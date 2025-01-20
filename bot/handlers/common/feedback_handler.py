@@ -31,10 +31,9 @@ async def feedback(message: Message, state: FSMContext):
 async def handle_feedback(message: Message, user_id: str, state: FSMContext):
     user_language_code = await get_user_language(user_id, state.storage)
 
-    reply_markup = build_feedback_keyboard(user_language_code)
     await message.answer(
         text=get_localization(user_language_code).FEEDBACK_INFO,
-        reply_markup=reply_markup,
+        reply_markup=build_feedback_keyboard(user_language_code),
     )
 
     await state.set_state(Feedback.waiting_for_feedback)
@@ -55,11 +54,10 @@ async def handle_feedback_sent(message: Message, state: FSMContext):
         message=text,
     )
 
-    reply_markup = build_manage_feedback_keyboard(user_language_code, user_id, feedback.id)
     await message.bot.send_message(
         chat_id=config.SUPER_ADMIN_ID,
         text=f'<b>{feedback.id} from {user_id}</b>',
-        reply_markup=reply_markup,
+        reply_markup=build_manage_feedback_keyboard(user_language_code, user_id, feedback.id),
     )
 
     await message.reply(

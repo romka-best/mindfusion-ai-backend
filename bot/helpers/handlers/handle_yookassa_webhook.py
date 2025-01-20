@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from aiogram import Bot, Dispatcher
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
@@ -11,6 +11,7 @@ from bot.config import config, MessageEffect, MessageSticker
 from bot.database.main import firebase
 from bot.database.models.common import Currency, PaymentMethod
 from bot.database.models.package import PackageStatus
+from bot.database.models.product import ProductType, ProductCategory
 from bot.database.models.subscription import (
     SubscriptionStatus,
     SUBSCRIPTION_FREE_LIMITS,
@@ -21,7 +22,8 @@ from bot.database.operations.cart.getters import get_cart_by_user_id
 from bot.database.operations.cart.updaters import update_cart
 from bot.database.operations.package.getters import get_packages_by_provider_payment_charge_id
 from bot.database.operations.package.updaters import update_package
-from bot.database.operations.product.getters import get_product
+from bot.database.operations.package.writers import write_package
+from bot.database.operations.product.getters import get_product, get_active_products_by_product_type_and_category
 from bot.database.operations.subscription.getters import (
     get_subscription,
     get_subscription_by_provider_payment_charge_id,
@@ -399,6 +401,55 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     await update_user(package.user_id, {
                         'discount': 0,
                     })
+
+                if package.amount >= 500:
+                    gift_products = await get_active_products_by_product_type_and_category(
+                        ProductType.PACKAGE,
+                        ProductCategory.OTHER,
+                    )
+                    for gift_product in gift_products:
+                        until_at = None
+                        if gift_product.details.get('is_recurring', False):
+                            current_date = datetime.now(timezone.utc)
+                            until_at = current_date + timedelta(days=30)
+
+                        gift_package = await write_package(
+                            None,
+                            package.user_id,
+                            gift_product.id,
+                            PackageStatus.WAITING,
+                            package.currency,
+                            0,
+                            0,
+                            1,
+                            PaymentMethod.YOOKASSA,
+                            payment.id,
+                            until_at,
+                        )
+
+                        transaction = firebase.db.transaction()
+                        await create_package(
+                            transaction,
+                            gift_package.id,
+                            gift_package.user_id,
+                            gift_package.income_amount,
+                            payment.id,
+                        )
+
+                        await write_transaction(
+                            user_id=gift_package.user_id,
+                            type=TransactionType.INCOME,
+                            product_id=gift_package.product_id,
+                            amount=0,
+                            clear_amount=0,
+                            currency=gift_package.currency,
+                            quantity=gift_package.quantity,
+                            details={
+                                'payment_method': PaymentMethod.YOOKASSA,
+                                'package_id': gift_package.id,
+                                'provider_payment_charge_id': payment.id,
+                            },
+                        )
 
                 await bot.send_sticker(
                     chat_id=user.telegram_chat_id,

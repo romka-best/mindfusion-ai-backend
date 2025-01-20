@@ -1,3 +1,4 @@
+import json
 import os
 from dataclasses import field
 from enum import StrEnum
@@ -5,7 +6,7 @@ from pathlib import Path
 from typing import ClassVar
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import SecretStr
+from pydantic import SecretStr, field_validator
 
 
 class MessageEffect(StrEnum):
@@ -64,14 +65,22 @@ class Settings(BaseSettings):
 
     BOT_URL: str
     BOT_TOKEN: SecretStr
+    ADDITIONAL_BOT_TOKENS: list[SecretStr]
+
+    @field_validator("ADDITIONAL_BOT_TOKENS", mode="before")
+    @classmethod
+    def parse_json(cls, value):
+        if isinstance(value, str):
+            return [SecretStr(token) for token in json.loads(value)]
+        return value
 
     MESSAGE_EFFECTS: dict[MessageEffect, str] = field(default_factory=lambda: {
-        MessageEffect.FIRE: '5104841245755180586', # 🔥
-        MessageEffect.LIKE: '5107584321108051014', # 👍
-        MessageEffect.DISLIKE: '5104858069142078462', # 👎
-        MessageEffect.HEART: '5159385139981059251', # ❤️
-        MessageEffect.CONGRATS: '5046509860389126442', # 🎉
-        MessageEffect.POOP: '5046589136895476101', # 💩
+        MessageEffect.FIRE: '5104841245755180586',  # 🔥
+        MessageEffect.LIKE: '5107584321108051014',  # 👍
+        MessageEffect.DISLIKE: '5104858069142078462',  # 👎
+        MessageEffect.HEART: '5159385139981059251',  # ❤️
+        MessageEffect.CONGRATS: '5046509860389126442',  # 🎉
+        MessageEffect.POOP: '5046589136895476101',  # 💩
     })
     MESSAGE_STICKERS: dict[MessageSticker, str] = field(default_factory=lambda: {
         MessageSticker.LOGO: 'CAACAgIAAxkBAAENOatnRjb80J2N4a8yNcN7pKuIutcOwgACE2cAAuj3MUqczl2UrDJzHjYE',
@@ -91,10 +100,6 @@ class Settings(BaseSettings):
 
     YOOKASSA_ACCOUNT_ID: SecretStr
     YOOKASSA_SECRET_KEY: SecretStr
-
-    PAY_SELECTION_SITE_ID: SecretStr
-    PAY_SELECTION_SECRET_KEY: SecretStr
-    PAY_SELECTION_PUBLIC_KEY: SecretStr
 
     STRIPE_PUBLISH_KEY: SecretStr
     STRIPE_SECRET_KEY: SecretStr

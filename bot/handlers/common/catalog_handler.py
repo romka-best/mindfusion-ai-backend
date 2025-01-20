@@ -51,11 +51,9 @@ async def catalog(message: Message, state: FSMContext):
 
     user_language_code = await get_user_language(str(message.from_user.id), state.storage)
 
-    text = get_localization(user_language_code).CATALOG_INFO
-    reply_markup = build_catalog_keyboard(user_language_code)
     await message.answer(
-        text=text,
-        reply_markup=reply_markup,
+        text=get_localization(user_language_code).CATALOG_INFO,
+        reply_markup=build_catalog_keyboard(user_language_code),
     )
 
 
@@ -90,17 +88,15 @@ async def handle_catalog_digital_employees(
     current_chat = await get_chat_by_user_id(user_id)
     roles = await get_roles()
 
-    text = get_localization(user_language_code).CATALOG_DIGITAL_EMPLOYEES_INFO
-    reply_markup = build_catalog_digital_employees_keyboard(
-        user_language_code,
-        current_chat.role_id,
-        roles,
-        model,
-        from_settings,
-    )
     await message.edit_text(
-        text=text,
-        reply_markup=reply_markup,
+        text=get_localization(user_language_code).CATALOG_DIGITAL_EMPLOYEES_INFO,
+        reply_markup=build_catalog_digital_employees_keyboard(
+            user_language_code,
+            current_chat.role_id,
+            roles,
+            model,
+            from_settings,
+        ),
     )
 
 
@@ -119,28 +115,24 @@ async def handle_catalog_digital_employees_selection(callback_query: CallbackQue
             if len(callback_query.data.split(':')) == 4:
                 chosen_model = cast(Model, callback_query.data.split(':')[-1])
                 human_model = get_human_model(chosen_model, user_language_code)
-                reply_markup = build_settings_keyboard(
-                    language_code=user_language_code,
-                    model=chosen_model,
-                    model_type=get_model_type(chosen_model),
-                    settings=user.settings,
-                )
                 await callback_query.message.edit_text(
                     text=get_localization(user_language_code).settings_info(human_model, chosen_model),
-                    reply_markup=reply_markup,
+                    reply_markup=build_settings_keyboard(
+                        language_code=user_language_code,
+                        model=chosen_model,
+                        model_type=get_model_type(chosen_model),
+                        settings=user.settings,
+                    ),
                 )
             else:
-                reply_markup = build_settings_choose_text_model_keyboard(user_language_code)
                 await callback_query.message.edit_text(
                     text=get_localization(user_language_code).SETTINGS_CHOOSE_MODEL,
-                    reply_markup=reply_markup,
+                    reply_markup=build_settings_choose_text_model_keyboard(user_language_code),
                 )
         else:
-            text = get_localization(user_language_code).CATALOG_INFO
-            reply_markup = build_catalog_keyboard(user_language_code)
             await callback_query.message.edit_text(
-                text=text,
-                reply_markup=reply_markup,
+                text=get_localization(user_language_code).CATALOG_INFO,
+                reply_markup=build_catalog_keyboard(user_language_code),
             )
         return
 
@@ -150,12 +142,10 @@ async def handle_catalog_digital_employees_selection(callback_query: CallbackQue
     role_photo_link = firebase.get_public_url(role_photo.name)
 
     if not user.daily_limits[Quota.ACCESS_TO_CATALOG] and not user.additional_usage_quota[Quota.ACCESS_TO_CATALOG]:
-        text = get_localization(user_language_code).CATALOG_DIGITAL_EMPLOYEES_FORBIDDEN_ERROR
-        reply_markup = build_buy_motivation_keyboard(user_language_code)
         await callback_query.message.reply_photo(
             photo=URLInputFile(role_photo_link, filename=role.photo, timeout=300),
-            caption=text,
-            reply_markup=reply_markup,
+            caption=get_localization(user_language_code).CATALOG_DIGITAL_EMPLOYEES_FORBIDDEN_ERROR,
+            reply_markup=build_buy_motivation_keyboard(user_language_code),
             allow_sending_without_reply=True,
         )
     else:
@@ -227,11 +217,9 @@ async def handle_catalog_prompts_model_type_selection(callback_query: CallbackQu
 
     model_type = cast(ModelType, callback_query.data.split(':')[1])
     if model_type == 'back':
-        text = get_localization(user_language_code).CATALOG_INFO
-        reply_markup = build_catalog_keyboard(user_language_code)
         await callback_query.message.edit_text(
-            text=text,
-            reply_markup=reply_markup,
+            text=get_localization(user_language_code).CATALOG_INFO,
+            reply_markup=build_catalog_keyboard(user_language_code),
         )
     else:
         await state.update_data(prompt_model_type=model_type)
@@ -294,11 +282,9 @@ async def handle_catalog_prompts_category(message: Message, user_id: str, state:
 
     prompt_subcategories = await get_prompt_subcategories_by_category_id(user_data.get('prompt_category_id'))
 
-    text = get_localization(user_language_code).CATALOG_PROMPTS_CHOOSE_SUBCATEGORY
-    reply_markup = build_catalog_prompt_subcategories_keyboard(user_language_code, prompt_subcategories)
     await message.edit_text(
-        text=text,
-        reply_markup=reply_markup,
+        text=get_localization(user_language_code).CATALOG_PROMPTS_CHOOSE_SUBCATEGORY,
+        reply_markup=build_catalog_prompt_subcategories_keyboard(user_language_code, prompt_subcategories),
     )
 
 
@@ -330,11 +316,9 @@ async def handle_catalog_prompts_subcategory(message: Message, user_id: str, sta
 
     prompts = await get_prompts_by_subcategory_id(user_data.get('prompt_subcategory_id'))
 
-    text = get_localization(user_language_code).catalog_prompts_choose_prompt(prompts)
-    reply_markup = build_prompts_catalog_keyboard(user_language_code, prompts)
     await message.edit_text(
-        text=text,
-        reply_markup=reply_markup,
+        text=get_localization(user_language_code).catalog_prompts_choose_prompt(prompts),
+        reply_markup=build_prompts_catalog_keyboard(user_language_code, prompts),
     )
 
 
@@ -371,11 +355,9 @@ async def handle_catalog_prompt(message: Message, user_id: str, state: FSMContex
         if product:
             products.append(product)
 
-    text = get_localization(user_language_code).catalog_prompts_info_prompt(prompt, products)
-    reply_markup = build_prompts_catalog_chosen_keyboard(user_language_code, prompt)
     await message.edit_text(
-        text=text,
-        reply_markup=reply_markup,
+        text=get_localization(user_language_code).catalog_prompts_info_prompt(prompt, products),
+        reply_markup=build_prompts_catalog_chosen_keyboard(user_language_code, prompt),
     )
 
 
@@ -447,13 +429,12 @@ async def handle_catalog_prompt_info(message: Message, user_id: str, state: FSMC
     user_data = await state.get_data()
 
     text = user_data.get('prompt_text')
-    reply_markup = build_prompts_catalog_copy_keyboard(
-        user_language_code,
-        text,
-    )
     await message.edit_text(
         text=text,
-        reply_markup=reply_markup,
+        reply_markup=build_prompts_catalog_copy_keyboard(
+            user_language_code,
+            text,
+        ),
     )
 
 
