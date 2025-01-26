@@ -179,7 +179,7 @@ async def handle_luma_photon(
 
             generations = await get_generations_by_request_id(request.id)
             for generation in generations:
-                generation.status = GenerationStatus.FINISHED,
+                generation.status = GenerationStatus.FINISHED
                 generation.has_error = True
                 await update_generation(
                     generation.id,
@@ -293,6 +293,8 @@ async def handle_luma_ray(
             result_id = await get_response_video(
                 prompt,
                 user.settings[Model.LUMA_RAY][UserSettings.ASPECT_RATIO],
+                user.settings[Model.LUMA_RAY][UserSettings.DURATION],
+                user.settings[Model.LUMA_RAY][UserSettings.RESOLUTION],
                 video_frame_link,
             )
 
@@ -328,7 +330,7 @@ async def handle_luma_ray(
 
             generations = await get_generations_by_request_id(request.id)
             for generation in generations:
-                generation.status = GenerationStatus.FINISHED,
+                generation.status = GenerationStatus.FINISHED
                 generation.has_error = True
                 await update_generation(
                     generation.id,

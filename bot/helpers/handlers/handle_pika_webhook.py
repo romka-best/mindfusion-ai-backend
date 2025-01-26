@@ -47,24 +47,34 @@ async def handle_pika_webhook(bot: Bot, dp: Dispatcher, body: dict):
             'has_error': generation.has_error,
         })
 
-        error_message = body.get('error', {}).get('message', '')
-        logging.exception(f'Error in pika_webhook', error_message)
-        await bot.send_sticker(
-            chat_id=user.telegram_chat_id,
-            sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
-        )
+        error_message = body.get('error', {}).get('message', {}).get('message', '')
+        if 'content violation' in error_message:
+            await bot.send_sticker(
+                chat_id=user.telegram_chat_id,
+                sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
+            )
+            await bot.send_message(
+                chat_id=user.telegram_chat_id,
+                text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
+            )
+        else:
+            logging.exception(f'Error in pika_webhook', error_message)
+            await bot.send_sticker(
+                chat_id=user.telegram_chat_id,
+                sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
+            )
 
-        await bot.send_message(
-            chat_id=user.telegram_chat_id,
-            text=get_localization(user_language_code).ERROR,
-            reply_markup=build_error_keyboard(user_language_code),
-        )
-        await send_error_info(
-            bot=bot,
-            user_id=user.id,
-            info=str(error_message),
-            hashtags=['pika'],
-        )
+            await bot.send_message(
+                chat_id=user.telegram_chat_id,
+                text=get_localization(user_language_code).ERROR,
+                reply_markup=build_error_keyboard(user_language_code),
+            )
+            await send_error_info(
+                bot=bot,
+                user_id=user.id,
+                info=str(error_message),
+                hashtags=['pika'],
+            )
     else:
         generation_result = generations_result[0]
         generation.result = generation_result.get('video_url', '')

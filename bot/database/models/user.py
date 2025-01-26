@@ -38,6 +38,8 @@ from bot.database.models.common import (
     RunwayResolution,
     RunwayDuration,
     LumaRayVersion,
+    LumaRayResolution,
+    LumaRayDuration,
     PikaVersion,
 )
 from bot.database.models.subscription import SUBSCRIPTION_FREE_LIMITS
@@ -180,7 +182,7 @@ class User:
             UserSettings.SHOW_USAGE_QUOTA: False,
             UserSettings.TURN_ON_VOICE_MESSAGES: False,
             UserSettings.VOICE: 'alloy',
-            UserSettings.VERSION: PerplexityGPTVersion.V3_Sonar_Large,
+            UserSettings.VERSION: PerplexityGPTVersion.Sonar,
             UserSettings.SHOW_EXAMPLES: False,
         },
         Model.EIGHTIFY: {
@@ -296,7 +298,9 @@ class User:
             UserSettings.SHOW_USAGE_QUOTA: True,
             UserSettings.SEND_TYPE: SendType.VIDEO,
             UserSettings.VERSION: LumaRayVersion.LATEST,
+            UserSettings.RESOLUTION: LumaRayResolution.HD,
             UserSettings.ASPECT_RATIO: AspectRatio.LANDSCAPE,
+            UserSettings.DURATION: LumaRayDuration.SECONDS_5,
             UserSettings.SHOW_EXAMPLES: False,
         },
         Model.PIKA: {

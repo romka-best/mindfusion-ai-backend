@@ -580,12 +580,6 @@ def build_model_restricted_keyboard(language_code: LanguageCode) -> InlineKeyboa
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).OPEN_BONUS_INFO,
-                callback_data='model_restricted:open_bonus_info'
-            )
-        ],
-        [
-            InlineKeyboardButton(
                 text=get_localization(language_code).OPEN_BUY_SUBSCRIPTIONS_INFO,
                 callback_data='model_restricted:open_buy_subscriptions_info'
             )
@@ -594,6 +588,12 @@ def build_model_restricted_keyboard(language_code: LanguageCode) -> InlineKeyboa
             InlineKeyboardButton(
                 text=get_localization(language_code).OPEN_BUY_PACKAGES_INFO,
                 callback_data='model_restricted:open_buy_packages_info'
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).OPEN_BONUS_INFO,
+                callback_data='model_restricted:open_bonus_info'
             )
         ],
     ]

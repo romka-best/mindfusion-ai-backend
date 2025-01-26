@@ -65,12 +65,6 @@ def build_buy_motivation_keyboard(language_code: LanguageCode) -> InlineKeyboard
     buttons = [
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).OPEN_BONUS_INFO,
-                callback_data='buy_motivation:open_bonus_info'
-            )
-        ],
-        [
-            InlineKeyboardButton(
                 text=get_localization(language_code).OPEN_BUY_SUBSCRIPTIONS_INFO,
                 callback_data='buy_motivation:open_buy_subscriptions_info'
             )
@@ -79,6 +73,12 @@ def build_buy_motivation_keyboard(language_code: LanguageCode) -> InlineKeyboard
             InlineKeyboardButton(
                 text=get_localization(language_code).OPEN_BUY_PACKAGES_INFO,
                 callback_data='buy_motivation:open_buy_packages_info'
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).OPEN_BONUS_INFO,
+                callback_data='buy_motivation:open_bonus_info'
             )
         ],
     ]
@@ -103,12 +103,6 @@ def build_time_limit_exceeded_chosen_keyboard(language_code: LanguageCode) -> In
     buttons = [
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).OPEN_BONUS_INFO,
-                callback_data='limit_exceeded:open_bonus_info'
-            )
-        ],
-        [
-            InlineKeyboardButton(
                 text=get_localization(language_code).OPEN_BUY_SUBSCRIPTIONS_INFO,
                 callback_data='limit_exceeded:open_buy_subscriptions_info'
             )
@@ -117,6 +111,12 @@ def build_time_limit_exceeded_chosen_keyboard(language_code: LanguageCode) -> In
             InlineKeyboardButton(
                 text=get_localization(language_code).OPEN_BUY_PACKAGES_INFO,
                 callback_data='limit_exceeded:open_buy_packages_info'
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).OPEN_BONUS_INFO,
+                callback_data='limit_exceeded:open_bonus_info'
             )
         ],
     ]

@@ -35,9 +35,10 @@ from bot.locales.types import LanguageCode
 perplexity_router = Router()
 
 PRICE_PERPLEXITY_REQUEST = 0.005
-PRICE_PERPLEXITY_SMALL_TOKEN = 0.0000002
-PRICE_PERPLEXITY_LARGE_TOKEN = 0.000001
-PRICE_PERPLEXITY_HUGE_TOKEN = 0.000005
+PRICE_PERPLEXITY_SOLAR_INPUT_TOKEN = 0.000001
+PRICE_PERPLEXITY_SOLAR_OUTPUT_TOKEN = 0.000001
+PRICE_PERPLEXITY_SOLAR_PRO_INPUT_TOKEN = 0.000003
+PRICE_PERPLEXITY_SOLAR_PRO_OUTPUT_TOKEN = 0.000015
 
 
 @perplexity_router.message(Command('perplexity'))
@@ -98,10 +99,10 @@ async def handle_perplexity(message: Message, state: FSMContext, user: User, pho
         await write_message(user.current_chat_id, 'user', user.id, text)
 
     chat = await get_chat(user.current_chat_id)
-    if not user.subscription_id:
-        limit = 6
-    else:
+    if user.subscription_id:
         limit = 12
+    else:
+        limit = 6
     messages = await get_messages_by_chat_id(
         chat_id=user.current_chat_id,
         limit=limit,
@@ -158,15 +159,12 @@ async def handle_perplexity(message: Message, state: FSMContext, user: User, pho
 
             response = await get_response_message(user.settings[user.current_model][UserSettings.VERSION], history)
             response_message = response['message']
-            if user.settings[user.current_model][UserSettings.VERSION] == PerplexityGPTVersion.V3_Sonar_Small:
-                input_price = response['input_tokens'] * PRICE_PERPLEXITY_SMALL_TOKEN
-                output_price = response['output_tokens'] * PRICE_PERPLEXITY_SMALL_TOKEN
-            elif user.settings[user.current_model][UserSettings.VERSION] == PerplexityGPTVersion.V3_Sonar_Large:
-                input_price = response['input_tokens'] * PRICE_PERPLEXITY_LARGE_TOKEN
-                output_price = response['output_tokens'] * PRICE_PERPLEXITY_LARGE_TOKEN
-            elif user.settings[user.current_model][UserSettings.VERSION] == PerplexityGPTVersion.V3_Sonar_Huge:
-                input_price = response['input_tokens'] * PRICE_PERPLEXITY_HUGE_TOKEN
-                output_price = response['output_tokens'] * PRICE_PERPLEXITY_HUGE_TOKEN
+            if user.settings[user.current_model][UserSettings.VERSION] == PerplexityGPTVersion.Sonar:
+                input_price = response['input_tokens'] * PRICE_PERPLEXITY_SOLAR_INPUT_TOKEN
+                output_price = response['output_tokens'] * PRICE_PERPLEXITY_SOLAR_OUTPUT_TOKEN
+            elif user.settings[user.current_model][UserSettings.VERSION] == PerplexityGPTVersion.Sonar_Pro:
+                input_price = response['input_tokens'] * PRICE_PERPLEXITY_SOLAR_PRO_INPUT_TOKEN
+                output_price = response['output_tokens'] * PRICE_PERPLEXITY_SOLAR_PRO_OUTPUT_TOKEN
 
             product = await get_product_by_quota(Quota.PERPLEXITY)
 

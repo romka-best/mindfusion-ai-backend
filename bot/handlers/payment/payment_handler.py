@@ -63,6 +63,7 @@ from bot.keyboards.payment.payment import (
     build_payment_method_for_package_keyboard,
     build_payment_method_for_cart_keyboard,
     build_return_to_packages_keyboard,
+    build_return_to_cart_keyboard,
 )
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
@@ -532,7 +533,7 @@ async def handle_package_selection(callback_query: CallbackQuery, state: FSMCont
         )
         await callback_query.message.edit_caption(
             caption=caption,
-            reply_markup=build_package_cart_keyboard(user_language_code),
+            reply_markup=build_package_cart_keyboard(user_language_code, not len(cart.items)),
         )
     else:
         product = await get_product(package_type)
@@ -803,7 +804,7 @@ async def handle_package_add_to_cart_selection(callback_query: CallbackQuery, st
                 media=URLInputFile(photo_link, filename=photo.name, timeout=300),
                 caption=caption,
             ),
-            reply_markup=build_package_cart_keyboard(user_language_code),
+            reply_markup=build_package_cart_keyboard(user_language_code, not len(cart.items)),
         )
     elif action == 'continue_shopping':
         await handle_package(callback_query.message, user_id, state, True)
@@ -845,7 +846,7 @@ async def handle_package_cart_selection(callback_query: CallbackQuery, state: FS
             )
             await callback_query.message.edit_caption(
                 caption=caption,
-                reply_markup=build_package_cart_keyboard(user_language_code),
+                reply_markup=build_package_cart_keyboard(user_language_code, not len(cart.items)),
             )
     elif action == 'change_currency':
         if user.currency == Currency.RUB:
@@ -877,7 +878,7 @@ async def handle_package_cart_selection(callback_query: CallbackQuery, state: FS
         )
         await callback_query.message.edit_caption(
             caption=caption,
-            reply_markup=build_package_cart_keyboard(user_language_code),
+            reply_markup=build_package_cart_keyboard(user_language_code, not len(cart.items)),
         )
     elif action == 'back':
         await handle_package(callback_query.message, user_id, state, True)
@@ -907,7 +908,7 @@ async def handle_package_proceed_to_checkout_selection(callback_query: CallbackQ
     )
     await callback_query.message.edit_caption(
         caption=caption,
-        reply_markup=build_package_cart_keyboard(user_language_code),
+        reply_markup=build_package_cart_keyboard(user_language_code, not len(cart.items)),
     )
 
 
@@ -1099,7 +1100,7 @@ async def handle_payment_method_cart_selection(callback_query: CallbackQuery, st
         )
         await callback_query.message.edit_caption(
             caption=caption,
-            reply_markup=build_package_cart_keyboard(user_language_code),
+            reply_markup=build_package_cart_keyboard(user_language_code, not len(cart.items)),
         )
     else:
         packages_with_waiting_status = await get_packages_by_user_id_and_status(user_id, PackageStatus.WAITING)
@@ -1170,7 +1171,7 @@ async def handle_payment_method_cart_selection(callback_query: CallbackQuery, st
         ):
             await callback_query.message.edit_caption(
                 caption=get_localization(user_language_code).payment_purchase_minimal_price(currency, amount),
-                reply_markup=build_return_to_packages_keyboard(user_language_code),
+                reply_markup=build_return_to_cart_keyboard(user_language_code),
             )
             return
 
@@ -1271,7 +1272,6 @@ async def handle_successful_payment(message: Message, state: FSMContext):
     user_language_code = await get_user_language(user_id, state.storage)
 
     payment = message.successful_payment
-    print(payment.invoice_payload)
     payment_type = payment.invoice_payload.split(':')[0]
     if payment_type == PaymentType.SUBSCRIPTION:
         _, subscription_id = payment.invoice_payload.split(':')
@@ -1324,7 +1324,6 @@ async def handle_successful_payment(message: Message, state: FSMContext):
             })
 
         await message.answer_sticker(
-            chat_id=user.telegram_chat_id,
             sticker=config.MESSAGE_STICKERS.get(MessageSticker.LOVE),
         )
         await message.answer(
@@ -1433,7 +1432,6 @@ async def handle_successful_payment(message: Message, state: FSMContext):
                 )
 
         await message.answer_sticker(
-            chat_id=user.telegram_chat_id,
             sticker=config.MESSAGE_STICKERS.get(MessageSticker.LOVE),
         )
         await message.answer(
@@ -1496,7 +1494,6 @@ async def handle_successful_payment(message: Message, state: FSMContext):
             })
 
         await message.answer_sticker(
-            chat_id=user.telegram_chat_id,
             sticker=config.MESSAGE_STICKERS.get(MessageSticker.LOVE),
         )
         await message.answer(

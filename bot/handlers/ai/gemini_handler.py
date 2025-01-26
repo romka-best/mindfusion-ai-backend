@@ -154,9 +154,6 @@ async def handle_gemini(
     filenames=None,
     single_mode=False,
 ):
-    if user_quota != Quota.GEMINI_2_FLASH and user_quota != Quota.GEMINI_1_PRO and user_quota != Quota.GEMINI_1_ULTRA:
-        raise NotImplementedError(f'User quota is not implemented: {user_quota}')
-
     await state.update_data(is_processing=True)
 
     user_language_code = await get_user_language(user.id, state.storage)
@@ -177,12 +174,12 @@ async def handle_gemini(
         await write_message(user.current_chat_id, 'user', user.id, text)
 
     chat = await get_chat(user.current_chat_id)
-    if not user.subscription_id:
-        limit = 6
-    elif user_quota == Quota.GEMINI_1_ULTRA:
-        limit = 20
-    else:
+    if user_quota == Quota.GEMINI_2_FLASH or user_quota == Quota.GEMINI_1_ULTRA:
+        limit = 18
+    elif user.subscription_id:
         limit = 12
+    else:
+        limit = 6
     messages = await get_messages_by_chat_id(
         chat_id=user.current_chat_id,
         limit=limit,

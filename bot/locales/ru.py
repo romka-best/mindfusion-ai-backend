@@ -1747,9 +1747,9 @@ class Russian(Texts):
             cost = f"{cost}{Currency.SYMBOLS[currency]}"
             gift_packages_sum = f"500{Currency.SYMBOLS[currency]}"
 
-        gift_packages_info = f"\n\n🎁 <i>Купите на {gift_packages_sum} или больше — получите эти пакеты в подарок:</i>"
+        gift_packages_info = f"\n\n🎁 <span class='tg-spoiler'>При покупке от {gift_packages_sum} — получите эти пакеты в подарок:</span>"
         for gift_package in gift_packages:
-            gift_packages_info += f"\n<i>{gift_package.names.get(LanguageCode.RU)}</i>"
+            gift_packages_info += f"\n<span class='tg-spoiler'>{gift_package.names.get(LanguageCode.RU)}</span>"
 
         return f"""
 🛍 <b>Пакеты</b>
@@ -3431,12 +3431,32 @@ class Russian(Texts):
             is_last = index == len(subscription_products) - 1
             left_part = '┣' if not is_last else '┗'
             right_part = '\n' if not is_last else ''
+            text_requests_price = 0
+            text_requests_price_before = 0
+            summary_requests_price = 0
+            summary_requests_price_before = 0
+            image_requests_price = 0
+            image_requests_price_before = 0
+            music_requests_price = 0
+            music_requests_price_before = 0
+            video_requests_price = 0
+            video_requests_price_before = 0
             average_price = 0
             average_price_before = 0
             all_price = 0
             all_price_before = 0
 
             for subscription_product_id in subscription_product_ids:
+                text_requests_price += count_expense_money[subscription_product_id]['TEXT']
+                text_requests_price_before += count_expense_money_before[subscription_product_id]['TEXT']
+                summary_requests_price += count_expense_money[subscription_product_id]['SUMMARY']
+                summary_requests_price_before += count_expense_money_before[subscription_product_id]['SUMMARY']
+                image_requests_price += count_expense_money[subscription_product_id]['IMAGE']
+                image_requests_price_before += count_expense_money_before[subscription_product_id]['IMAGE']
+                music_requests_price += count_expense_money[subscription_product_id]['MUSIC']
+                music_requests_price_before += count_expense_money_before[subscription_product_id]['MUSIC']
+                video_requests_price += count_expense_money[subscription_product_id]['VIDEO']
+                video_requests_price_before += count_expense_money_before[subscription_product_id]['VIDEO']
                 average_price += count_expense_money[subscription_product_id]['AVERAGE_PRICE']
                 average_price_before += count_expense_money_before[subscription_product_id]['AVERAGE_PRICE']
                 all_price += count_expense_money[subscription_product_id]['ALL']
@@ -3445,6 +3465,11 @@ class Russian(Texts):
             final_sum += all_price
             final_sum_before += all_price_before
             subscription_info += f"""    {left_part} <b>{subscription_product_name}:</b>
+            ┣ 🔤 Текстовые модели: ${round(text_requests_price, 4)} {calculate_percentage_difference(is_all_time, text_requests_price, text_requests_price_before)}
+            ┣ 📝 Резюме модели: ${round(summary_requests_price, 4)} {calculate_percentage_difference(is_all_time, summary_requests_price, summary_requests_price_before)}
+            ┣ 🖼 Графические модели: ${round(image_requests_price, 4)} {calculate_percentage_difference(is_all_time, image_requests_price, image_requests_price_before)}
+            ┣ 🎵 Музыкальные модели: ${round(music_requests_price, 4)} {calculate_percentage_difference(is_all_time, music_requests_price, music_requests_price_before)}
+            ┣ 📹 Видео модели: ${round(video_requests_price, 4)} {calculate_percentage_difference(is_all_time, video_requests_price, video_requests_price_before)}
             ┣ 💸 Средняя цена подписчика: ${round(average_price, 4)} {calculate_percentage_difference(is_all_time, average_price, average_price_before)}
             ┗ 💰 Всего: ${round(all_price, 4)} {calculate_percentage_difference(is_all_time, all_price, all_price_before)}{right_part}"""
 

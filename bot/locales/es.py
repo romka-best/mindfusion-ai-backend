@@ -1716,9 +1716,9 @@ El número ingresado supera lo que puedes adquirir.
             cost = f"{cost}{Currency.SYMBOLS[currency]}"
             gift_packages_sum = f"500{Currency.SYMBOLS[currency]}"
 
-        gift_packages_info = f"\n\n🎁 <i>Gasta {gift_packages_sum} o más — recibe estos paquetes de regalo:</i>"
+        gift_packages_info = f"\n\n🎁 <span class='tg-spoiler'>Gasta {gift_packages_sum} o más — recibe estos paquetes de regalo:</span>"
         for gift_package in gift_packages:
-            gift_packages_info += f"\n<i>{gift_package.names.get(LanguageCode.ES)}</i>"
+            gift_packages_info += f"\n<span class='tg-spoiler'>{gift_package.names.get(LanguageCode.ES)}</span>"
 
         return f"""
 🛍 <b>Paquetes</b>

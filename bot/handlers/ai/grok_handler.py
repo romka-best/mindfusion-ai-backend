@@ -95,10 +95,10 @@ async def handle_grok(message: Message, state: FSMContext, user: User, photo_fil
         await write_message(user.current_chat_id, 'user', user.id, text)
 
     chat = await get_chat(user.current_chat_id)
-    if not user.subscription_id:
-        limit = 6
-    else:
+    if user.subscription_id:
         limit = 12
+    else:
+        limit = 6
     messages = await get_messages_by_chat_id(
         chat_id=user.current_chat_id,
         limit=limit,

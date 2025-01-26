@@ -1724,9 +1724,9 @@ class Hindi(Texts):
             cost = f"{cost}{Currency.SYMBOLS[currency]}"
             gift_packages_sum = f"500{Currency.SYMBOLS[currency]}"
 
-        gift_packages_info = f"\n\n🎁 <i>{gift_packages_sum} या उससे अधिक खर्च करें — इन पैकेजों को उपहार में पाएं:</i>"
+        gift_packages_info = f"\n\n🎁 <span class='tg-spoiler'>{gift_packages_sum} या उससे अधिक खर्च करें — इन पैकेजों को उपहार में पाएं:</span>"
         for gift_package in gift_packages:
-            gift_packages_info += f"\n<i>{gift_package.names.get(LanguageCode.HI)}</i>"
+            gift_packages_info += f"\n<span class='tg-spoiler'>{gift_package.names.get(LanguageCode.HI)}</span>"
 
         return f"""
 🛍 <b>पैकेज</b>

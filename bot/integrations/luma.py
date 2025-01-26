@@ -3,7 +3,7 @@ from typing import Optional
 from lumaai import AsyncLumaAI, NOT_GIVEN
 
 from bot.config import config
-from bot.database.models.common import AspectRatio, LumaPhotonVersion
+from bot.database.models.common import AspectRatio, LumaPhotonVersion, LumaRayDuration, LumaRayResolution
 
 WEBHOOK_LUMA_URL = config.WEBHOOK_URL + config.WEBHOOK_LUMA_PATH
 
@@ -34,6 +34,8 @@ async def get_response_image(
 async def get_response_video(
     prompt_text: str,
     aspect_ratio: AspectRatio,
+    duration: LumaRayDuration,
+    resolution: LumaRayResolution,
     prompt_image: Optional[str] = None,
 ) -> str:
     response = await client.generations.video.create(
@@ -45,7 +47,12 @@ async def get_response_video(
                 'type': 'image',
                 'url': prompt_image,
             }
-        }
+        },
+        # extra_body={
+        #     'model': 'ray-2',
+        #     'duration': duration,
+        #     'resolution': resolution,
+        # },
     )
 
     return response.id

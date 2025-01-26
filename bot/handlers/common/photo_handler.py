@@ -40,7 +40,7 @@ from bot.handlers.ai.flux_handler import handle_flux
 from bot.handlers.ai.gemini_handler import handle_gemini
 from bot.handlers.ai.grok_handler import handle_grok
 from bot.handlers.ai.kling_handler import handle_kling
-from bot.handlers.ai.luma_handler import handle_luma_photon, handle_luma_ray
+from bot.handlers.ai.luma_handler import handle_luma_photon
 from bot.handlers.ai.midjourney_handler import handle_midjourney
 from bot.handlers.ai.pika_handler import handle_pika
 from bot.handlers.ai.runway_handler import handle_runway
@@ -415,7 +415,6 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
     elif (
         user.current_model == Model.KLING or
         user.current_model == Model.RUNWAY or
-        user.current_model == Model.LUMA_RAY or
         user.current_model == Model.PIKA
     ):
         current_time = time.time()
@@ -443,8 +442,6 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
             await handle_kling(message, state, user, video_frame_photo_link)
         elif user.current_model == Model.RUNWAY:
             await handle_runway(message, state, user, video_frame_photo_link)
-        elif user.current_model == Model.LUMA_RAY:
-            await handle_luma_ray(message, state, user, video_frame_photo_link)
         elif user.current_model == Model.PIKA:
             await handle_pika(message, state, user, video_frame_photo_link)
     else:
@@ -545,7 +542,6 @@ async def handle_album(message: Message, state: FSMContext, album: list[Message]
         user.current_model == Model.PHOTOSHOP_AI or
         user.current_model == Model.KLING or
         user.current_model == Model.RUNWAY or
-        user.current_model == Model.LUMA_RAY or
         user.current_model == Model.PIKA
     ):
         await message.reply(
