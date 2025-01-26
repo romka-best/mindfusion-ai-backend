@@ -1713,9 +1713,9 @@ The entered number exceeds what you can purchase
             cost = f"{cost}{Currency.SYMBOLS[currency]}"
             gift_packages_sum = f"500{Currency.SYMBOLS[currency]}"
 
-        gift_packages_info = f"\n\n🎁 <i>Spend {gift_packages_sum} or more — get these packages as a gift:</i>"
+        gift_packages_info = f"\n\n🎁 <span class='tg-spoiler'>Spend {gift_packages_sum} or more — get these packages as a gift:</span>"
         for gift_package in gift_packages:
-            gift_packages_info += f"\n<i>{gift_package.names.get(LanguageCode.EN)}</i>"
+            gift_packages_info += f"\n<span class='tg-spoiler'>{gift_package.names.get(LanguageCode.EN)}</span>"
 
         return f"""
 🛍 <b>Packages</b>

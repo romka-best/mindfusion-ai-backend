@@ -353,20 +353,27 @@ def build_package_add_to_cart_selection_keyboard(language_code: LanguageCode) ->
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def build_package_cart_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
-    buttons = [
-        [
-            InlineKeyboardButton(
-                text=get_localization(language_code).PAYMENT_PROCEED_TO_CHECKOUT,
-                callback_data='package_cart:proceed_to_checkout'
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                text=get_localization(language_code).SHOPPING_CART_CLEAR,
-                callback_data='package_cart:clear'
-            )
-        ],
+def build_package_cart_keyboard(
+    language_code: LanguageCode,
+    is_empty: bool,
+) -> InlineKeyboardMarkup:
+    buttons = []
+    if not is_empty:
+        buttons.extend([
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).PAYMENT_PROCEED_TO_CHECKOUT,
+                    callback_data='package_cart:proceed_to_checkout'
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).SHOPPING_CART_CLEAR,
+                    callback_data='package_cart:clear'
+                )
+            ],
+        ])
+    buttons.extend([
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).PAYMENT_CHANGE_CURRENCY,
@@ -379,7 +386,7 @@ def build_package_cart_keyboard(language_code: LanguageCode) -> InlineKeyboardMa
                 callback_data='package_cart:back'
             )
         ],
-    ]
+    ])
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -456,6 +463,19 @@ def build_return_to_packages_keyboard(language_code: LanguageCode) -> InlineKeyb
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_BACK,
                 callback_data=f'pmp:back'
+            ),
+        ],
+    ]
+
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def build_return_to_cart_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).ACTION_BACK,
+                callback_data=f'pmc:back'
             ),
         ],
     ]

@@ -36,6 +36,7 @@ from bot.helpers.senders.send_document import send_document
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.senders.send_images import send_image
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
+from bot.keyboards.ai.face_swap import build_face_swap_upload_photo_keyboard
 from bot.keyboards.common.common import build_reaction_keyboard, build_error_keyboard, build_buy_motivation_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.types import LanguageCode
@@ -272,8 +273,9 @@ async def handle_replicate_face_swap(
         total_result = len(success_generations)
         if total_result != len(request_generations):
             await bot.send_message(
-                user.telegram_chat_id,
-                get_localization(user_language_code).FACE_SWAP_NO_FACE_FOUND_ERROR,
+                chat_id=user.telegram_chat_id,
+                text=get_localization(user_language_code).FACE_SWAP_NO_FACE_FOUND_ERROR,
+                reply_markup=build_face_swap_upload_photo_keyboard(user_language_code),
             )
 
         used_face_swap_package = await get_used_face_swap_package(

@@ -49,7 +49,7 @@ def build_face_swap_choose_package_keyboard(
 ) -> InlineKeyboardMarkup:
     buttons = []
     for i in range(0, len(packages), 2):
-        pair = packages[i:i+2]
+        pair = packages[i:i + 2]
         buttons.append(
             [
                 InlineKeyboardButton(
@@ -90,5 +90,18 @@ def build_face_swap_chosen_package_keyboard(language_code: LanguageCode, quantit
             )
         ],
     ])
+
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def build_face_swap_upload_photo_keyboard(language_code: LanguageCode):
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).PROFILE_UPLOAD_PHOTO,
+                callback_data=f'profile:change_photo'
+            ),
+        ],
+    ]
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)

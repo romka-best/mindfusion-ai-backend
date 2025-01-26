@@ -235,7 +235,7 @@ async def handle_flux(
 
             generations = await get_generations_by_request_id(request.id)
             for generation in generations:
-                generation.status = GenerationStatus.FINISHED,
+                generation.status = GenerationStatus.FINISHED
                 generation.has_error = True
                 await update_generation(
                     generation.id,

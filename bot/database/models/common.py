@@ -106,9 +106,8 @@ class GrokGPTVersion:
 
 
 class PerplexityGPTVersion:
-    V3_Sonar_Small = 'llama-3.1-sonar-small-128k-online'
-    V3_Sonar_Large = 'llama-3.1-sonar-large-128k-online'
-    V3_Sonar_Huge = 'llama-3.1-sonar-huge-128k-online'
+    Sonar = 'sonar'
+    Sonar_Pro = 'sonar-pro'
 
 
 class EightifyVersion:
@@ -256,6 +255,14 @@ class RunwayResolution:
 
 class LumaRayVersion:
     LATEST = 'LATEST'
+
+
+class LumaRayDuration:
+    SECONDS_5 = 5
+
+
+class LumaRayResolution:
+    HD = '720p'
 
 
 class PikaVersion:

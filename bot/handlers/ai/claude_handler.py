@@ -154,9 +154,6 @@ async def handle_claude(
     filenames=None,
     single_mode=False,
 ):
-    if user_quota != Quota.CLAUDE_3_HAIKU and user_quota != Quota.CLAUDE_3_SONNET and user_quota != Quota.CLAUDE_3_OPUS:
-        raise NotImplementedError(f'User quota is not implemented: {user_quota}')
-
     await state.update_data(is_processing=True)
 
     user_language_code = await get_user_language(user.id, state.storage)
@@ -179,10 +176,12 @@ async def handle_claude(
         await write_message(user.current_chat_id, 'user', user.id, text)
 
     chat = await get_chat(user.current_chat_id)
-    if not user.subscription_id or user_quota == Quota.CLAUDE_3_OPUS:
-        limit = 4
+    if user_quota == Quota.CLAUDE_3_OPUS:
+        limit = 2
+    elif user.subscription_id:
+        limit = 6
     else:
-        limit = 8
+        limit = 4
     messages = await get_messages_by_chat_id(
         chat_id=user.current_chat_id,
         limit=limit,

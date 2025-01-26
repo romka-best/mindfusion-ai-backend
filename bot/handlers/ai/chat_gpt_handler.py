@@ -169,11 +169,9 @@ async def handle_chatgpt(message: Message, state: FSMContext, user: User, user_q
     if user_quota == Quota.CHAT_GPT_O_1:
         limit = 2
     elif user_quota == Quota.CHAT_GPT_O_1_MINI:
-        limit = 6
-    elif not user.subscription_id:
         limit = 4
-    elif user_quota not in [Quota.CHAT_GPT_O_1, Quota.CHAT_GPT_O_1_MINI]:
-        limit = 8
+    elif user.subscription_id:
+        limit = 6
     else:
         limit = 4
     messages = await get_messages_by_chat_id(

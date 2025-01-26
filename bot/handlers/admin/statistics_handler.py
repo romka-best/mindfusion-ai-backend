@@ -69,6 +69,11 @@ async def get_zero():
 
 async def get_statistics_by_transactions_query(
     products: list[Product],
+    text_products: dict[str, str],
+    summary_products: dict[str, str],
+    image_products: dict[str, str],
+    music_products: dict[str, str],
+    video_products: dict[str, str],
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
 ):
@@ -119,6 +124,11 @@ async def get_statistics_by_transactions_query(
         'AVERAGE_EXAMPLE_PRICE': 0,
         'EXAMPLE_ALL': 0,
         'AVERAGE_PRICE': 0,
+        'TEXT': 0,
+        'SUMMARY': 0,
+        'IMAGE': 0,
+        'MUSIC': 0,
+        'VIDEO': 0,
         'ALL': 0,
     }
     count_expense_money = {
@@ -234,6 +244,16 @@ async def get_statistics_by_transactions_query(
                 if not is_super_admin:
                     for key, value in subscription_users.items():
                         if transaction.user_id in value:
+                            if transaction.product_id in text_products:
+                                count_expense_money[key]['TEXT'] += transaction.amount
+                            elif transaction.product_id in summary_products:
+                                count_expense_money[key]['SUMMARY'] += transaction.amount
+                            elif transaction.product_id in image_products:
+                                count_expense_money[key]['IMAGE'] += transaction.amount
+                            elif transaction.product_id in music_products:
+                                count_expense_money[key]['MUSIC'] += transaction.amount
+                            elif transaction.product_id in video_products:
+                                count_expense_money[key]['VIDEO'] += transaction.amount
                             count_expense_money[key]['ALL'] += transaction.amount
                             break
 
@@ -621,6 +641,11 @@ async def handle_get_statistics(language_code: LanguageCode, period: str):
         count_expense_money,
     ) = await get_statistics_by_transactions_query(
         products=products,
+        text_products=text_products,
+        summary_products=summary_products,
+        image_products=image_products,
+        music_products=music_products,
+        video_products=video_products,
         start_date=start_date,
         end_date=end_date,
     )
@@ -633,6 +658,11 @@ async def handle_get_statistics(language_code: LanguageCode, period: str):
         count_expense_money_before,
     ) = await get_statistics_by_transactions_query(
         products=products,
+        text_products=text_products,
+        summary_products=summary_products,
+        image_products=image_products,
+        music_products=music_products,
+        video_products=video_products,
         start_date=start_date_before,
         end_date=end_date_before,
     )

@@ -508,7 +508,7 @@ async def handle_face_swap_video(
 
             generations = await get_generations_by_request_id(request.id)
             for generation in generations:
-                generation.status = GenerationStatus.FINISHED,
+                generation.status = GenerationStatus.FINISHED
                 generation.has_error = True
                 await update_generation(
                     generation.id,
@@ -682,16 +682,22 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
                 text=get_localization(user_language_code).face_swap_package_forbidden_error(quota),
                 reply_markup=build_cancel_keyboard(user_language_code),
             )
+            await processing_sticker.delete()
+            await processing_message.delete()
         elif quantity < 1:
             await message.answer(
                 text=get_localization(user_language_code).FACE_SWAP_MIN_ERROR,
                 reply_markup=build_cancel_keyboard(user_language_code),
             )
+            await processing_sticker.delete()
+            await processing_message.delete()
         elif face_swap_package_quantity < quantity:
             await message.answer(
                 text=get_localization(user_language_code).FACE_SWAP_MAX_ERROR,
                 reply_markup=build_cancel_keyboard(user_language_code),
             )
+            await processing_sticker.delete()
+            await processing_message.delete()
         else:
             product = await get_product_by_quota(Quota.FACE_SWAP)
 
@@ -777,7 +783,7 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
 
                 generations = await get_generations_by_request_id(request.id)
                 for generation in generations:
-                    generation.status = GenerationStatus.FINISHED,
+                    generation.status = GenerationStatus.FINISHED
                     generation.has_error = True
                     await update_generation(
                         generation.id,
