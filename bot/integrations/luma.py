@@ -48,11 +48,11 @@ async def get_response_video(
                 'url': prompt_image,
             }
         },
-        extra_body={
-            'model': 'ray-2',
-            'duration': duration,
-            'resolution': resolution,
-        },
+        # extra_body={
+        #     'model': 'ray-2',
+        #     'duration': duration,
+        #     'resolution': resolution,
+        # },
     )
 
     return response.id
