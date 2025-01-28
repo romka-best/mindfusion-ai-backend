@@ -27,6 +27,8 @@ Access to AI:
 • Gemini 1.5 Pro
 • Gemini 1 Ultra
 • Grok 2
+• DeepSeek V3
+• DeepSeek R1
 • Perplexity
 
 📝 Summary
@@ -50,6 +52,7 @@ Access to AI:
 • Kling
 • Runway
 • Luma Ray
+• Pika
 """,
     )
     await bot.set_my_description(
@@ -68,6 +71,8 @@ Access to AI:
 • Gemini 1.5 Pro
 • Gemini 1 Ultra
 • Grok 2
+• DeepSeek V3
+• DeepSeek R1
 • Perplexity
 
 📝 Резюме
@@ -89,8 +94,9 @@ Access to AI:
 
 📹 Видео
 • Kling
-• Luma Ray
 • Runway
+• Luma Ray
+• Pika
 """,
         language_code=LanguageCode.RU,
     )
@@ -110,6 +116,8 @@ Acceso a redes neuronales:
 • Gemini 1.5 Pro
 • Gemini 1 Ultra
 • Grok 2
+• DeepSeek V3
+• DeepSeek R1
 • Perplexity
 
 📝 Resúmenes
@@ -131,8 +139,9 @@ Acceso a redes neuronales:
 
 📹 Video
 • Kling
-• Luma Ray
 • Runway
+• Luma Ray
+• Pika
 """,
         language_code=LanguageCode.ES,
     )
@@ -152,6 +161,8 @@ AI मॉडल्स तक पहुंच:
 • Gemini 1.5 Pro
 • Gemini 1 Ultra
 • Grok 2
+• DeepSeek V3
+• DeepSeek R1
 • Perplexity
 
 📝 सारांश
@@ -173,8 +184,9 @@ AI मॉडल्स तक पहुंच:
 
 📹 वीडियो
 • Kling
-• Luma Ray
 • Runway
+• Luma Ray
+• Pika
 """,
         language_code=LanguageCode.HI,
     )

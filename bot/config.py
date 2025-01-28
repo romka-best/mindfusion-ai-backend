@@ -110,6 +110,7 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: SecretStr
     GEMINI_API_KEY: SecretStr
     GROK_API_KEY: SecretStr
+    DEEPSEEK_API_KEY: SecretStr
     PERPLEXITY_API_KEY: SecretStr
 
     EIGHTIFY_API_KEY: SecretStr

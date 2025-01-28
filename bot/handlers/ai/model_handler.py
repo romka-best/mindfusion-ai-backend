@@ -23,8 +23,9 @@ from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.handlers.handle_model_info import handle_model_info
 from bot.integrations.kling import Kling
+from bot.integrations.luma import get_cost_for_video as get_cost_for_luma_ray_video
 from bot.integrations.open_ai import get_cost_for_image
-from bot.integrations.runway import get_cost_for_video
+from bot.integrations.runway import get_cost_for_video as get_cost_for_runway_video
 from bot.keyboards.ai.model import (
     build_model_keyboard,
     build_switched_to_ai_keyboard,
@@ -128,6 +129,7 @@ async def handle_model_selection(callback_query: CallbackQuery, state: FSMContex
         chosen_model == Model.CHAT_GPT or
         chosen_model == Model.CLAUDE or
         chosen_model == Model.GEMINI or
+        chosen_model == Model.DEEP_SEEK or
         chosen_model == Model.STABLE_DIFFUSION or
         chosen_model == Model.FLUX
     ):
@@ -192,6 +194,8 @@ async def handle_model_selection(callback_query: CallbackQuery, state: FSMContex
             user.settings[Model.CLAUDE][UserSettings.VERSION] = chosen_version
         elif chosen_model == Model.GEMINI:
             user.settings[Model.GEMINI][UserSettings.VERSION] = chosen_version
+        elif chosen_model == Model.DEEP_SEEK:
+            user.settings[Model.DEEP_SEEK][UserSettings.VERSION] = chosen_version
         elif chosen_model == Model.STABLE_DIFFUSION:
             user.settings[Model.STABLE_DIFFUSION][UserSettings.VERSION] = chosen_version
         elif chosen_model == Model.FLUX:
@@ -264,8 +268,13 @@ async def handle_switched_to_ai_selection(callback_query: CallbackQuery, state: 
                 user.settings[Model.KLING][UserSettings.DURATION],
             )
         elif model == Model.RUNWAY:
-            generation_cost = get_cost_for_video(
+            generation_cost = get_cost_for_runway_video(
                 user.settings[Model.RUNWAY][UserSettings.DURATION],
+            )
+        elif model == Model.LUMA_RAY:
+            generation_cost = get_cost_for_luma_ray_video(
+                user.settings[Model.LUMA_RAY][UserSettings.QUALITY],
+                user.settings[Model.LUMA_RAY][UserSettings.DURATION],
             )
         human_model = get_human_model(model, user_language_code)
         await callback_query.message.answer(

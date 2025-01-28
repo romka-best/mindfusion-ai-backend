@@ -1,7 +1,7 @@
 aiogram==3.17.0
 aiohttp==3.11.11
 aiofiles===23.2.1
-anthropic==0.45.0
+anthropic==0.45.2
 async-timeout==4.0.3
 babel==2.16.0
 cachetools==5.5.1
@@ -10,7 +10,7 @@ charset-normalizer==3.4.1
 filetype==1.2.0
 firebase-admin==6.6.0
 google-auth==2.38.0
-google-api-core==2.24.0
+google-api-core==2.24.1
 google-cloud-bigquery==3.29.0
 google-cloud-firestore==2.20.0
 google-cloud-storage==2.19.0
@@ -21,7 +21,7 @@ gcloud-aio-storage==9.3.0
 grpcio==1.70.0
 httpx==0.28.1
 idna==3.10
-lumaai==1.2.2
+lumaai==1.3.0
 pyasn1==0.6.0
 pyasn1-modules==0.4.0
 pycryptodome==3.21.0
@@ -32,9 +32,9 @@ requests==2.32.3
 replicate==1.0.4
 runwayml==2.1.9
 six==1.17.0
-stripe==11.4.1
+stripe==11.5.0
 telegramify-markdown==0.4.1
-openai==1.60.1
+openai==1.60.2
 python-dotenv==1.0.1
 pydantic==2.10.5
 pydantic-settings==2.7.1

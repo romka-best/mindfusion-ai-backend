@@ -150,7 +150,10 @@ async def handle_kling(
             update_user_usage_quota(
                 user,
                 Quota.KLING,
-                1 if generation.result else 0,
+                Kling.get_cost_for_video(
+                    generation.details.get('mode'),
+                    generation.details.get('duration'),
+                ) if generation.result else 0,
             ),
         ]
 

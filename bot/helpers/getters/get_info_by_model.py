@@ -5,6 +5,7 @@ from bot.database.models.common import (
     ChatGPTVersion,
     ClaudeGPTVersion,
     GeminiGPTVersion,
+    DeepSeekVersion,
     StableDiffusionVersion,
     FluxVersion,
 )
@@ -15,7 +16,7 @@ from bot.locales.types import LanguageCode
 def get_info_by_model(
     model: Model,
     model_version: Optional[
-        ChatGPTVersion | ClaudeGPTVersion | GeminiGPTVersion | StableDiffusionVersion | FluxVersion
+        ChatGPTVersion | ClaudeGPTVersion | GeminiGPTVersion | DeepSeekVersion | StableDiffusionVersion | FluxVersion
     ],
     language_code: LanguageCode,
 ):
@@ -44,6 +45,11 @@ def get_info_by_model(
             info = get_localization(language_code).INFO_GEMINI_1_PRO
         elif model_version == GeminiGPTVersion.V1_Ultra:
             info = get_localization(language_code).INFO_GEMINI_1_ULTRA
+    elif model == Model.DEEP_SEEK:
+        if model_version == DeepSeekVersion.V3:
+            info = get_localization(language_code).INFO_DEEP_SEEK_V3
+        elif model_version == DeepSeekVersion.R1:
+            info = get_localization(language_code).INFO_DEEP_SEEK_R1
     elif model == Model.GROK:
         info = get_localization(language_code).INFO_GROK
     elif model == Model.PERPLEXITY:

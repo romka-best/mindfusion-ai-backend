@@ -1,7 +1,7 @@
 import aiohttp
 
 from bot.config import config
-from bot.database.models.common import PikaVersion, AspectRatio
+from bot.database.models.common import PikaVersion
 
 PIKA_API_URL = 'https://api.acedata.cloud/pika/videos'
 PIKA_API_KEY = config.PIKA_API_KEY.get_secret_value()

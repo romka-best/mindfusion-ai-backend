@@ -15,6 +15,7 @@ from bot.keyboards.common.info import (
     build_info_chat_gpt_models_keyboard,
     build_info_claude_models_keyboard,
     build_info_gemini_models_keyboard,
+    build_info_deep_seek_models_keyboard,
     build_info_image_models_keyboard,
     build_info_stable_diffusion_models_keyboard,
     build_info_flux_models_keyboard,
@@ -113,6 +114,11 @@ async def info_text_models_selection(callback_query: CallbackQuery, state: FSMCo
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).INFO_GEMINI,
             reply_markup=build_info_gemini_models_keyboard(user_language_code),
+        )
+    elif model == Model.DEEP_SEEK:
+        await callback_query.message.edit_text(
+            text=get_localization(user_language_code).INFO_DEEP_SEEK,
+            reply_markup=build_info_deep_seek_models_keyboard(user_language_code),
         )
     else:
         await callback_query.message.edit_text(
@@ -281,6 +287,9 @@ async def info_model_type_selection(callback_query: CallbackQuery, state: FSMCon
     elif model_type == Model.GEMINI:
         text = get_localization(user_language_code).INFO_GEMINI
         reply_markup = build_info_gemini_models_keyboard(user_language_code)
+    elif model_type == Model.DEEP_SEEK:
+        text = get_localization(user_language_code).INFO_DEEP_SEEK
+        reply_markup = build_info_deep_seek_models_keyboard(user_language_code)
     elif (
         model_type == ModelType.IMAGE or
         model_type in [

@@ -4,6 +4,7 @@ from bot.database.models.common import (
     SunoVersion,
     KlingVersion,
     PikaVersion,
+    LumaRayVersion,
 )
 from bot.database.models.user import UserSettings
 
@@ -15,6 +16,8 @@ def get_model_version(model_settings: dict):
         return '3.5'
     elif model_settings[UserSettings.VERSION] == SunoVersion.V4:
         return '4.0'
+    elif model_settings[UserSettings.VERSION] == LumaRayVersion.V2:
+        return '2.0'
     elif (
         model_settings[UserSettings.VERSION] == MidjourneyVersion.V5 or
         model_settings[UserSettings.VERSION] == MidjourneyVersion.V6 or

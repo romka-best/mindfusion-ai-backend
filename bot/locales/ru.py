@@ -440,7 +440,6 @@ class Russian(Texts):
 📹 <b>Видео Модели</b>:
     ┣ 🎬 Kling
     ┣ 🎥 Runway
-    ┣ 🔆 Luma Ray
     ┗ 🐇 Pika
 
 Чтобы переключиться на модель с поддержкой чтения изображений, используйте кнопку ниже 👇
@@ -744,6 +743,7 @@ class Russian(Texts):
 /claude — Выбрать Claude
 /gemini — Выбрать Gemini
 /grok — Выбрать Grok
+/deep_seek — Выбрать DeepSeek
 /perplexity — Выбрать Perplexity
 
 ─────────────
@@ -1138,6 +1138,65 @@ class Russian(Texts):
 • MMMU: 66.1%
 • MathVista: 69.0%
 """
+    INFO_DEEP_SEEK = "🤖 <b>Выберите DeepSeek модель</b>, про которую вы хотите получить информацию:"
+    INFO_DEEP_SEEK_V3 = f"""
+<b>{Texts.DEEP_SEEK_V3}</b>
+
+<b>Создатель:</b> DeepSeek
+
+💡<b>Варианты использования:</b>
+• Генерация контента
+• Генерация идей
+• Копирайтинг
+• Общение и поддержка
+• Объяснение сложных концепций
+• Ответы на вопросы
+• Перевод с одного языка на другой
+• Помощь в обучении
+• Помощь в решении задач
+• Работа с текстом
+• Работа с кодом
+• Рекомендации
+
+🚦 <b>Оценки:</b>
+• Работа с изображениями: Нет 🔴
+• Качество ответов: Выше среднего 🟢
+• Скорость ответа: Высокая 🟢
+
+📊 <b>Тесты:</b>
+• MMLU: 88.5%
+• GPQA: 59.1%
+• DROP: 91.6%
+• MGSM: 79.8%
+• MATH: 90.2%
+• HumanEval: 82.6%
+"""
+    INFO_DEEP_SEEK_R1 = f"""
+<b>{Texts.DEEP_SEEK_R1}</b>
+
+<b>Создатель:</b> DeepSeek
+
+💡<b>Варианты использования:</b>
+• Генерация контента
+• Объяснение сложных концепций
+• Ответы на вопросы
+• Перевод с одного языка на другой
+• Помощь в обучении
+• Помощь в решении задач
+• Работа с текстом
+• Работа с кодом
+
+🚦 <b>Оценки:</b>
+• Работа с изображениями: Нет 🔴
+• Качество ответов: Высокое 🟢
+• Скорость ответа: Ниже средней 🟠
+
+📊 <b>Тесты:</b>
+• MMLU: 90.8%
+• GPQA: 71.5%
+• DROP: 92.2%
+• MATH: 97.3%
+"""
     INFO_PERPLEXITY = f"""
 <b>{Texts.PERPLEXITY}</b>
 
@@ -1331,6 +1390,7 @@ class Russian(Texts):
     MODEL_CHOOSE_CHAT_GPT = "Для выбора <b>ChatGPT 💭</b> модели нажмите на кнопку ниже 👇"
     MODEL_CHOOSE_CLAUDE = "Для выбора <b>Claude 📄</b> модели нажмите на кнопку ниже 👇"
     MODEL_CHOOSE_GEMINI = "Для выбора <b>Gemini ✨</b> модели нажмите на кнопку ниже 👇"
+    MODEL_CHOOSE_DEEP_SEEK = "Для выбора <b>DeepSeek 🐳</b> модели нажмите на кнопку ниже 👇"
     MODEL_CHOOSE_STABLE_DIFFUSION = "Для выбора <b>Stable Diffusion 🎆</b> модели нажмите на кнопку ниже 👇"
     MODEL_CHOOSE_FLUX = "Для выбора <b>Flux 🫐</b> модели нажмите на кнопку ниже 👇"
     MODEL_CONTINUE_GENERATING = "Продолжить генерацию"
@@ -1927,6 +1987,7 @@ class Russian(Texts):
     ┣ ✉️ ChatGPT 4.0 Omni Mini{f': доп. {additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI] > 0 else ''}
     ┣ 📜 Claude 3.5 Haiku{f': доп. {additional_usage_quota[Quota.CLAUDE_3_HAIKU]}' if additional_usage_quota[Quota.CLAUDE_3_HAIKU] > 0 else ''}
     ┣ 🏎 Gemini 2.0 Flash{f': доп. {additional_usage_quota[Quota.GEMINI_2_FLASH]}' if additional_usage_quota[Quota.GEMINI_2_FLASH] > 0 else ''}
+    ┣ 🐬 DeepSeek V3{f': доп. {additional_usage_quota[Quota.DEEP_SEEK_V3]}' if additional_usage_quota[Quota.DEEP_SEEK_V3] > 0 else ''}
     ┗ Дневной лимит: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI_MINI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI_MINI])}
 
 <b>Продвинутые</b>:
@@ -1935,6 +1996,7 @@ class Russian(Texts):
     ┣ 💫 Claude 3.5 Sonnet{f': доп. {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 1.5 Pro{f': доп. {additional_usage_quota[Quota.GEMINI_1_PRO]}' if additional_usage_quota[Quota.GEMINI_1_PRO] > 0 else ''}
     ┣ 🐦 Grok 2.0{f': доп. {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
+    ┣ 🐋 DeepSeek R1{f': доп. {additional_usage_quota[Quota.DEEP_SEEK_R1]}' if additional_usage_quota[Quota.DEEP_SEEK_R1] > 0 else ''}
     ┣ 🌐 Perplexity{f': доп. {additional_usage_quota[Quota.PERPLEXITY]}' if additional_usage_quota[Quota.PERPLEXITY] > 0 else ''}
     ┗ Дневной лимит: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}
 
@@ -2077,7 +2139,7 @@ class Russian(Texts):
     def settings_info(human_model: str, current_model: Model, generation_cost=1) -> str:
         if current_model == Model.DALL_E:
             additional_text = f"\nПри текущих настройках 1 запрос стоит: {generation_cost} 🖼"
-        elif current_model == Model.KLING or current_model == Model.RUNWAY:
+        elif current_model == Model.KLING or current_model == Model.RUNWAY or current_model == Model.LUMA_RAY:
             additional_text = f"\nПри текущих настройках 1 запрос стоит: {generation_cost} 📹"
         else:
             additional_text = ""

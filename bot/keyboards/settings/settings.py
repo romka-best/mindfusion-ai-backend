@@ -18,6 +18,8 @@ from bot.database.models.common import (
     KlingMode,
     RunwayResolution,
     RunwayDuration,
+    LumaRayQuality,
+    LumaRayDuration,
 )
 from bot.database.models.user import UserSettings, UserGender
 from bot.locales.main import get_localization
@@ -72,9 +74,15 @@ def build_settings_choose_text_model_keyboard(language_code: LanguageCode) -> In
                 text=get_localization(language_code).CLAUDE,
                 callback_data=f'settings_choose_text_model:{Model.CLAUDE}'
             ),
+        ],
+        [
             InlineKeyboardButton(
                 text=get_localization(language_code).GEMINI,
                 callback_data=f'settings_choose_text_model:{Model.GEMINI}'
+            ),
+            InlineKeyboardButton(
+                text=get_localization(language_code).DEEP_SEEK,
+                callback_data=f'settings_choose_text_model:{Model.DEEP_SEEK}'
             ),
         ],
         [
@@ -242,6 +250,7 @@ def build_settings_keyboard(
         model == Model.CLAUDE or
         model == Model.GEMINI or
         model == Model.GROK or
+        model == Model.DEEP_SEEK or
         model == Model.PERPLEXITY
     ):
         buttons = [
@@ -1344,6 +1353,26 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
+                    text=get_localization(language_code).SETTINGS_QUALITY.upper(),
+                    callback_data=f'setting:nothing:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=LumaRayQuality.SD + (
+                        ' ✅' if settings[model][UserSettings.QUALITY] == LumaRayQuality.SD else ''
+                    ),
+                    callback_data=f'setting:{LumaRayQuality.SD}:{model}'
+                ),
+                InlineKeyboardButton(
+                    text=LumaRayQuality.HD + (
+                        ' ✅' if settings[model][UserSettings.QUALITY] == LumaRayQuality.HD else ''
+                    ),
+                    callback_data=f'setting:{LumaRayQuality.HD}:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
                     text=get_localization(language_code).SETTINGS_ASPECT_RATIO.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
@@ -1394,6 +1423,26 @@ def build_settings_keyboard(
                         ' ✅' if settings[model][UserSettings.ASPECT_RATIO] == AspectRatio.CLASSIC_VERTICAL else ''
                     ),
                     callback_data=f'setting:CLASSIC_VERTICAL:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).SETTINGS_DURATION.upper(),
+                    callback_data=f'setting:nothing:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text='5' + (
+                        ' ✅' if settings[model][UserSettings.DURATION] == LumaRayDuration.SECONDS_5 else ''
+                    ),
+                    callback_data=f'setting:{LumaRayDuration.SECONDS_5}:{model}'
+                ),
+                InlineKeyboardButton(
+                    text='9' + (
+                        ' ✅' if settings[model][UserSettings.DURATION] == LumaRayDuration.SECONDS_9 else ''
+                    ),
+                    callback_data=f'setting:{LumaRayDuration.SECONDS_9}:{model}'
                 ),
             ],
         ]

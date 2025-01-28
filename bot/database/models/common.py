@@ -18,6 +18,7 @@ class Model:
     CLAUDE = 'claude'
     GEMINI = 'gemini'
     GROK = 'grok'
+    DEEP_SEEK = 'deep-seek'
     PERPLEXITY = 'perplexity'
     EIGHTIFY = 'eightify'
     GEMINI_VIDEO = 'gemini-video'
@@ -57,6 +58,8 @@ class Quota:
     GEMINI_1_PRO = 'gemini_1_pro'
     GEMINI_1_ULTRA = 'gemini_1_ultra'
     GROK_2 = 'grok_2'
+    DEEP_SEEK_V3 = 'deep_seek_v3'
+    DEEP_SEEK_R1 = 'deep_seek_r1'
     PERPLEXITY = 'perplexity'
     EIGHTIFY = 'eightify'
     GEMINI_VIDEO = 'gemini_video'
@@ -103,6 +106,11 @@ class GeminiGPTVersion:
 
 class GrokGPTVersion:
     V2 = 'grok-2-vision-1212'
+
+
+class DeepSeekVersion:
+    V3 = 'deepseek-chat'
+    R1 = 'deepseek-reasoner'
 
 
 class PerplexityGPTVersion:
@@ -254,14 +262,16 @@ class RunwayResolution:
 
 
 class LumaRayVersion:
-    LATEST = 'LATEST'
+    V2 = 'ray-2'
 
 
 class LumaRayDuration:
     SECONDS_5 = 5
+    SECONDS_9 = 9
 
 
-class LumaRayResolution:
+class LumaRayQuality:
+    SD = '540p'
     HD = '720p'
 
 
