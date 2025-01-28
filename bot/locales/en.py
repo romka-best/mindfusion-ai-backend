@@ -416,7 +416,6 @@ Please review the text/photo for prohibited content and try again 😌
 📹 <b>Video Models</b>:
     ┣ 🎬 Kling
     ┣ 🎥 Runway
-    ┣ 🔆 Luma Ray
     ┗ 🐇 Pika
 
 To switch to a model with image reading support, use the button below 👇
@@ -1109,6 +1108,65 @@ For any questions, you can also contact technical support:
 • MMMU: 66.1%
 • MathVista: 69.0%
 """
+    INFO_DEEP_SEEK = "🤖 <b>Select the DeepSeek model</b> you want to learn more about:"
+    INFO_DEEP_SEEK_V3 = f"""
+<b>{Texts.DEEP_SEEK_V3}</b>
+
+<b>Creator:</b> DeepSeek
+
+💡 <b>Use Cases:</b>
+• Content generation
+• Idea generation
+• Copyrighting
+• Communication and support
+• Explaining complex concepts
+• Answering questions
+• Translating between languages
+• Learning assistance
+• Problem-solving
+• Text processing
+• Coding assistance
+• Recommendations
+
+🚦 <b>Ratings:</b>
+• Vision: No 🔴
+• Answer Quality: Above average 🟢
+• Response Speed: High 🟢
+
+📊 <b>Benchmarks:</b>
+• MMLU: 88.5%
+• GPQA: 59.1%
+• DROP: 91.6%
+• MGSM: 79.8%
+• MATH: 90.2%
+• HumanEval: 82.6%
+"""
+    INFO_DEEP_SEEK_R1 = f"""
+<b>{Texts.DEEP_SEEK_R1}</b>
+
+<b>Creator:</b> DeepSeek
+
+💡 <b>Use Cases:</b>
+• Content generation
+• Explaining complex concepts
+• Answering questions
+• Translating between languages
+• Learning assistance
+• Problem-solving
+• Text processing
+• Coding assistance
+
+🚦 <b>Ratings:</b>
+• Vision: No 🔴
+• Answer Quality: High 🟢
+• Response Speed: Below Average 🟠
+
+📊 <b>Benchmarks:</b>
+• MMLU: 90.8%
+• GPQA: 71.5%
+• DROP: 92.2%
+• MATH: 97.3%
+"""
     INFO_PERPLEXITY = f"""
 <b>{Texts.PERPLEXITY}</b>
 
@@ -1302,6 +1360,7 @@ For any questions, you can also contact technical support:
     MODEL_CHOOSE_CHAT_GPT = "To choose a <b>ChatGPT 💭</b> model click a button below 👇"
     MODEL_CHOOSE_CLAUDE = "To choose a <b>Claude 📄</b> model click a button below 👇"
     MODEL_CHOOSE_GEMINI = "To choose a <b>Gemini ✨</b> model click a button below 👇"
+    MODEL_CHOOSE_DEEP_SEEK = "To choose a <b>DeepSeek 🐳</b> model click a button below 👇"
     MODEL_CHOOSE_STABLE_DIFFUSION = "To choose a <b>Stable Diffusion 🎆</b> model click a button below 👇"
     MODEL_CHOOSE_FLUX = "To choose a <b>Flux 🫐</b> model click a button below 👇"
     MODEL_CONTINUE_GENERATING = "Continue generating"

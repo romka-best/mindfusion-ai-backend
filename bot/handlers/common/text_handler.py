@@ -13,6 +13,7 @@ from bot.database.operations.user.getters import get_user
 from bot.handlers.ai.chat_gpt_handler import handle_chatgpt
 from bot.handlers.ai.claude_handler import handle_claude
 from bot.handlers.ai.dalle_handler import handle_dall_e
+from bot.handlers.ai.deep_seek_handler import handle_deep_seek
 from bot.handlers.ai.eightify_handler import handle_eightify
 from bot.handlers.ai.face_swap_handler import handle_face_swap_prompt
 from bot.handlers.ai.flux_handler import handle_flux
@@ -68,6 +69,8 @@ async def handle_text(message: Message, state: FSMContext):
         await handle_gemini(message, state, user, user_quota)
     elif user.current_model == Model.GROK:
         await handle_grok(message, state, user)
+    elif user.current_model == Model.DEEP_SEEK:
+        await handle_deep_seek(message, state, user, user_quota)
     elif user.current_model == Model.PERPLEXITY:
         await handle_perplexity(message, state, user)
     elif user.current_model == Model.EIGHTIFY:

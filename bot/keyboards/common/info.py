@@ -8,6 +8,7 @@ from bot.database.models.common import (
     ChatGPTVersion,
     ClaudeGPTVersion,
     GeminiGPTVersion,
+    DeepSeekVersion,
     StableDiffusionVersion,
     FluxVersion,
 )
@@ -69,9 +70,15 @@ def build_info_text_models_keyboard(language_code: LanguageCode) -> InlineKeyboa
                 text=get_localization(language_code).CLAUDE,
                 callback_data=f'info_text_models:{Model.CLAUDE}'
             ),
+        ],
+        [
             InlineKeyboardButton(
                 text=get_localization(language_code).GEMINI,
                 callback_data=f'info_text_models:{Model.GEMINI}'
+            ),
+            InlineKeyboardButton(
+                text=get_localization(language_code).DEEP_SEEK,
+                callback_data=f'info_text_models:{Model.DEEP_SEEK}'
             ),
         ],
         [
@@ -187,6 +194,31 @@ def build_info_gemini_models_keyboard(language_code: LanguageCode) -> InlineKeyb
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_TO_OTHER_MODELS,
                 callback_data=f'info_text_model:{Model.GEMINI}:back'
+            ),
+        ],
+    ]
+
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def build_info_deep_seek_models_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).DEEP_SEEK_V3,
+                callback_data=f'info_text_model:{Model.DEEP_SEEK}:{DeepSeekVersion.V3}'
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).DEEP_SEEK_R1,
+                callback_data=f'info_text_model:{Model.DEEP_SEEK}:{DeepSeekVersion.R1}'
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).ACTION_TO_OTHER_MODELS,
+                callback_data=f'info_text_model:{Model.DEEP_SEEK}:back'
             ),
         ],
     ]

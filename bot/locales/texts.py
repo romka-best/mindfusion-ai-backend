@@ -153,6 +153,11 @@ class Texts(Protocol):
     # DALL-E
     DALL_E = '👨‍🎨 DALL-E'
 
+    # DeepSeek
+    DEEP_SEEK = '🐳 DeepSeek'
+    DEEP_SEEK_V3 = '🐬 DeepSeek V3'
+    DEEP_SEEK_R1 = '🐋 DeepSeek R1'
+
     # Eightify
     EIGHTIFY = '👀 YouTube Summary'
     EIGHTIFY_INFO: str
@@ -280,6 +285,9 @@ class Texts(Protocol):
     INFO_GEMINI_1_PRO: str
     INFO_GEMINI_1_ULTRA: str
     INFO_GROK: str
+    INFO_DEEP_SEEK: str
+    INFO_DEEP_SEEK_V3: str
+    INFO_DEEP_SEEK_R1: str
     INFO_PERPLEXITY: str
     INFO_DALL_E: str
     INFO_MIDJOURNEY: str
@@ -328,6 +336,7 @@ class Texts(Protocol):
     MODEL_CHOOSE_CHAT_GPT: str
     MODEL_CHOOSE_CLAUDE: str
     MODEL_CHOOSE_GEMINI: str
+    MODEL_CHOOSE_DEEP_SEEK: str
     MODEL_CHOOSE_STABLE_DIFFUSION: str
     MODEL_CHOOSE_FLUX: str
     MODEL_CONTINUE_GENERATING: str

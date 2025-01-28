@@ -85,24 +85,13 @@ async def handle_dall_e(message: Message, state: FSMContext, user: User):
 
     async with ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id):
         try:
-            maximum_generations = user.daily_limits[Quota.DALL_E] + user.additional_usage_quota[Quota.DALL_E]
+            version = user.settings[Model.DALL_E][UserSettings.VERSION]
             resolution = user.settings[Model.DALL_E][UserSettings.RESOLUTION]
             quality = user.settings[Model.DALL_E][UserSettings.QUALITY]
             cost = get_cost_for_image(quality, resolution)
-            if maximum_generations < cost:
-                await message.answer_sticker(
-                    sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
-                )
-
-                await message.reply(
-                    text=get_localization(user_language_code).model_reached_usage_limit(),
-                    reply_markup=build_model_limit_exceeded_keyboard(user_language_code),
-                    allow_sending_without_reply=True,
-                )
-                return
 
             response_url = await get_response_image(
-                user.settings[Model.DALL_E][UserSettings.VERSION],
+                version,
                 text,
                 resolution,
                 quality,

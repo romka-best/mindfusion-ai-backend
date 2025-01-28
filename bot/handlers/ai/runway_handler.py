@@ -21,7 +21,7 @@ from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_mode
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
 from bot.integrations.runway import get_response_video, get_cost_for_video
-from bot.keyboards.ai.model import build_switched_to_ai_keyboard, build_model_limit_exceeded_keyboard
+from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.translate_text import translate_text
@@ -102,23 +102,11 @@ async def handle_runway(message: Message, state: FSMContext, user: User, video_f
 
     async with ChatActionSender.upload_video(bot=message.bot, chat_id=message.chat.id):
         try:
-            maximum_generations = user.daily_limits[Quota.RUNWAY] + user.additional_usage_quota[Quota.RUNWAY]
             model_version = user.settings[Model.RUNWAY][UserSettings.VERSION]
             resolution = user.settings[Model.RUNWAY][UserSettings.RESOLUTION]
             duration = user.settings[Model.RUNWAY][UserSettings.DURATION]
 
             cost = get_cost_for_video(duration)
-            if maximum_generations < cost:
-                await message.answer_sticker(
-                    sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
-                )
-
-                await message.reply(
-                    text=get_localization(user_language_code).model_reached_usage_limit(),
-                    reply_markup=build_model_limit_exceeded_keyboard(user_language_code),
-                    allow_sending_without_reply=True,
-                )
-                return
 
             if prompt and user_language_code != LanguageCode.EN:
                 prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)

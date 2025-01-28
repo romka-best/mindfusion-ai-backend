@@ -10,6 +10,7 @@ from bot.database.models.common import (
     ChatGPTVersion,
     ClaudeGPTVersion,
     GeminiGPTVersion,
+    DeepSeekVersion,
     StableDiffusionVersion,
     FluxVersion,
 )
@@ -72,6 +73,14 @@ def create_user_object(
     elif quota == Quota.GROK_2:
         default_model = Model.GROK
         default_additional_quota[Quota.GROK_2] = 10
+    elif quota in [Quota.DEEP_SEEK_V3, Quota.DEEP_SEEK_R1]:
+        default_model = Model.DEEP_SEEK
+        if quota == Quota.DEEP_SEEK_V3:
+            default_settings[default_model][UserSettings.VERSION] = DeepSeekVersion.V3
+            default_additional_quota[Quota.DEEP_SEEK_V3] = 10
+        elif quota == Quota.DEEP_SEEK_R1:
+            default_settings[default_model][UserSettings.VERSION] = DeepSeekVersion.R1
+            default_additional_quota[Quota.DEEP_SEEK_R1] = 10
     elif quota == Quota.PERPLEXITY:
         default_model = Model.PERPLEXITY
         default_additional_quota[Quota.PERPLEXITY] = 10

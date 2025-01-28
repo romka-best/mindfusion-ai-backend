@@ -16,6 +16,7 @@ from bot.database.models.common import (
     ClaudeGPTVersion,
     GeminiGPTVersion,
     GrokGPTVersion,
+    DeepSeekVersion,
 )
 from bot.database.models.generation import Generation
 from bot.database.models.user import UserSettings
@@ -26,6 +27,7 @@ from bot.database.operations.user.initialize_user_for_the_first_time import init
 from bot.database.operations.user.updaters import update_user
 from bot.handlers.ai.chat_gpt_handler import handle_chatgpt
 from bot.handlers.ai.claude_handler import handle_claude
+from bot.handlers.ai.deep_seek_handler import handle_deep_seek
 from bot.handlers.ai.gemini_handler import handle_gemini
 from bot.handlers.ai.grok_handler import handle_grok
 from bot.handlers.ai.model_handler import handle_model
@@ -122,6 +124,8 @@ async def start(message: Message, state: FSMContext):
                     'gemini1pro',
                     'gemini1ultra',
                     'grok',
+                    'deepseekv3',
+                    'deepseekr1',
                     'perplexity',
                     'eightify',
                     'geminivideo',
@@ -164,6 +168,10 @@ async def start(message: Message, state: FSMContext):
                         default_quota = Quota.GEMINI_1_ULTRA
                     elif sub_param_value == 'grok':
                         default_quota = Quota.GROK_2
+                    elif sub_param_value == 'deepseekv3':
+                        default_quota = Quota.DEEP_SEEK_V3
+                    elif sub_param_value == 'deepseekr1':
+                        default_quota = Quota.DEEP_SEEK_R1
                     elif sub_param_value == 'perplexity':
                         default_quota = Quota.PERPLEXITY
                     elif sub_param_value == 'eightify':
@@ -388,6 +396,10 @@ async def handle_continue_generation_choose_selection(callback_query: CallbackQu
             user_quota = Quota.GEMINI_1_ULTRA
         elif user.settings[user.current_model][UserSettings.VERSION] == GrokGPTVersion.V2:
             user_quota = Quota.GROK_2
+        elif user.settings[user.current_model][UserSettings.VERSION] == DeepSeekVersion.V3:
+            user_quota = Quota.DEEP_SEEK_V3
+        elif user.settings[user.current_model][UserSettings.VERSION] == DeepSeekVersion.R1:
+            user_quota = Quota.DEEP_SEEK_R1
         else:
             raise NotImplementedError(
                 f'AI version is not defined: {user.settings[user.current_model][UserSettings.VERSION]}'
@@ -414,6 +426,11 @@ async def handle_continue_generation_choose_selection(callback_query: CallbackQu
             await handle_gemini(callback_query.message, state, user, user_quota)
         elif user_quota == Quota.GROK_2:
             await handle_grok(callback_query.message, state, user)
+        elif user_quota in [
+            Quota.DEEP_SEEK_V3,
+            Quota.DEEP_SEEK_R1,
+        ]:
+            await handle_deep_seek(callback_query.message, state, user, user_quota)
 
         await callback_query.message.edit_reply_markup(reply_markup=None)
         await state.update_data(recognized_text=None)

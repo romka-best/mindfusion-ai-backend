@@ -24,6 +24,7 @@ from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.senders.send_images import send_image
 from bot.helpers.senders.send_video import send_video
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
+from bot.integrations.luma import get_cost_for_video
 from bot.keyboards.common.common import build_reaction_keyboard, build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.types import LanguageCode
@@ -195,7 +196,7 @@ async def handle_luma_ray(
                 generation.result,
                 caption,
                 get_localization(user_language_code).SETTINGS_SEND_TYPE_VIDEO,
-                5,
+                generation.details.get('duration', 5),
                 reply_markup,
             )
     elif generation.has_error:
@@ -235,7 +236,10 @@ async def handle_luma_ray(
             update_user_usage_quota(
                 user,
                 Quota.LUMA_RAY,
-                1 if generation.result else 0,
+                get_cost_for_video(
+                    generation.details.get('quality'),
+                    generation.details.get('duration'),
+                ) if generation.result else 0,
             ),
         ]
 

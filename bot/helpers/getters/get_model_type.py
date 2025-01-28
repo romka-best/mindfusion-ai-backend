@@ -7,6 +7,7 @@ def get_model_type(model: Model):
         model == Model.CLAUDE or
         model == Model.GEMINI or
         model == Model.GROK or
+        model == Model.DEEP_SEEK or
         model == Model.PERPLEXITY
     ):
         return ModelType.TEXT

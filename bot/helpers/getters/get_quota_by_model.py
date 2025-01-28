@@ -4,6 +4,7 @@ from bot.database.models.common import (
     ChatGPTVersion,
     ClaudeGPTVersion,
     GeminiGPTVersion,
+    DeepSeekVersion,
     StableDiffusionVersion,
     FluxVersion,
 )
@@ -35,6 +36,11 @@ def get_quota_by_model(model: Model, version: str):
             return Quota.GEMINI_1_ULTRA
     elif model == Model.GROK:
         return Quota.GROK_2
+    elif model == Model.DEEP_SEEK:
+        if version == DeepSeekVersion.V3:
+            return Quota.DEEP_SEEK_V3
+        elif version == DeepSeekVersion.R1:
+            return Quota.DEEP_SEEK_R1
     elif model == Model.PERPLEXITY:
         return Quota.PERPLEXITY
     elif model == Model.EIGHTIFY:

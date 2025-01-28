@@ -6,6 +6,7 @@ from bot.database.models.common import (
     ChatGPTVersion,
     ClaudeGPTVersion,
     GeminiGPTVersion,
+    DeepSeekVersion,
     StableDiffusionVersion,
     FluxVersion,
 )
@@ -16,7 +17,7 @@ from bot.locales.types import LanguageCode
 def build_model_keyboard(
     language_code: LanguageCode,
     model: Model,
-    model_version: ChatGPTVersion | ClaudeGPTVersion | GeminiGPTVersion | StableDiffusionVersion | FluxVersion,
+    model_version: ChatGPTVersion | ClaudeGPTVersion | GeminiGPTVersion | DeepSeekVersion | StableDiffusionVersion | FluxVersion,
     page=0,
     chosen_model=None,
 ) -> InlineKeyboardMarkup:
@@ -153,6 +154,39 @@ def build_model_keyboard(
                     ],
                 ]
             )
+        elif chosen_model == Model.DEEP_SEEK:
+            buttons.extend(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text=get_localization(language_code).DEEP_SEEK.upper(),
+                            callback_data=f'model:{ModelType.TEXT}',
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text=get_localization(language_code).DEEP_SEEK_V3 + (
+                                ' ✅' if model == Model.DEEP_SEEK and model_version == DeepSeekVersion.V3 else ''
+                            ),
+                            callback_data=f'model:{Model.DEEP_SEEK}:{DeepSeekVersion.V3}'
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text=get_localization(language_code).DEEP_SEEK_R1 + (
+                                ' ✅' if model == Model.DEEP_SEEK and model_version == DeepSeekVersion.R1 else ''
+                            ),
+                            callback_data=f'model:{Model.DEEP_SEEK}:{DeepSeekVersion.R1}'
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text=get_localization(language_code).ACTION_BACK,
+                            callback_data=f'model:{Model.DEEP_SEEK}:back'
+                        ),
+                    ],
+                ]
+            )
         else:
             buttons.extend(
                 [
@@ -171,9 +205,15 @@ def build_model_keyboard(
                             text=get_localization(language_code).CLAUDE,
                             callback_data=f'model:{Model.CLAUDE}',
                         ),
+                    ],
+                    [
                         InlineKeyboardButton(
                             text=get_localization(language_code).GEMINI,
                             callback_data=f'model:{Model.GEMINI}',
+                        ),
+                        InlineKeyboardButton(
+                            text=get_localization(language_code).DEEP_SEEK,
+                            callback_data=f'model:{Model.DEEP_SEEK}'
                         ),
                     ],
                     [

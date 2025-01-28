@@ -10,6 +10,8 @@ def get_human_model(model: Model, language_code: LanguageCode):
         human_model = get_localization(language_code).CLAUDE
     elif model == Model.GEMINI:
         human_model = get_localization(language_code).GEMINI
+    elif model == Model.DEEP_SEEK:
+        human_model = get_localization(language_code).DEEP_SEEK
     elif model == Model.GROK:
         human_model = get_localization(language_code).GROK
     elif model == Model.PERPLEXITY:

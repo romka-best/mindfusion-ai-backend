@@ -10,7 +10,7 @@ from google.cloud.firestore_v1 import AsyncWriteBatch, FieldFilter
 
 from bot.config import config, MessageSticker
 from bot.database.main import firebase
-from bot.database.models.common import Quota, PaymentMethod, Currency
+from bot.database.models.common import Quota, PaymentMethod
 from bot.database.models.subscription import (
     SubscriptionStatus,
     SUBSCRIPTION_FREE_LIMITS,
@@ -178,12 +178,12 @@ async def update_user_subscription(bot: Bot, user: User, batch: AsyncWriteBatch,
                         current_subscription.user_id,
                         product.names.get(user_language_code),
                     ),
-                    amount=product.prices.get(Currency.RUB),
+                    amount=current_subscription.amount,
                     language_code=user_language_code,
                     order_items=[
                         OrderItem(
                             product=product,
-                            price=product.prices.get(Currency.RUB),
+                            price=current_subscription.amount,
                         ),
                     ],
                 )

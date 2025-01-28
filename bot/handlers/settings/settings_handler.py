@@ -30,6 +30,8 @@ from bot.database.models.common import (
     KlingMode,
     RunwayResolution,
     RunwayDuration,
+    LumaRayQuality,
+    LumaRayDuration,
 )
 from bot.database.models.user import UserSettings, UserGender
 from bot.database.operations.chat.deleters import delete_chat, reset_chat
@@ -42,8 +44,9 @@ from bot.handlers.payment.payment_handler import handle_buy
 from bot.helpers.getters.get_human_model import get_human_model
 from bot.helpers.getters.get_model_type import get_model_type
 from bot.integrations.kling import Kling
+from bot.integrations.luma import get_cost_for_video as get_cost_for_luma_ray_video
 from bot.integrations.open_ai import get_cost_for_image
-from bot.integrations.runway import get_cost_for_video
+from bot.integrations.runway import get_cost_for_video as get_cost_for_runway_video
 from bot.keyboards.settings.chats import (
     build_chats_keyboard,
     build_create_chat_keyboard,
@@ -92,8 +95,13 @@ async def handle_settings(message: Message, user_id: str, state: FSMContext, adv
                 user.settings[Model.KLING][UserSettings.DURATION],
             )
         elif user.current_model == Model.RUNWAY:
-            generation_cost = get_cost_for_video(
+            generation_cost = get_cost_for_runway_video(
                 user.settings[Model.RUNWAY][UserSettings.DURATION],
+            )
+        elif user.current_model == Model.LUMA_RAY:
+            generation_cost = get_cost_for_luma_ray_video(
+                user.settings[Model.LUMA_RAY][UserSettings.QUALITY],
+                user.settings[Model.LUMA_RAY][UserSettings.DURATION],
             )
         human_model = get_human_model(user.current_model, user_language_code)
         await message.answer(
@@ -257,9 +265,14 @@ async def handle_settings_choose_video_model_selection(callback_query: CallbackQ
             user.settings[Model.KLING][UserSettings.MODE],
             user.settings[Model.KLING][UserSettings.DURATION],
         )
-    elif chosen_model == Model.RUNWAY:
-        generation_cost = get_cost_for_video(
+    elif user.current_model == Model.RUNWAY:
+        generation_cost = get_cost_for_runway_video(
             user.settings[Model.RUNWAY][UserSettings.DURATION],
+        )
+    elif user.current_model == Model.LUMA_RAY:
+        generation_cost = get_cost_for_luma_ray_video(
+            user.settings[Model.LUMA_RAY][UserSettings.QUALITY],
+            user.settings[Model.LUMA_RAY][UserSettings.DURATION],
         )
 
     human_model = get_human_model(chosen_model, user_language_code)
@@ -357,7 +370,9 @@ async def handle_setting_selection(callback_query: CallbackQuery, state: FSMCont
         chosen_setting == str(RunwayDuration.SECONDS_5) or
         chosen_setting == str(RunwayDuration.SECONDS_10) or
         chosen_setting == str(KlingDuration.SECONDS_5) or
-        chosen_setting == str(KlingDuration.SECONDS_10)
+        chosen_setting == str(KlingDuration.SECONDS_10) or
+        chosen_setting == str(LumaRayDuration.SECONDS_5) or
+        chosen_setting == str(LumaRayDuration.SECONDS_9)
     ):
         user.settings[chosen_model][UserSettings.DURATION] = int(chosen_setting)
         what_changed = UserSettings.DURATION
@@ -400,6 +415,9 @@ async def handle_setting_selection(callback_query: CallbackQuery, state: FSMCont
     elif chosen_setting == KlingMode.STANDARD or chosen_setting == KlingMode.PRO:
         user.settings[Model.KLING][UserSettings.MODE] = chosen_setting
         what_changed = UserSettings.MODE
+    elif chosen_setting == LumaRayQuality.SD or chosen_setting == LumaRayQuality.HD:
+        user.settings[Model.LUMA_RAY][UserSettings.QUALITY] = chosen_setting
+        what_changed = UserSettings.QUALITY
     else:
         user.settings[chosen_model][chosen_setting] = not user.settings[chosen_model][chosen_setting]
         what_changed = chosen_setting
@@ -458,7 +476,12 @@ async def handle_setting_selection(callback_query: CallbackQuery, state: FSMCont
                 if callback_data == chosen_setting and '✅' not in text:
                     text += ' ✅'
                     keyboard_changed = True
-                elif callback_data == DALLEQuality.STANDARD or callback_data == DALLEQuality.HD:
+                elif (
+                    callback_data == DALLEQuality.STANDARD or
+                    callback_data == DALLEQuality.HD or
+                    callback_data == LumaRayQuality.SD or
+                    callback_data == LumaRayQuality.HD
+                ):
                     text = text.replace(' ✅', '')
             elif what_changed == UserSettings.RESOLUTION:
                 if callback_data == chosen_setting and '✅' not in text:
@@ -520,7 +543,9 @@ async def handle_setting_selection(callback_query: CallbackQuery, state: FSMCont
                     callback_data == str(RunwayDuration.SECONDS_5) or
                     callback_data == str(RunwayDuration.SECONDS_10) or
                     callback_data == str(KlingDuration.SECONDS_5) or
-                    callback_data == str(KlingDuration.SECONDS_10)
+                    callback_data == str(KlingDuration.SECONDS_10) or
+                    callback_data == str(LumaRayDuration.SECONDS_5) or
+                    callback_data == str(LumaRayDuration.SECONDS_9)
                 ):
                     text = text.replace(' ✅', '')
             elif what_changed == UserSettings.MODE:
@@ -564,9 +589,14 @@ async def handle_setting_selection(callback_query: CallbackQuery, state: FSMCont
                 user.settings[Model.KLING][UserSettings.MODE],
                 user.settings[Model.KLING][UserSettings.DURATION],
             )
-        elif chosen_model == Model.RUNWAY:
-            generation_cost = get_cost_for_video(
+        elif user.current_model == Model.RUNWAY:
+            generation_cost = get_cost_for_runway_video(
                 user.settings[Model.RUNWAY][UserSettings.DURATION],
+            )
+        elif user.current_model == Model.LUMA_RAY:
+            generation_cost = get_cost_for_luma_ray_video(
+                user.settings[Model.LUMA_RAY][UserSettings.QUALITY],
+                user.settings[Model.LUMA_RAY][UserSettings.DURATION],
             )
         human_model = get_human_model(chosen_model, user_language_code)
 
@@ -625,6 +655,7 @@ async def handle_voice_messages_setting_selection(callback_query: CallbackQuery,
         user.settings[Model.CLAUDE][chosen_setting] = False
         user.settings[Model.GEMINI][chosen_setting] = False
         user.settings[Model.GROK][chosen_setting] = False
+        user.settings[Model.DEEP_SEEK][chosen_setting] = False
         user.settings[Model.PERPLEXITY][chosen_setting] = False
 
         user.settings[Model.EIGHTIFY][chosen_setting] = False
@@ -678,6 +709,7 @@ async def handle_voice_messages_setting_selection(callback_query: CallbackQuery,
             user.settings[Model.CLAUDE][UserSettings.VOICE] = chosen_setting
             user.settings[Model.GEMINI][UserSettings.VOICE] = chosen_setting
             user.settings[Model.GROK][UserSettings.VOICE] = chosen_setting
+            user.settings[Model.DEEP_SEEK][UserSettings.VOICE] = chosen_setting
             user.settings[Model.PERPLEXITY][UserSettings.VOICE] = chosen_setting
 
             user.settings[Model.EIGHTIFY][UserSettings.VOICE] = chosen_setting
@@ -688,6 +720,7 @@ async def handle_voice_messages_setting_selection(callback_query: CallbackQuery,
             user.settings[Model.CLAUDE][chosen_setting] = new_setting
             user.settings[Model.GEMINI][chosen_setting] = new_setting
             user.settings[Model.GROK][chosen_setting] = new_setting
+            user.settings[Model.DEEP_SEEK][chosen_setting] = chosen_setting
             user.settings[Model.PERPLEXITY][chosen_setting] = new_setting
 
             user.settings[Model.EIGHTIFY][chosen_setting] = new_setting

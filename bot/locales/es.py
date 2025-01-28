@@ -419,7 +419,6 @@ Revisa el texto/la foto en busca de contenido prohibido e inténtalo de nuevo �
 📹 <b>Modelos de video:</b>
     ┣ 🎬 Kling
     ┣ 🎥 Runway
-    ┣ 🔆 Luma Ray
     ┗ 🐇 Pika
 
 Para cambiar a un modelo con soporte para lectura de imágenes, utiliza el botón de abajo 👇
@@ -1112,6 +1111,65 @@ Para cualquier consulta también puedes contactar al soporte técnico:
 • MMMU: 66.1%
 • MathVista: 69.0%
 """
+    INFO_DEEP_SEEK = "🤖 <b>Selecciona el modelo DeepSeek</b> sobre el cual deseas obtener información:"
+    INFO_DEEP_SEEK_V3 = f"""
+<b>{Texts.DEEP_SEEK_V3}</b>
+
+<b>Creador:</b> Google
+
+💡<b>Usos:</b>
+• Generación de contenido
+• Generación de ideas
+• Redacción
+• Comunicación y soporte
+• Explicación de conceptos complejos
+• Respuesta a preguntas
+• Traducción entre idiomas
+• Asistencia en aprendizaje
+• Resolución de problemas
+• Procesamiento de texto
+• Trabajo con código
+• Recomendaciones
+
+🚦 <b>Evaluaciones:</b>
+• Trabajo con imágenes: No 🔴
+• Calidad de respuestas: Por encima del promedio 🟢
+• Velocidad de respuesta: Alta 🟢
+
+📊 <b>Pruebas:</b>
+• MMLU: 88.5%
+• GPQA: 59.1%
+• DROP: 91.6%
+• MGSM: 79.8%
+• MATH: 90.2%
+• HumanEval: 82.6%
+"""
+    INFO_DEEP_SEEK_R1 = f"""
+<b>{Texts.DEEP_SEEK_R1}</b>
+
+<b>Creador:</b> DeepSeek
+
+💡<b>Usos:</b>
+• Generación de contenido
+• Explicación de conceptos complejos
+• Respuesta a preguntas
+• Traducción entre idiomas
+• Asistencia en aprendizaje
+• Resolución de problemas
+• Procesamiento de texto
+• Trabajo con código
+
+🚦 <b>Evaluaciones:</b>
+• Trabajo con imágenes: No 🔴
+• Calidad de respuestas: Alta 🟢
+• Velocidad de respuesta: Por debajo del promedio 🟠
+
+📊 <b>Pruebas:</b>
+• MMLU: 90.8%
+• GPQA: 71.5%
+• DROP: 92.2%
+• MATH: 97.3%
+"""
     INFO_PERPLEXITY = f"""
 <b>{Texts.PERPLEXITY}</b>
 
@@ -1305,6 +1363,7 @@ Para cualquier consulta también puedes contactar al soporte técnico:
     MODEL_CHOOSE_CHAT_GPT = "Para seleccionar el modelo <b>ChatGPT 💭</b>, presiona el botón de abajo 👇"
     MODEL_CHOOSE_CLAUDE = "Para seleccionar el modelo <b>Claude 📄</b>, presiona el botón de abajo 👇"
     MODEL_CHOOSE_GEMINI = "Para seleccionar el modelo <b>Gemini ✨</b>, presiona el botón de abajo 👇"
+    MODEL_CHOOSE_DEEP_SEEK = "Para seleccionar el modelo <b>DeepSeek 🐳</b>, presiona el botón de abajo 👇"
     MODEL_CHOOSE_STABLE_DIFFUSION = "Para seleccionar el modelo <b>Stable Diffusion 🎆</b>, presiona el botón de abajo 👇"
     MODEL_CHOOSE_FLUX = "Para seleccionar el modelo <b>Flux 🫐</b>, presiona el botón de abajo 👇"
     MODEL_CONTINUE_GENERATING = "Continuar generando"

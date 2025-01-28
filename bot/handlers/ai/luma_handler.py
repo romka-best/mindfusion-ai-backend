@@ -292,9 +292,10 @@ async def handle_luma_ray(
                 prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
             result_id = await get_response_video(
                 prompt,
+                user.settings[Model.LUMA_RAY][UserSettings.VERSION],
                 user.settings[Model.LUMA_RAY][UserSettings.ASPECT_RATIO],
                 user.settings[Model.LUMA_RAY][UserSettings.DURATION],
-                user.settings[Model.LUMA_RAY][UserSettings.RESOLUTION],
+                user.settings[Model.LUMA_RAY][UserSettings.QUALITY],
                 video_frame_link,
             )
 
@@ -305,6 +306,9 @@ async def handle_luma_ray(
                 has_error=result_id is None,
                 details={
                     'prompt': prompt,
+                    'aspect_ratio': user.settings[Model.LUMA_RAY][UserSettings.ASPECT_RATIO],
+                    'duration': user.settings[Model.LUMA_RAY][UserSettings.DURATION],
+                    'quality': user.settings[Model.LUMA_RAY][UserSettings.QUALITY],
                 }
             )
         except Exception as e:
