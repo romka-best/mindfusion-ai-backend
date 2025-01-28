@@ -265,11 +265,11 @@ async def handle_settings_choose_video_model_selection(callback_query: CallbackQ
             user.settings[Model.KLING][UserSettings.MODE],
             user.settings[Model.KLING][UserSettings.DURATION],
         )
-    elif user.current_model == Model.RUNWAY:
+    elif chosen_model == Model.RUNWAY:
         generation_cost = get_cost_for_runway_video(
             user.settings[Model.RUNWAY][UserSettings.DURATION],
         )
-    elif user.current_model == Model.LUMA_RAY:
+    elif chosen_model == Model.LUMA_RAY:
         generation_cost = get_cost_for_luma_ray_video(
             user.settings[Model.LUMA_RAY][UserSettings.QUALITY],
             user.settings[Model.LUMA_RAY][UserSettings.DURATION],
@@ -589,11 +589,11 @@ async def handle_setting_selection(callback_query: CallbackQuery, state: FSMCont
                 user.settings[Model.KLING][UserSettings.MODE],
                 user.settings[Model.KLING][UserSettings.DURATION],
             )
-        elif user.current_model == Model.RUNWAY:
+        elif chosen_model == Model.RUNWAY:
             generation_cost = get_cost_for_runway_video(
                 user.settings[Model.RUNWAY][UserSettings.DURATION],
             )
-        elif user.current_model == Model.LUMA_RAY:
+        elif chosen_model == Model.LUMA_RAY:
             generation_cost = get_cost_for_luma_ray_video(
                 user.settings[Model.LUMA_RAY][UserSettings.QUALITY],
                 user.settings[Model.LUMA_RAY][UserSettings.DURATION],

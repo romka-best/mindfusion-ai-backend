@@ -2099,7 +2099,7 @@ Ya has usado este código promocional. Es magia de un solo uso, y ya la utilizas
     def settings_info(human_model: str, current_model: Model, generation_cost=1) -> str:
         if current_model == Model.DALL_E:
             additional_text = f"\nCon la configuración actual, 1 solicitud cuesta: {generation_cost} 🖼"
-        elif current_model == Model.KLING or current_model == Model.RUNWAY:
+        elif current_model == Model.KLING or current_model == Model.RUNWAY or current_model == Model.LUMA_RAY:
             additional_text = f"\nCon la configuración actual, 1 solicitud cuesta: {generation_cost} 📹"
         else:
             additional_text = ""

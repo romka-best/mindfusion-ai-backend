@@ -2108,7 +2108,7 @@ class Hindi(Texts):
     def settings_info(human_model: str, current_model: Model, generation_cost=1) -> str:
         if current_model == Model.DALL_E:
             additional_text = f"\nवर्तमान सेटिंग्स पर 1 अनुरोध की कीमत है: {generation_cost} 🖼"
-        elif current_model == Model.KLING or current_model == Model.RUNWAY:
+        elif current_model == Model.KLING or current_model == Model.RUNWAY or current_model == Model.LUMA_RAY:
             additional_text = f"\nवर्तमान सेटिंग्स पर 1 अनुरोध की कीमत है: {generation_cost} 📹"
         else:
             additional_text = ""

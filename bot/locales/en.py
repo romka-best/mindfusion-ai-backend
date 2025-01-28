@@ -2096,7 +2096,7 @@ But don’t worry! You can check out my offers by clicking the button below:
     def settings_info(human_model: str, current_model: Model, generation_cost=1) -> str:
         if current_model == Model.DALL_E:
             additional_text = f"\nAt the current settings, 1 request costs: {generation_cost} 🖼"
-        elif current_model == Model.KLING or current_model == Model.RUNWAY:
+        elif current_model == Model.KLING or current_model == Model.RUNWAY or current_model == Model.LUMA_RAY:
             additional_text = f"\nAt the current settings, 1 request costs: {generation_cost} 📹"
         else:
             additional_text = ""

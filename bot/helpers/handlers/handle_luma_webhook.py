@@ -217,7 +217,12 @@ async def handle_luma_ray(
             'status': request.status
         })
 
-        total_price = PRICE_LUMA_RAY
+        cost = get_cost_for_video(
+            generation.details.get('quality'),
+            generation.details.get('duration'),
+        )
+
+        total_price = PRICE_LUMA_RAY * cost
         update_tasks = [
             write_transaction(
                 user_id=user.id,
@@ -236,10 +241,7 @@ async def handle_luma_ray(
             update_user_usage_quota(
                 user,
                 Quota.LUMA_RAY,
-                get_cost_for_video(
-                    generation.details.get('quality'),
-                    generation.details.get('duration'),
-                ) if generation.result else 0,
+                cost if generation.result else 0,
             ),
         ]
 
