@@ -34,14 +34,14 @@ runwayml==2.1.9
 six==1.17.0
 stripe==11.5.0
 telegramify-markdown==0.4.1
-openai==1.60.2
+openai==1.61.0
 python-dotenv==1.0.1
 pydantic==2.10.5
 pydantic-settings==2.7.1
 pydub==0.25.1
 pytz==2024.2
 uvicorn==0.34.0
-fastapi==0.115.7
+fastapi==0.115.8
 ffmpeg==1.4
 ffprobe-python==1.0.3
 yookassa==3.5.0

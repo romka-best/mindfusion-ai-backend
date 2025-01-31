@@ -835,8 +835,8 @@ class Hindi(Texts):
 • MMMU: 69.1%
 • MathVista: 63.8%
 """
-    INFO_CHAT_GPT_O_1_MINI = f"""
-<b>{Texts.CHAT_GPT_O_1_MINI}</b>
+    INFO_CHAT_GPT_O_3_MINI = f"""
+<b>{Texts.CHAT_GPT_O_3_MINI}</b>
 
 <b>निर्माता:</b> OpenAI
 
@@ -856,9 +856,9 @@ class Hindi(Texts):
 • उत्तर की गति: औसत 🟡
 
 📊 <b>परीक्षण:</b>
-• MMLU: 85.2%
-• GPQA: 60.0%
-• MATH: 90.0%
+• MMLU: 86.9%
+• GPQA: 79.7%
+• MATH: 97.9%
 • HumanEval: 92.4%
 """
     INFO_CHAT_GPT_O_1 = f"""
@@ -1961,7 +1961,7 @@ class Hindi(Texts):
 
 <b>उन्नत</b>:
     ┣ 💥 ChatGPT 4.0 Omni{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
-    ┣ 🧩 ChatGPT o1-mini{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_O_1_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_1_MINI] > 0 else ''}
+    ┣ 🧩 ChatGPT o3-mini{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_O_3_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_3_MINI] > 0 else ''}
     ┣ 💫 Claude 3.5 Sonnet{f': अतिरिक्त {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 1.5 Pro{f': अतिरिक्त {additional_usage_quota[Quota.GEMINI_1_PRO]}' if additional_usage_quota[Quota.GEMINI_1_PRO] > 0 else ''}
     ┣ 🐦 Grok 2.0{f': अतिरिक्त {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}

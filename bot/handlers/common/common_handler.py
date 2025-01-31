@@ -115,7 +115,7 @@ async def start(message: Message, state: FSMContext):
                 elif sub_param_key == 'm' and sub_param_value in [
                     'chatgpt4omnimini',
                     'chatgpt4omni',
-                    'chatgpto1mini',
+                    'chatgpto3mini',
                     'chatgpto1',
                     'claude3haiku',
                     'claude3sonnet',
@@ -150,8 +150,8 @@ async def start(message: Message, state: FSMContext):
                         default_quota = Quota.CHAT_GPT4_OMNI_MINI
                     elif sub_param_value == 'chatgpt4omni':
                         default_quota = Quota.CHAT_GPT4_OMNI
-                    elif sub_param_value == 'chatgpto1mini':
-                        default_quota = Quota.CHAT_GPT_O_1_MINI
+                    elif sub_param_value == 'chatgpto3mini':
+                        default_quota = Quota.CHAT_GPT_O_3_MINI
                     elif sub_param_value == 'chatgpto1':
                         default_quota = Quota.CHAT_GPT_O_1
                     elif sub_param_value == 'claude3haiku':
@@ -378,8 +378,8 @@ async def handle_continue_generation_choose_selection(callback_query: CallbackQu
             user_quota = Quota.CHAT_GPT4_OMNI_MINI
         elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_Omni:
             user_quota = Quota.CHAT_GPT4_OMNI
-        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V1_O_Mini:
-            user_quota = Quota.CHAT_GPT_O_1_MINI
+        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V3_O_Mini:
+            user_quota = Quota.CHAT_GPT_O_3_MINI
         elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V1_O:
             user_quota = Quota.CHAT_GPT_O_1
         elif user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Haiku:
@@ -408,7 +408,7 @@ async def handle_continue_generation_choose_selection(callback_query: CallbackQu
         if user_quota in [
             Quota.CHAT_GPT4_OMNI_MINI,
             Quota.CHAT_GPT4_OMNI,
-            Quota.CHAT_GPT_O_1_MINI,
+            Quota.CHAT_GPT_O_3_MINI,
             Quota.CHAT_GPT_O_1,
         ]:
             await handle_chatgpt(callback_query.message, state, user, user_quota)

@@ -34,7 +34,7 @@ def create_user_object(
     default_model = Model.CHAT_GPT
     default_settings = User.DEFAULT_SETTINGS
     default_additional_quota = User.DEFAULT_ADDITIONAL_USAGE_QUOTA
-    if quota in [Quota.CHAT_GPT4_OMNI_MINI, Quota.CHAT_GPT4_OMNI, Quota.CHAT_GPT_O_1_MINI, Quota.CHAT_GPT_O_1]:
+    if quota in [Quota.CHAT_GPT4_OMNI_MINI, Quota.CHAT_GPT4_OMNI, Quota.CHAT_GPT_O_3_MINI, Quota.CHAT_GPT_O_1]:
         default_model = Model.CHAT_GPT
         if quota == Quota.CHAT_GPT4_OMNI_MINI:
             default_settings[default_model][UserSettings.VERSION] = ChatGPTVersion.V4_Omni_Mini
@@ -42,9 +42,9 @@ def create_user_object(
         elif quota == Quota.CHAT_GPT4_OMNI:
             default_settings[default_model][UserSettings.VERSION] = ChatGPTVersion.V4_Omni
             default_additional_quota[Quota.CHAT_GPT4_OMNI] = 10
-        elif quota == Quota.CHAT_GPT_O_1_MINI:
-            default_settings[default_model][UserSettings.VERSION] = ChatGPTVersion.V1_O_Mini
-            default_additional_quota[Quota.CHAT_GPT_O_1_MINI] = 10
+        elif quota == Quota.CHAT_GPT_O_3_MINI:
+            default_settings[default_model][UserSettings.VERSION] = ChatGPTVersion.V3_O_Mini
+            default_additional_quota[Quota.CHAT_GPT_O_3_MINI] = 10
         elif quota == Quota.CHAT_GPT_O_1:
             default_settings[default_model][UserSettings.VERSION] = ChatGPTVersion.V1_O
             default_additional_quota[Quota.CHAT_GPT_O_1] = 10
