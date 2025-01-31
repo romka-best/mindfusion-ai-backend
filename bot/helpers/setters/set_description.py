@@ -18,7 +18,7 @@ Access to AI:
 🔤 Text
 • ChatGPT 4 Omni Mini
 • ChatGPT 4 Omni
-• ChatGPT o1-mini
+• ChatGPT o3-mini
 • ChatGPT o1
 • Claude 3.5 Haiku
 • Claude 3.5 Sonnet
@@ -62,7 +62,7 @@ Access to AI:
 🔤 Текстовые
 • ChatGPT 4 Omni Mini
 • ChatGPT 4 Omni
-• ChatGPT o1-mini
+• ChatGPT o3-mini
 • ChatGPT o1
 • Claude 3.5 Haiku
 • Claude 3.5 Sonnet
@@ -107,7 +107,7 @@ Acceso a redes neuronales:
 🔤 Texto
 • ChatGPT 4 Omni Mini
 • ChatGPT 4 Omni
-• ChatGPT o1-mini
+• ChatGPT o3-mini
 • ChatGPT o1
 • Claude 3.5 Haiku
 • Claude 3.5 Sonnet
@@ -152,7 +152,7 @@ AI मॉडल्स तक पहुंच:
 🔤 टेक्स्ट जनरेशन
 • ChatGPT 4 Omni Mini
 • ChatGPT 4 Omni
-• ChatGPT o1-mini
+• ChatGPT o3-mini
 • ChatGPT o1
 • Claude 3.5 Haiku
 • Claude 3.5 Sonnet

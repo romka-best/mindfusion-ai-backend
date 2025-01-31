@@ -10,7 +10,7 @@ TEXT_SIMPLE_QUOTA = [
 ]
 TEXT_ADVANCED_QUOTA = [
     Quota.CHAT_GPT4_OMNI,
-    Quota.CHAT_GPT_O_1_MINI,
+    Quota.CHAT_GPT_O_3_MINI,
     Quota.CLAUDE_3_SONNET,
     Quota.GEMINI_1_PRO,
     Quota.GROK_2,

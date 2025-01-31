@@ -141,7 +141,7 @@ class Texts(Protocol):
     CHAT_GPT_4_OMNI_MINI = '✉️ ChatGPT 4.0 Omni Mini'
     CHAT_GPT_4_TURBO = '🧠 ChatGPT 4.0 Turbo'
     CHAT_GPT_4_OMNI = '💥 ChatGPT 4.0 Omni'
-    CHAT_GPT_O_1_MINI = '🧩 ChatGPT o1-mini'
+    CHAT_GPT_O_3_MINI = '🧩 ChatGPT o3-mini'
     CHAT_GPT_O_1 = '🧪 ChatGPT o1'
 
     # Claude
@@ -274,7 +274,7 @@ class Texts(Protocol):
     INFO_CHAT_GPT: str
     INFO_CHAT_GPT_4_OMNI_MINI: str
     INFO_CHAT_GPT_4_OMNI: str
-    INFO_CHAT_GPT_O_1_MINI: str
+    INFO_CHAT_GPT_O_3_MINI: str
     INFO_CHAT_GPT_O_1: str
     INFO_CLAUDE: str
     INFO_CLAUDE_3_HAIKU: str

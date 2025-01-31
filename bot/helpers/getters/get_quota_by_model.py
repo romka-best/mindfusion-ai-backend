@@ -16,8 +16,8 @@ def get_quota_by_model(model: Model, version: str):
             return Quota.CHAT_GPT4_OMNI_MINI
         elif version == ChatGPTVersion.V4_Omni:
             return Quota.CHAT_GPT4_OMNI
-        elif version == ChatGPTVersion.V1_O_Mini:
-            return Quota.CHAT_GPT_O_1_MINI
+        elif version == ChatGPTVersion.V3_O_Mini:
+            return Quota.CHAT_GPT_O_3_MINI
         elif version == ChatGPTVersion.V1_O:
             return Quota.CHAT_GPT_O_1
     elif model == Model.CLAUDE:

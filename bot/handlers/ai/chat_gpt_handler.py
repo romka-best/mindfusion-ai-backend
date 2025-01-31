@@ -45,8 +45,8 @@ PRICE_GPT4_OMNI_MINI_INPUT = 0.00000015
 PRICE_GPT4_OMNI_MINI_OUTPUT = 0.0000006
 PRICE_GPT4_OMNI_INPUT = 0.0000025
 PRICE_GPT4_OMNI_OUTPUT = 0.00001
-PRICE_CHAT_GPT_O_1_MINI_INPUT = 0.000003
-PRICE_CHAT_GPT_O_1_MINI_OUTPUT = 0.000012
+PRICE_CHAT_GPT_O_3_MINI_INPUT = 0.000003
+PRICE_CHAT_GPT_O_3_MINI_OUTPUT = 0.000012
 PRICE_CHAT_GPT_O_1_INPUT = 0.000015
 PRICE_CHAT_GPT_O_1_OUTPUT = 0.00006
 
@@ -159,7 +159,7 @@ async def handle_chatgpt(message: Message, state: FSMContext, user: User, user_q
         else:
             text = ''
 
-    can_work_with_photos = user_quota != Quota.CHAT_GPT_O_1_MINI
+    can_work_with_photos = user_quota != Quota.CHAT_GPT_O_3_MINI
     if photo_filenames and len(photo_filenames) and can_work_with_photos:
         await write_message(user.current_chat_id, 'user', user.id, text, True, photo_filenames)
     else:
@@ -168,7 +168,7 @@ async def handle_chatgpt(message: Message, state: FSMContext, user: User, user_q
     chat = await get_chat(user.current_chat_id)
     if user_quota == Quota.CHAT_GPT_O_1:
         limit = 2
-    elif user_quota == Quota.CHAT_GPT_O_1_MINI:
+    elif user_quota == Quota.CHAT_GPT_O_3_MINI:
         limit = 4
     elif user.subscription_id:
         limit = 6
@@ -240,9 +240,9 @@ async def handle_chatgpt(message: Message, state: FSMContext, user: User, user_q
             elif user_quota == Quota.CHAT_GPT4_OMNI:
                 input_price = response['input_tokens'] * PRICE_GPT4_OMNI_INPUT
                 output_price = response['output_tokens'] * PRICE_GPT4_OMNI_OUTPUT
-            elif user_quota == Quota.CHAT_GPT_O_1_MINI:
-                input_price = response['input_tokens'] * PRICE_CHAT_GPT_O_1_MINI_INPUT
-                output_price = response['output_tokens'] * PRICE_CHAT_GPT_O_1_MINI_OUTPUT
+            elif user_quota == Quota.CHAT_GPT_O_3_MINI:
+                input_price = response['input_tokens'] * PRICE_CHAT_GPT_O_3_MINI_INPUT
+                output_price = response['output_tokens'] * PRICE_CHAT_GPT_O_3_MINI_OUTPUT
             elif user_quota == Quota.CHAT_GPT_O_1:
                 input_price = response['input_tokens'] * PRICE_CHAT_GPT_O_1_INPUT
                 output_price = response['output_tokens'] * PRICE_CHAT_GPT_O_1_OUTPUT

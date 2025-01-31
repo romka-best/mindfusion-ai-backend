@@ -118,8 +118,8 @@ def build_info_chat_gpt_models_keyboard(language_code: LanguageCode) -> InlineKe
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).CHAT_GPT_O_1_MINI,
-                callback_data=f'info_text_model:{Model.CHAT_GPT}:{ChatGPTVersion.V1_O_Mini}'
+                text=get_localization(language_code).CHAT_GPT_O_3_MINI,
+                callback_data=f'info_text_model:{Model.CHAT_GPT}:{ChatGPTVersion.V3_O_Mini}'
             ),
         ],
         [
