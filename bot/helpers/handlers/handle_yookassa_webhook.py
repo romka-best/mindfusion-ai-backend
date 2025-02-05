@@ -285,7 +285,10 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                 elif payment.status == 'canceled':
                     current_date = datetime.now(timezone.utc)
 
-                    if (current_date - old_subscription.end_date).days < 2:
+                    if (
+                        old_subscription.status != SubscriptionStatus.TRIAL and
+                        (current_date - old_subscription.end_date).days < 2
+                    ):
                         await bot.send_sticker(
                             chat_id=user.telegram_chat_id,
                             sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
