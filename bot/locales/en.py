@@ -2374,14 +2374,16 @@ You can continue exploring the universe of AI models and regain access by clicki
         for subscription in subscriptions:
             subscription_name = subscription.names.get(LanguageCode.EN)
             subscription_price = subscription.prices.get(currency)
+            subscription_has_trial = is_trial and subscription.details.get('has_trial', False)
+
             left_part_price = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
             right_part_price = Currency.SYMBOLS[currency] if currency != Currency.USD else ''
             if subscription_name and subscription_price:
                 is_trial_info = ''
 
-                if is_trial and currency == Currency.RUB:
+                if subscription_has_trial and currency == Currency.RUB:
                     is_trial_info = '1₽ first 3 days, then '
-                elif is_trial and currency == Currency.USD:
+                elif subscription_has_trial and currency == Currency.USD:
                     is_trial_info = 'Free first 3 days, then '
 
                 text_subscriptions += f'<b>{subscription_name}</b>: '

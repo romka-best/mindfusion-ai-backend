@@ -432,8 +432,12 @@ async def additional_bot_webhook(bot_instance: Bot, update: dict, background_tas
 
     if telegram_update.message:
         chat_id = telegram_update.message.chat.id
+        language_code = telegram_update.message.from_user.language_code
+    elif telegram_update.edited_message:
+        chat_id = telegram_update.edited_message.chat.id
+        language_code = telegram_update.edited_message.from_user.language_code
     else:
-        return JSONResponse(content={'error': 'Invalid update'}, status_code=400)
+        return
 
     bot_description = (await bot_instance.get_my_description()).description
 
@@ -443,7 +447,7 @@ async def additional_bot_webhook(bot_instance: Bot, update: dict, background_tas
     background_tasks.add_task(
         bot_instance.send_message,
         chat_id,
-        get_localization(telegram_update.message.from_user.language_code).additional_bot_info(bot_link),
+        get_localization(language_code).additional_bot_info(bot_link),
     )
 
 

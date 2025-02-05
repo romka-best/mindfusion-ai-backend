@@ -314,7 +314,11 @@ async def handle_payment_method_subscription_selection(callback_query: CallbackQ
             user.id,
             datetime(2024, 1, 1),
         )
-        is_trial = len(last_user_subscriptions) == 0 and payment_method != PaymentMethod.TELEGRAM_STARS
+        is_trial = (
+            subscription.details.get('has_trial', False) and
+            len(last_user_subscriptions) == 0 and
+            payment_method != PaymentMethod.TELEGRAM_STARS
+        )
 
         if payment_method == PaymentMethod.TELEGRAM_STARS:
             subscription_ref = await write_subscription(
