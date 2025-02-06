@@ -55,7 +55,7 @@ class Quota:
     CLAUDE_3_SONNET = 'claude_3_sonnet'
     CLAUDE_3_OPUS = 'claude_3_opus'
     GEMINI_2_FLASH = 'gemini_2_flash'
-    GEMINI_1_PRO = 'gemini_1_pro'
+    GEMINI_2_PRO = 'gemini_2_pro'
     GEMINI_1_ULTRA = 'gemini_1_ultra'
     GROK_2 = 'grok_2'
     DEEP_SEEK_V3 = 'deep_seek_v3'
@@ -99,8 +99,9 @@ class ClaudeGPTVersion:
 
 
 class GeminiGPTVersion:
-    V2_Flash = 'gemini-2.0-flash-exp'
+    V2_Flash = 'gemini-2.0-flash'
     V1_Pro = 'gemini-1.5-pro'
+    V2_Pro = 'gemini-2.0-pro-exp-02-05'
     V1_Ultra = 'gemini-1.0-ultra'
 
 

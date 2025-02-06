@@ -180,8 +180,8 @@ def build_info_gemini_models_keyboard(language_code: LanguageCode) -> InlineKeyb
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).GEMINI_1_PRO,
-                callback_data=f'info_text_model:{Model.GEMINI}:{GeminiGPTVersion.V1_Pro}'
+                text=get_localization(language_code).GEMINI_2_PRO,
+                callback_data=f'info_text_model:{Model.GEMINI}:{GeminiGPTVersion.V2_Pro}'
             ),
         ],
         [

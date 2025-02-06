@@ -59,14 +59,14 @@ def create_user_object(
         elif quota == Quota.CLAUDE_3_OPUS:
             default_settings[default_model][UserSettings.VERSION] = ClaudeGPTVersion.V3_Opus
             default_additional_quota[Quota.CLAUDE_3_OPUS] = 10
-    elif quota in [Quota.GEMINI_2_FLASH, Quota.GEMINI_1_PRO, Quota.GEMINI_1_ULTRA]:
+    elif quota in [Quota.GEMINI_2_FLASH, Quota.GEMINI_2_PRO, Quota.GEMINI_1_ULTRA]:
         default_model = Model.GEMINI
         if quota == Quota.GEMINI_2_FLASH:
             default_settings[default_model][UserSettings.VERSION] = GeminiGPTVersion.V2_Flash
             default_additional_quota[Quota.GEMINI_2_FLASH] = 10
-        elif quota == Quota.GEMINI_1_PRO:
-            default_settings[default_model][UserSettings.VERSION] = GeminiGPTVersion.V1_Pro
-            default_additional_quota[Quota.GEMINI_1_PRO] = 10
+        elif quota == Quota.GEMINI_2_PRO:
+            default_settings[default_model][UserSettings.VERSION] = GeminiGPTVersion.V2_Pro
+            default_additional_quota[Quota.GEMINI_2_PRO] = 10
         elif quota == Quota.GEMINI_1_ULTRA:
             default_settings[default_model][UserSettings.VERSION] = GeminiGPTVersion.V1_Ultra
             default_additional_quota[Quota.GEMINI_1_ULTRA] = 10

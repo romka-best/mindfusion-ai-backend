@@ -68,7 +68,7 @@ async def handle_document(message: Message, state: FSMContext, document_file: Fi
     if (
         user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Sonnet or
         user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V2_Flash or
-        user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Pro or
+        user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V2_Pro or
         user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Ultra
     ):
         if not (user.daily_limits[Quota.WORK_WITH_FILES] or user.additional_usage_quota[Quota.WORK_WITH_FILES]):
@@ -82,8 +82,8 @@ async def handle_document(message: Message, state: FSMContext, document_file: Fi
             quota = Quota.CLAUDE_3_SONNET
         elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V2_Flash:
             quota = Quota.GEMINI_2_FLASH
-        elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Pro:
-            quota = Quota.GEMINI_1_PRO
+        elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V2_Pro:
+            quota = Quota.GEMINI_2_PRO
         elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Ultra:
             quota = Quota.GEMINI_1_ULTRA
         else:

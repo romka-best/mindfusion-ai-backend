@@ -37,7 +37,7 @@ SUBSCRIPTION_FREE_LIMITS = {
     Quota.CLAUDE_3_SONNET: 0,
     Quota.CLAUDE_3_OPUS: 0,
     Quota.GEMINI_2_FLASH: 10,
-    Quota.GEMINI_1_PRO: 0,
+    Quota.GEMINI_2_PRO: 0,
     Quota.GEMINI_1_ULTRA: 0,
     Quota.GROK_2: 0,
     Quota.DEEP_SEEK_V3: 10,

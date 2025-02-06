@@ -1,6 +1,6 @@
 import re
 
-from aiogram import Router, Bot, F
+from aiogram import Router
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -29,8 +29,8 @@ from bot.locales.main import get_user_language, get_localization
 
 gemini_video_router = Router()
 
-PRICE_GEMINI_VIDEO_INPUT = 0
-PRICE_GEMINI_VIDEO_OUTPUT = 0
+PRICE_GEMINI_VIDEO_INPUT = 0.0000001
+PRICE_GEMINI_VIDEO_OUTPUT = 0.0000004
 
 
 @gemini_video_router.message(Command('video_summary'))

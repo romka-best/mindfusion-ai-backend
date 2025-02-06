@@ -10,6 +10,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.chat_action import ChatActionSender
 from filetype import filetype
+from google.api_core.exceptions import ResourceExhausted
 from google.generativeai.types import StopCandidateException, BlockedPromptException
 
 from bot.config import config, MessageEffect, MessageSticker
@@ -44,10 +45,10 @@ from bot.locales.types import LanguageCode
 
 gemini_router = Router()
 
-PRICE_GEMINI_2_FLASH_INPUT = 0
-PRICE_GEMINI_2_FLASH_OUTPUT = 0
-PRICE_GEMINI_1_PRO_INPUT = 0.00000125
-PRICE_GEMINI_1_PRO_OUTPUT = 0.000005
+PRICE_GEMINI_2_FLASH_INPUT = 0.0000001
+PRICE_GEMINI_2_FLASH_OUTPUT = 0.0000004
+PRICE_GEMINI_2_PRO_INPUT = 0
+PRICE_GEMINI_2_PRO_OUTPUT = 0
 PRICE_GEMINI_1_ULTRA_INPUT = 0.00000125
 PRICE_GEMINI_1_ULTRA_OUTPUT = 0.000005
 
@@ -246,18 +247,26 @@ async def handle_gemini(
 
     async with chat_action_sender(bot=message.bot, chat_id=message.chat.id):
         try:
-            response = await get_response_message(
-                model_version=user.settings[user.current_model][UserSettings.VERSION],
-                system_prompt=system_prompt,
-                history=history,
-            )
+            try:
+                response = await get_response_message(
+                    model_version=user.settings[user.current_model][UserSettings.VERSION],
+                    system_prompt=system_prompt,
+                    history=history,
+                )
+            except ResourceExhausted:
+                response = await get_response_message(
+                    model_version=GeminiGPTVersion.V1_Pro,
+                    system_prompt=system_prompt,
+                    history=history,
+                )
+
             response_message = response['message']
             if user_quota == Quota.GEMINI_2_FLASH:
                 input_price = response['input_tokens'] * PRICE_GEMINI_2_FLASH_INPUT
                 output_price = response['output_tokens'] * PRICE_GEMINI_2_FLASH_OUTPUT
-            elif user_quota == Quota.GEMINI_1_PRO:
-                input_price = response['input_tokens'] * PRICE_GEMINI_1_PRO_INPUT
-                output_price = response['output_tokens'] * PRICE_GEMINI_1_PRO_OUTPUT
+            elif user_quota == Quota.GEMINI_2_PRO:
+                input_price = response['input_tokens'] * PRICE_GEMINI_2_PRO_INPUT
+                output_price = response['output_tokens'] * PRICE_GEMINI_2_PRO_OUTPUT
             elif user_quota == Quota.GEMINI_1_ULTRA:
                 input_price = response['input_tokens'] * PRICE_GEMINI_1_ULTRA_INPUT
                 output_price = response['output_tokens'] * PRICE_GEMINI_1_ULTRA_OUTPUT
@@ -344,7 +353,7 @@ async def handle_gemini(
             await state.update_data(is_processing=False)
 
     asyncio.create_task(
-        handle_gemini_1_pro_example(
+        handle_gemini_2_pro_example(
             user=user,
             user_language_code=user_language_code,
             prompt=text,
@@ -355,7 +364,7 @@ async def handle_gemini(
     )
 
 
-async def handle_gemini_1_pro_example(
+async def handle_gemini_2_pro_example(
     user: User,
     user_language_code: LanguageCode,
     prompt: str,
@@ -373,16 +382,16 @@ async def handle_gemini_1_pro_example(
             (current_date - user.last_subscription_limit_update).days <= 3
         ):
             response = await get_response_message(
-                model_version=GeminiGPTVersion.V1_Pro,
+                model_version=GeminiGPTVersion.V2_Pro,
                 system_prompt=system_prompt,
                 history=history,
             )
             response_message = response['message']
 
-            product = await get_product_by_quota(Quota.GEMINI_1_PRO)
+            product = await get_product_by_quota(Quota.GEMINI_2_PRO)
 
-            input_price = response['input_tokens'] * PRICE_GEMINI_1_PRO_INPUT
-            output_price = response['output_tokens'] * PRICE_GEMINI_1_PRO_OUTPUT
+            input_price = response['input_tokens'] * PRICE_GEMINI_2_PRO_INPUT
+            output_price = response['output_tokens'] * PRICE_GEMINI_2_PRO_OUTPUT
 
             total_price = round(input_price + output_price, 6)
             message_role, message_content = 'assistant', response_message
@@ -404,7 +413,7 @@ async def handle_gemini_1_pro_example(
                 },
             )
 
-            header_text = f'{get_localization(user_language_code).example_text_model(get_localization(user_language_code).GEMINI_1_PRO)}\n\n'
+            header_text = f'{get_localization(user_language_code).example_text_model(get_localization(user_language_code).GEMINI_2_PRO)}\n\n'
             footer_text = f'\n{get_localization(user_language_code).EXAMPLE_INFO}'
             full_text = f'{header_text}{message_content}{footer_text}'
             await send_ai_message(

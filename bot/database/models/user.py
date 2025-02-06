@@ -112,7 +112,7 @@ class User:
         Quota.CLAUDE_3_SONNET: 0,
         Quota.CLAUDE_3_OPUS: 0,
         Quota.GEMINI_2_FLASH: 0,
-        Quota.GEMINI_1_PRO: 0,
+        Quota.GEMINI_2_PRO: 0,
         Quota.GEMINI_1_ULTRA: 0,
         Quota.DEEP_SEEK_V3: 0,
         Quota.DEEP_SEEK_R1: 0,

@@ -261,8 +261,8 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
             quota = Quota.CLAUDE_3_OPUS
         elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V2_Flash:
             quota = Quota.GEMINI_2_FLASH
-        elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Pro:
-            quota = Quota.GEMINI_1_PRO
+        elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V2_Pro:
+            quota = Quota.GEMINI_2_PRO
         elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Ultra:
             quota = Quota.GEMINI_1_ULTRA
         elif user.settings[user.current_model][UserSettings.VERSION] == GrokGPTVersion.V2:
@@ -485,8 +485,8 @@ async def handle_album(message: Message, state: FSMContext, album: list[Message]
             quota = Quota.CLAUDE_3_OPUS
         elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V2_Flash:
             quota = Quota.GEMINI_2_FLASH
-        elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Pro:
-            quota = Quota.GEMINI_1_PRO
+        elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V2_Pro:
+            quota = Quota.GEMINI_2_PRO
         elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Ultra:
             quota = Quota.GEMINI_1_ULTRA
         elif user.settings[user.current_model][UserSettings.VERSION] == GrokGPTVersion.V2:
