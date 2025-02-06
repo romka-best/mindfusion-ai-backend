@@ -24,7 +24,7 @@ Access to AI:
 • Claude 3.5 Sonnet
 • Claude 3 Opus
 • Gemini 2 Flash
-• Gemini 1.5 Pro
+• Gemini 2 Pro
 • Gemini 1 Ultra
 • Grok 2
 • DeepSeek V3
@@ -68,7 +68,7 @@ Access to AI:
 • Claude 3.5 Sonnet
 • Claude 3 Opus
 • Gemini 2 Flash
-• Gemini 1.5 Pro
+• Gemini 2 Pro
 • Gemini 1 Ultra
 • Grok 2
 • DeepSeek V3
@@ -113,7 +113,7 @@ Acceso a redes neuronales:
 • Claude 3.5 Sonnet
 • Claude 3 Opus
 • Gemini 2 Flash
-• Gemini 1.5 Pro
+• Gemini 2 Pro
 • Gemini 1 Ultra
 • Grok 2
 • DeepSeek V3
@@ -158,7 +158,7 @@ AI मॉडल्स तक पहुंच:
 • Claude 3.5 Sonnet
 • Claude 3 Opus
 • Gemini 2 Flash
-• Gemini 1.5 Pro
+• Gemini 2 Pro
 • Gemini 1 Ultra
 • Grok 2
 • DeepSeek V3

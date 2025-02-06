@@ -132,10 +132,10 @@ def build_model_keyboard(
                     ],
                     [
                         InlineKeyboardButton(
-                            text=get_localization(language_code).GEMINI_1_PRO + (
-                                ' ✅' if model == Model.GEMINI and model_version == GeminiGPTVersion.V1_Pro else ''
+                            text=get_localization(language_code).GEMINI_2_PRO + (
+                                ' ✅' if model == Model.GEMINI and model_version == GeminiGPTVersion.V2_Pro else ''
                             ),
-                            callback_data=f'model:{Model.GEMINI}:{GeminiGPTVersion.V1_Pro}'
+                            callback_data=f'model:{Model.GEMINI}:{GeminiGPTVersion.V2_Pro}'
                         ),
                     ],
                     [

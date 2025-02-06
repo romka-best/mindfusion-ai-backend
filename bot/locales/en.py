@@ -399,7 +399,7 @@ Please review the text/photo for prohibited content and try again 😌
     ┣ Claude 3.5 Sonnet 💫
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 1.5 Flash 🏎
-    ┣ Gemini 1.5 Pro 💼
+    ┣ Gemini 2.0 Pro 💼
     ┣ Gemini 1.0 Ultra 🛡️
     ┗ Grok 2.0 🐦
 
@@ -1015,8 +1015,8 @@ For any questions, you can also contact technical support:
 • MATH: 89.7%
 • MMMU: 70.7%
 """
-    INFO_GEMINI_1_PRO = f"""
-<b>{Texts.GEMINI_1_PRO}</b>
+    INFO_GEMINI_2_PRO = f"""
+<b>{Texts.GEMINI_2_PRO}</b>
 
 <b>Creator:</b> Google
 
@@ -1952,7 +1952,7 @@ Choose action 👇
     ┣ 💥 ChatGPT 4.0 Omni{f': extra {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
     ┣ 🧩 ChatGPT o3-mini{f': extra {additional_usage_quota[Quota.CHAT_GPT_O_3_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_3_MINI] > 0 else ''}
     ┣ 💫 Claude 3.5 Sonnet{f': extra {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
-    ┣ 💼 Gemini 1.5 Pro{f': extra {additional_usage_quota[Quota.GEMINI_1_PRO]}' if additional_usage_quota[Quota.GEMINI_1_PRO] > 0 else ''}
+    ┣ 💼 Gemini 2.0 Pro{f': extra {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
     ┣ 🐦 Grok 2.0{f': extra {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
     ┣ 🌐 Perplexity{f': extra {additional_usage_quota[Quota.PERPLEXITY]}' if additional_usage_quota[Quota.PERPLEXITY] > 0 else ''}
     ┗ Daily Limits: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}

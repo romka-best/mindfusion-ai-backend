@@ -162,8 +162,8 @@ async def start(message: Message, state: FSMContext):
                         default_quota = Quota.CLAUDE_3_OPUS
                     elif sub_param_value == 'gemini2flash':
                         default_quota = Quota.GEMINI_2_FLASH
-                    elif sub_param_value == 'gemini1pro':
-                        default_quota = Quota.GEMINI_1_PRO
+                    elif sub_param_value == 'gemini2pro':
+                        default_quota = Quota.GEMINI_2_PRO
                     elif sub_param_value == 'gemini1ultra':
                         default_quota = Quota.GEMINI_1_ULTRA
                     elif sub_param_value == 'grok':
@@ -390,8 +390,8 @@ async def handle_continue_generation_choose_selection(callback_query: CallbackQu
             user_quota = Quota.CLAUDE_3_OPUS
         elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V2_Flash:
             user_quota = Quota.GEMINI_2_FLASH
-        elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Pro:
-            user_quota = Quota.GEMINI_1_PRO
+        elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V2_Pro:
+            user_quota = Quota.GEMINI_2_PRO
         elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Ultra:
             user_quota = Quota.GEMINI_1_ULTRA
         elif user.settings[user.current_model][UserSettings.VERSION] == GrokGPTVersion.V2:
@@ -420,7 +420,7 @@ async def handle_continue_generation_choose_selection(callback_query: CallbackQu
             await handle_claude(callback_query.message, state, user, user_quota)
         elif user_quota in [
             Quota.GEMINI_2_FLASH,
-            Quota.GEMINI_1_PRO,
+            Quota.GEMINI_2_PRO,
             Quota.GEMINI_1_ULTRA,
         ]:
             await handle_gemini(callback_query.message, state, user, user_quota)

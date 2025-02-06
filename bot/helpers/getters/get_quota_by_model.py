@@ -30,8 +30,8 @@ def get_quota_by_model(model: Model, version: str):
     elif model == Model.GEMINI:
         if version == GeminiGPTVersion.V2_Flash:
             return Quota.GEMINI_2_FLASH
-        elif version == GeminiGPTVersion.V1_Pro:
-            return Quota.GEMINI_1_PRO
+        elif version == GeminiGPTVersion.V2_Pro:
+            return Quota.GEMINI_2_PRO
         elif version == GeminiGPTVersion.V1_Ultra:
             return Quota.GEMINI_1_ULTRA
     elif model == Model.GROK:

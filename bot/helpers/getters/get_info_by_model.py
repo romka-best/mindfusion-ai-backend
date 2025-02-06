@@ -41,8 +41,8 @@ def get_info_by_model(
     elif model == Model.GEMINI:
         if model_version == GeminiGPTVersion.V2_Flash:
             info = get_localization(language_code).INFO_GEMINI_2_FLASH
-        elif model_version == GeminiGPTVersion.V1_Pro:
-            info = get_localization(language_code).INFO_GEMINI_1_PRO
+        elif model_version == GeminiGPTVersion.V2_Pro:
+            info = get_localization(language_code).INFO_GEMINI_2_PRO
         elif model_version == GeminiGPTVersion.V1_Ultra:
             info = get_localization(language_code).INFO_GEMINI_1_ULTRA
     elif model == Model.DEEP_SEEK:

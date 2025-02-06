@@ -2,7 +2,6 @@ import asyncio
 import io
 
 import httpx
-from filetype import filetype
 from google.generativeai import configure, GenerativeModel, GenerationConfig, upload_file, get_file
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
@@ -13,10 +12,10 @@ configure(api_key=config.GEMINI_API_KEY.get_secret_value())
 
 
 def get_default_max_tokens(model_version: GeminiGPTVersion) -> int:
-    base = 1024
+    base = 2048
     if (
         model_version == GeminiGPTVersion.V2_Flash or
-        model_version == GeminiGPTVersion.V1_Pro
+        model_version == GeminiGPTVersion.V2_Pro
     ):
         return base
     elif model_version == GeminiGPTVersion.V1_Ultra:
