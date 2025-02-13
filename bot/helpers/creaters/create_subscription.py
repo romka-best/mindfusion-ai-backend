@@ -31,7 +31,9 @@ async def create_subscription(
     all_subscriptions = await get_subscriptions_by_user_id(user_id)
 
     for old_subscription in all_subscriptions:
-        if old_subscription.id != subscription.id and old_subscription.status == SubscriptionStatus.ACTIVE:
+        if old_subscription.id != subscription.id and (
+            old_subscription.status == SubscriptionStatus.ACTIVE or old_subscription.status == SubscriptionStatus.TRIAL
+        ):
             await unsubscribe(transaction, old_subscription, bot)
 
     subscription.status = SubscriptionStatus.TRIAL if is_trial else SubscriptionStatus.ACTIVE
@@ -47,6 +49,5 @@ async def create_subscription(
     await update_user_in_transaction(transaction, user_id, {
         'subscription_id': subscription.id,
         'daily_limits': user.daily_limits,
-        'additional_usage_quota': user.additional_usage_quota,
         'last_subscription_limit_update': datetime.now(timezone.utc),
     })
