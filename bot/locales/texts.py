@@ -386,6 +386,18 @@ class Texts(Protocol):
     def model_restricted(model: str):
         raise NotImplementedError
 
+    @staticmethod
+    def model_text_info():
+        raise NotImplementedError
+
+    @staticmethod
+    def model_image_info():
+        raise NotImplementedError
+
+    @staticmethod
+    def model_video_info():
+        raise NotImplementedError
+
     MODELS_TEXT: str
     MODELS_SUMMARY: str
     MODELS_IMAGE: str
@@ -473,6 +485,7 @@ class Texts(Protocol):
 
     # Perplexity
     PERPLEXITY = '🌐 Perplexity'
+    PERPLEXITY_INFO: str
 
     # Photoshop AI
     PHOTOSHOP_AI = '🪄 Photoshop AI'

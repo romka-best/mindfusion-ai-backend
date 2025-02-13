@@ -65,7 +65,6 @@ def build_subscriptions_keyboard(
             subscription.prices.get(currency),
             currency,
             discount,
-            SubscriptionPeriod.MONTH1 if category == ProductCategory.MONTHLY else SubscriptionPeriod.MONTHS12,
         )
         buttons.append([
             InlineKeyboardButton(

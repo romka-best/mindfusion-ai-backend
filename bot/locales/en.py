@@ -1618,6 +1618,65 @@ If you don’t want to wait, I have some solutions:
 Select an action:
 """
 
+    @staticmethod
+    def model_text_info():
+        return f"""
+📕 <b>Instruction</b>
+
+<b>My Capabilities:</b>
+💡 Content creation & ideas
+🌍 Translation & localization
+💻 Writing & debugging code
+📊 Solving problems
+🌟 And much more!
+
+<b>Example Queries:</b>
+💡 Write a post about traveling
+🌍 Translate "Hello" to Spanish
+💻 How to create my own website?
+📊 Solve the equation: 3x² - 5x + 2 = 0
+
+<b>Just type your request 👇</b>
+"""
+
+    @staticmethod
+    def model_image_info():
+        return f"""
+📕 <b>Instruction</b>
+
+<b>My Capabilities:</b>
+🖼 Generating creative images
+🎭 Creating unique characters
+🖍 Working with logos & design
+🎨 Styling existing photos
+🌟 And much more!
+
+<b>Example Queries:</b>
+🖼 Draw a dragon in the mist
+🎭 Create a superhero for a comic book
+🖍 Design a logo for a startup
+🎨 Add a spark effect to a photo
+
+<b>Just type your request 👇</b>
+"""
+
+    @staticmethod
+    def model_video_info():
+        return f"""
+📕 <b>Instruction</b>
+
+<b>My Capabilities:</b>
+🎬 Video generation
+🖼 Image animation
+🌟 And much more!
+
+<b>Example Queries:</b>
+🎬 Create a video of an explosion in space
+🖼 Animate an old photograph [photo]
+
+<b>Just type your request 👇</b>
+"""
+
     MODELS_TEXT = "🔤 Text Models"
     MODELS_SUMMARY = "📝 Summary Models"
     MODELS_IMAGE = "🖼 Image Models"
@@ -1862,6 +1921,24 @@ Choose by clicking the button below 👇
 To complete the purchase, the total amount must be equal to or greater than <b>{left_part_price}{1 if currency == Currency.USD else 50}{right_part_price}</b>
 
 Currently, the purchase amount is: <b>{left_part_price}{current_price}{right_part_price}</b>
+"""
+
+    # Perplexity
+    PERPLEXITY_INFO = """
+📕 <b>Instruction</b>
+
+<b>My Capabilities:</b>
+🌐 Information search
+📊 Source analysis
+🔗 Providing links
+🌟 And much more!
+
+<b>Example Queries:</b>
+🌐 What are the consequences of global warming in 2025?
+📊 Compare studies on the effects of caffeine on health
+🔗 What are the best books on psychology?
+
+<b>Just type your request 👇</b>
 """
 
     # Photoshop AI
@@ -2397,7 +2474,6 @@ You can continue exploring the universe of AI models and regain access by clicki
                         subscription_price,
                         currency,
                         discount,
-                        SubscriptionPeriod.MONTH1 if subscription.category == ProductCategory.MONTHLY else SubscriptionPeriod.MONTHS12,
                     )
                     text_subscriptions += f'{is_trial_info}<s>{left_part_price}{subscription_price}{right_part_price}</s> {left_part_price}{discount_price}{right_part_price} {per_period}\n'
                 else:
