@@ -40,8 +40,6 @@ from bot.locales.types import LanguageCode
 
 midjourney_router = Router()
 
-PRICE_MIDJOURNEY_REQUEST = 0.04
-
 
 @midjourney_router.message(Command('midjourney'))
 async def midjourney(message: Message, state: FSMContext):
@@ -143,13 +141,13 @@ async def handle_midjourney(
             try:
                 if user_language_code != LanguageCode.EN:
                     prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
-                prompt = prompt.replace('-', '- ')
                 if image_filename:
                     image_path = f'users/vision/{user.id}/{image_filename}'
                     image = await firebase.bucket.get_blob(image_path)
                     image_link = firebase.get_public_url(image.name)
                     prompt = f'{image_link} {prompt}'
-                prompt += f' --v {version} --ar {user.settings[Model.MIDJOURNEY][UserSettings.ASPECT_RATIO]}'
+                prompt = prompt.rstrip('.').replace('--', '').replace('—', '').replace('-', ' ')
+                prompt += f' --v {version}'
 
                 if action == MidjourneyAction.UPSCALE:
                     result_id = await create_midjourney_image(hash_id, choice)
@@ -158,7 +156,10 @@ async def handle_midjourney(
                 elif action == MidjourneyAction.REROLL:
                     result_id = await create_different_midjourney_images(hash_id)
                 else:
-                    result_id = await create_midjourney_images(prompt)
+                    result_id = await create_midjourney_images(
+                        prompt,
+                        user.settings[Model.MIDJOURNEY][UserSettings.ASPECT_RATIO],
+                    )
                 await write_generation(
                     id=result_id,
                     request_id=request.id,
@@ -172,21 +173,33 @@ async def handle_midjourney(
                     }
                 )
             except Exception as e:
-                await message.answer_sticker(
-                    sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
-                )
+                if action == MidjourneyAction.IMAGINE:
+                    await message.answer_sticker(
+                        sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
+                    )
+                    await message.answer(
+                        text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
+                    )
+                elif action == MidjourneyAction.UPSCALE:
+                    await message.answer(
+                        text=get_localization(user_language_code).MIDJOURNEY_ALREADY_CHOSE_UPSCALE,
+                    )
+                else:
+                    await message.answer_sticker(
+                        sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
+                    )
 
-                await message.answer(
-                    text=get_localization(user_language_code).ERROR,
-                    reply_markup=build_error_keyboard(user_language_code),
-                )
+                    await message.answer(
+                        text=get_localization(user_language_code).ERROR,
+                        reply_markup=build_error_keyboard(user_language_code),
+                    )
 
-                await send_error_info(
-                    bot=message.bot,
-                    user_id=user.id,
-                    info=str(e),
-                    hashtags=['midjourney'],
-                )
+                    await send_error_info(
+                        bot=message.bot,
+                        user_id=user.id,
+                        info=str(e),
+                        hashtags=['midjourney'],
+                    )
 
                 request.status = RequestStatus.FINISHED
                 await update_request(request.id, {
@@ -283,9 +296,12 @@ async def handle_midjourney_example(user: User, user_language_code: LanguageCode
         try:
             if user_language_code != LanguageCode.EN:
                 prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
-            prompt += f' --v {MidjourneyVersion.V6} --ar {user.settings[user.current_model][UserSettings.ASPECT_RATIO]}'
+            prompt += f' --v {MidjourneyVersion.V6}'
 
-            result_id = await create_midjourney_images(prompt)
+            result_id = await create_midjourney_images(
+                prompt,
+                user.settings[user.current_model][UserSettings.ASPECT_RATIO],
+            )
             await write_generation(
                 id=result_id,
                 request_id=request.id,

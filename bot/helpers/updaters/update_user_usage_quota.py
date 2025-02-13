@@ -36,7 +36,7 @@ IMAGE_ADVANCED_QUOTA = [
     Quota.MIDJOURNEY,
     Quota.STABLE_DIFFUSION_3,
     Quota.FLUX_1_PRO,
-    Quota.LUMA_PHOTON,
+    Quota.RECRAFT,
     Quota.FACE_SWAP,
     Quota.PHOTOSHOP_AI,
 ]

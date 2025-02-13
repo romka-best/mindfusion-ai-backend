@@ -353,10 +353,8 @@ async def replicate_webhook(prediction: dict):
 
 
 @app.post(WEBHOOK_MIDJOURNEY_PATH)
-async def midjourney_webhook(body: dict):
-    is_ok = await handle_midjourney_webhook(bot, dp, body)
-    if not is_ok:
-        return JSONResponse(content={}, status_code=500)
+async def midjourney_webhook(body: dict, background_tasks: BackgroundTasks):
+    background_tasks.add_task(handle_midjourney_webhook, bot, dp, body)
 
 
 @app.post(WEBHOOK_SUNO_PATH)

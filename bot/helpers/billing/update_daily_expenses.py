@@ -1,37 +1,14 @@
 from datetime import datetime
 
 from bot.config import config
-from bot.database.models.common import Currency, Quota
+from bot.database.models.common import Currency
 from bot.database.models.transaction import TransactionType, ServiceType
-from bot.database.operations.product.getters import get_product_by_quota
 from bot.database.operations.transaction.getters import get_transactions_by_product_id_and_created_time
 from bot.database.operations.transaction.writers import write_transaction
 from bot.helpers.billing.main import client
 
 
 async def update_daily_expenses(date: datetime):
-    if date.day == 13:
-        midjourney_product = await get_product_by_quota(Quota.MIDJOURNEY)
-        midjourney_transactions = await get_transactions_by_product_id_and_created_time(
-            midjourney_product.id,
-            date,
-            True,
-        )
-        if not len(midjourney_transactions):
-            await write_transaction(
-                user_id=config.SUPER_ADMIN_ID,
-                type=TransactionType.EXPENSE,
-                product_id=midjourney_product.id,
-                amount=30,
-                clear_amount=30,
-                currency=Currency.USD,
-                quantity=1,
-                details={
-                    'type': 'payment',
-                },
-                created_at=date,
-            )
-
     need_count_server_expenses = True
     need_count_database_expenses = True
 
