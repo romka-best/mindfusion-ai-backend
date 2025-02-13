@@ -60,13 +60,25 @@ async def handle_kling_webhook(bot: Bot, dp: Dispatcher, body: dict):
             'has_error': generation.has_error,
         })
 
-        await send_error_info(
-            bot=bot,
-            user_id=user.id,
-            info=generation_error,
-            hashtags=['kling'],
-        )
-        logging.exception(f'Error in kling_webhook: {generation_error}')
+        if 'inappropriate image detected' in generation_error:
+            await bot.send_sticker(
+                chat_id=user.telegram_chat_id,
+                sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
+            )
+            await bot.send_message(
+                chat_id=user.telegram_chat_id,
+                text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
+            )
+
+            generation.has_error = False
+        else:
+            await send_error_info(
+                bot=bot,
+                user_id=user.id,
+                info=generation_error,
+                hashtags=['kling'],
+            )
+            logging.exception(f'Error in kling_webhook: {generation_error}')
     else:
         generation.result = generation_result
         await update_generation(generation.id, {

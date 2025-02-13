@@ -17,7 +17,35 @@ async def handle_model_info(
     model: Model,
     language_code: LanguageCode,
 ):
-    if model == Model.EIGHTIFY:
+    if model in [
+        Model.CHAT_GPT,
+        Model.CLAUDE,
+        Model.GEMINI,
+        Model.DEEP_SEEK,
+        Model.GROK,
+    ]:
+        await bot.send_message(
+            chat_id=chat_id,
+            text=get_localization(language_code).model_text_info()
+        )
+    elif model == Model.PERPLEXITY:
+        await bot.send_message(
+            chat_id=chat_id,
+            text=get_localization(language_code).PERPLEXITY_INFO,
+        )
+    elif model in [
+        Model.DALL_E,
+        Model.MIDJOURNEY,
+        Model.STABLE_DIFFUSION,
+        Model.FLUX,
+        Model.LUMA_PHOTON,
+        Model.RECRAFT,
+    ]:
+        await bot.send_message(
+            chat_id=chat_id,
+            text=get_localization(language_code).model_image_info()
+        )
+    elif model == Model.EIGHTIFY:
         await bot.send_message(
             chat_id=chat_id,
             text=get_localization(language_code).EIGHTIFY_INFO,
@@ -54,4 +82,14 @@ async def handle_model_info(
             chat_id=chat_id,
             state=state,
             user_id=chat_id,
+        )
+    elif model in [
+        Model.KLING,
+        Model.RUNWAY,
+        Model.LUMA_RAY,
+        Model.PIKA,
+    ]:
+        await bot.send_message(
+            chat_id=chat_id,
+            text=get_localization(language_code).model_video_info()
         )

@@ -1621,6 +1621,65 @@ Si no quieres esperar, tengo una solución para ti:
 Selecciona una acción:
 """
 
+    @staticmethod
+    def model_text_info():
+        return f"""
+📕 <b>Instrucción</b>
+
+<b>Mis capacidades:</b>
+💡 Creación de contenido e ideas
+🌍 Traducción y localización
+💻 Escritura y depuración de código
+📊 Resolución de problemas
+🌟 ¡Y mucho más!
+
+<b>Ejemplos de consultas:</b>
+💡 Escribe un post sobre viajes
+🌍 Traduce "Hola" al inglés
+💻 ¿Cómo crear mi propio sitio web?
+📊 Resuelve la ecuación: 3x² - 5x + 2 = 0
+
+<b>Escribe tu consulta aquí 👇</b>
+"""
+
+    @staticmethod
+    def model_image_info():
+        return f"""
+📕 <b>Instrucción</b>
+
+<b>Mis capacidades:</b>
+🖼 Generación de imágenes creativas
+🎭 Creación de personajes únicos
+🖍 Trabajo con logotipos y diseño
+🎨 Estilización de fotos existentes
+🌟 ¡Y mucho más!
+
+<b>Ejemplos de consultas:</b>
+🖼 Dibuja un dragón en la niebla
+🎭 Crea un superhéroe para un cómic
+🖍 Diseña un logotipo para una startup
+🎨 Agrega un efecto de chispas a una foto
+
+<b>Escribe tu consulta aquí 👇</b>
+"""
+
+    @staticmethod
+    def model_video_info():
+        return f"""
+📕 <b>Instrucción</b>
+
+<b>Mis capacidades:</b>
+🎬 Generación de videos
+🖼 Animación de imágenes
+🌟 ¡Y mucho más!
+
+<b>Ejemplos de consultas:</b>
+🎬 Crea un video de una explosión en el espacio
+🖼 Anima una fotografía antigua [foto]
+
+<b>Escribe tu consulta aquí 👇</b>
+"""
+
     MODELS_TEXT = "🔤 Modelos de texto"
     MODELS_SUMMARY = "📝 Modelos de resumen"
     MODELS_IMAGE = "🖼 Modelos gráficos"
@@ -1865,6 +1924,24 @@ Selecciona presionando el botón de abajo 👇
 Para realizar una compra, el total debe ser igual o mayor a <b>{left_part_price}{1 if currency == Currency.USD else 50}{right_part_price}</b>
 
 Actualmente, el total de tu compra es: <b>{left_part_price}{current_price}{right_part_price}</b>
+"""
+
+    # Perplexity
+    PERPLEXITY_INFO = """
+📕 <b>Instrucción</b>
+
+<b>Mis capacidades:</b>
+🌐 Búsqueda de información
+📊 Análisis de fuentes
+🔗 Provisión de enlaces
+🌟 ¡Y mucho más!
+
+<b>Ejemplos de consultas:</b>
+🌐 ¿Cuáles son las consecuencias del calentamiento global en 2025?
+📊 Compara estudios sobre los efectos de la cafeína en la salud
+🔗 ¿Cuáles son los mejores libros sobre psicología?
+
+<b>Escribe tu consulta aquí 👇</b>
 """
 
     # Photoshop AI
@@ -2400,7 +2477,6 @@ Puedes continuar explorando el universo de las redes neuronales y reactivar tu a
                         subscription_price,
                         currency,
                         discount,
-                        SubscriptionPeriod.MONTH1 if subscription.category == ProductCategory.MONTHLY else SubscriptionPeriod.MONTHS12,
                     )
                     text_subscriptions += f'{is_trial_info}<s>{left_part_price}{subscription_price}{right_part_price}</s> {left_part_price}{discount_price}{right_part_price} {per_period}\n'
                 else:

@@ -63,18 +63,10 @@ class Product(BaseModel):
         price: Union[int, float],
         currency: Currency,
         discount: int,
-        subscription_period: Optional[SubscriptionPeriod] = None,
     ) -> str:
         if type == ProductType.SUBSCRIPTION:
-            price_discount = {
-                SubscriptionPeriod.MONTH1: discount if discount > 0 else 0,
-                SubscriptionPeriod.MONTHS3: discount if discount > 5 else 5,
-                SubscriptionPeriod.MONTHS6: discount if discount > 10 else 10,
-                SubscriptionPeriod.MONTHS12: discount if discount > 20 else 20,
-            }
-
             price_with_discount = round(
-                price - (price * (price_discount[subscription_period] / 100.0)),
+                price - (price * (discount / 100.0)),
                 2,
             )
             if currency == Currency.RUB or currency == Currency.XTR:

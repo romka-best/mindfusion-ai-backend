@@ -234,7 +234,7 @@ async def handle_subscription_selection(callback_query: CallbackQuery, state: FS
         )
 
         product_category = user_data.get('product_category')
-        if product_category is None:
+        if product_category is None or user.currency == Currency.XTR:
             product_category = ProductCategory.MONTHLY
 
         subscriptions = await get_active_products_by_product_type_and_category(
@@ -307,7 +307,6 @@ async def handle_payment_method_subscription_selection(callback_query: CallbackQ
             subscription_price,
             currency,
             discount,
-            subscription_period,
         )
 
         last_user_subscriptions = await get_activated_subscriptions_by_user_id(
