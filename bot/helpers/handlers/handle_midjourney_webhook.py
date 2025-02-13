@@ -55,12 +55,33 @@ async def handle_midjourney_webhook(bot: Bot, dp: Dispatcher, body: dict):
             'has_error': generation.has_error,
         })
 
-        await send_error_info(
-            bot=bot,
-            user_id=user.id,
-            info=generation_error,
-            hashtags=['midjourney'],
-        )
+        if not generation.details.get('is_suggestion', False):
+            if 'might be against our community standards' in generation_error:
+                await bot.send_sticker(
+                    chat_id=user.telegram_chat_id,
+                    sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
+                )
+                await bot.send_message(
+                    chat_id=user.telegram_chat_id,
+                    text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
+                )
+            else:
+                await bot.send_sticker(
+                    chat_id=user.telegram_chat_id,
+                    sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
+                )
+                await bot.send_message(
+                    chat_id=user.telegram_chat_id,
+                    text=get_localization(user_language_code).ERROR,
+                    reply_markup=build_error_keyboard(user_language_code),
+                )
+
+                await send_error_info(
+                    bot=bot,
+                    user_id=user.id,
+                    info=generation_error,
+                    hashtags=['midjourney'],
+                )
         logging.exception(f'Error in midjourney_webhook: {generation_error}')
     else:
         generation.result = generation_result
@@ -104,24 +125,6 @@ async def handle_midjourney_result(
             generation.result,
             build_buy_motivation_keyboard(user_language_code),
             full_text,
-        )
-    else:
-        generation_error = generation.details.get('error', '').lower()
-        if not is_suggestion:
-            await bot.send_sticker(
-                chat_id=user.telegram_chat_id,
-                sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
-            )
-            await bot.send_message(
-                chat_id=user.telegram_chat_id,
-                text=get_localization(user_language_code).ERROR,
-                reply_markup=build_error_keyboard(user_language_code),
-            )
-        await send_error_info(
-            bot=bot,
-            user_id=user.id,
-            info=str(generation_error),
-            hashtags=['midjourney'],
         )
 
     request.status = RequestStatus.FINISHED

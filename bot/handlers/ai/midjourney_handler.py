@@ -146,7 +146,7 @@ async def handle_midjourney(
                     image = await firebase.bucket.get_blob(image_path)
                     image_link = firebase.get_public_url(image.name)
                     prompt = f'{image_link} {prompt}'
-                prompt = prompt.rstrip('.').replace('--', '').replace('—', '').replace(' -', '')
+                prompt = prompt.rstrip('.').replace('--', '').replace('—', '').replace('-', ' ')
                 prompt += f' --v {version}'
 
                 if action == MidjourneyAction.UPSCALE:
