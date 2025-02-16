@@ -4,6 +4,7 @@ from typing import Optional
 from aiogram import Bot
 from google.cloud import firestore
 
+from bot.database.models.common import Quota
 from bot.database.models.subscription import SubscriptionStatus
 from bot.database.operations.product.getters import get_product
 from bot.database.operations.subscription.getters import get_subscription, get_subscriptions_by_user_id
@@ -36,18 +37,20 @@ async def create_subscription(
         ):
             await unsubscribe(transaction, old_subscription, bot)
 
-    subscription.status = SubscriptionStatus.TRIAL if is_trial else SubscriptionStatus.ACTIVE
     await update_subscription_in_transaction(transaction, subscription_id, {
-        'status': subscription.status,
+        'status': SubscriptionStatus.TRIAL if is_trial else SubscriptionStatus.ACTIVE,
         'provider_payment_charge_id': provider_payment_charge_id,
         'provider_auto_payment_charge_id': provider_auto_payment_charge_id,
         'income_amount': income_amount,
         **({'stripe_id': stripe_id} if stripe_id else {}),
     })
 
+    user.additional_usage_quota[Quota.MIDJOURNEY] += product.details.get('limits').get(Quota.MIDJOURNEY, 0)
+    user.additional_usage_quota[Quota.KLING] += product.details.get('limits').get(Quota.KLING, 0)
     user.daily_limits.update(product.details.get('limits'))
     await update_user_in_transaction(transaction, user_id, {
         'subscription_id': subscription.id,
+        'additional_usage_quota': user.additional_usage_quota,
         'daily_limits': user.daily_limits,
         'last_subscription_limit_update': datetime.now(timezone.utc),
     })

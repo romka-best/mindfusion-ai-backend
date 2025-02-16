@@ -276,7 +276,7 @@ async def handle_subscription_selection(callback_query: CallbackQuery, state: FS
                 media=URLInputFile(photo_link, filename=photo.name, timeout=300),
                 caption=get_localization(user_language_code).PAYMENT_CHOOSE_PAYMENT_METHOD,
             ),
-            reply_markup=build_payment_method_for_subscription_keyboard(user_language_code, subscription.id),
+            reply_markup=build_payment_method_for_subscription_keyboard(user_language_code, subscription),
         )
 
 
@@ -1281,7 +1281,7 @@ async def handle_successful_payment(message: Message, state: FSMContext):
         subscription = await get_subscription(subscription_id)
         product = await get_product(subscription.product_id)
 
-        if not payment.is_first_recurring:
+        if payment.is_recurring:
             subscription = await write_subscription(
                 None,
                 user_id,
@@ -1295,7 +1295,7 @@ async def handle_successful_payment(message: Message, state: FSMContext):
                 None,
             )
 
-        subscription.income_amount = subscription.amount
+        subscription.income_amount = payment.total_amount
         transaction = firebase.db.transaction()
         await create_subscription(
             transaction,
@@ -1340,7 +1340,7 @@ async def handle_successful_payment(message: Message, state: FSMContext):
                 subscription=subscription,
                 product=product,
                 is_trial=False,
-                is_renew=payment.is_first_recurring,
+                is_renew=payment.is_recurring,
             )
         )
     elif payment_type == PaymentType.PACKAGE:

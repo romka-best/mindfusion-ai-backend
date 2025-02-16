@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -141,12 +142,16 @@ async def handle_midjourney(
             try:
                 if user_language_code != LanguageCode.EN:
                     prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
+
+                prompt = re.sub(r'\s*[-—]+\s*', ' ', prompt).rstrip('.')
+                if not prompt:
+                    prompt = "Generate image"
+
                 if image_filename:
                     image_path = f'users/vision/{user.id}/{image_filename}'
                     image = await firebase.bucket.get_blob(image_path)
                     image_link = firebase.get_public_url(image.name)
                     prompt = f'{image_link} {prompt}'
-                prompt = prompt.rstrip('.').replace('--', '').replace('—', '').replace('-', ' ')
                 prompt += f' --v {version}'
 
                 if action == MidjourneyAction.UPSCALE:

@@ -2079,7 +2079,8 @@ Choose action 👇
     ┣ 🎬 Kling{f': extra {additional_usage_quota[Quota.KLING]}' if additional_usage_quota[Quota.KLING] > 0 else ''}
     ┣ 🎥 Runway{f': extra {additional_usage_quota[Quota.RUNWAY]}' if additional_usage_quota[Quota.RUNWAY] > 0 else ''}
     ┣ 🔆 Luma Ray{f': extra {additional_usage_quota[Quota.LUMA_RAY]}' if additional_usage_quota[Quota.LUMA_RAY] > 0 else ''}
-    ┗ 🐇 Pika{f': extra {additional_usage_quota[Quota.PIKA]}' if additional_usage_quota[Quota.PIKA] > 0 else ''}
+    ┣ 🐇 Pika{f': extra {additional_usage_quota[Quota.PIKA]}' if additional_usage_quota[Quota.PIKA] > 0 else ''}
+    ┗ Daily Limits: {format_number(daily_limits[Quota.KLING])}/{format_number(subscription_limits[Quota.KLING])}
 
 ─────────────
 
@@ -2499,10 +2500,10 @@ To subscribe, pick your potion and hit the button below:
 
         trial_info = ''
         if is_trial:
-            trial_info = ' with a trial period first 3 days'
+            trial_info = ' with a free trial period first 3 days'
 
         return f"""
-You're about to activate subscription {name} for {left_price_part}{price}{right_price_part}/{period}{trial_info}
+You're about to activate subscription <b>{name} for {left_price_part}{price}{right_price_part}/{period}{trial_info}</b>
 
 ❗️You can cancel your subscription at any time in <b>Profile 👤</b>
 """

@@ -93,34 +93,37 @@ def build_subscriptions_keyboard(
 
 def build_payment_method_for_subscription_keyboard(
     language_code: LanguageCode,
-    subscription_id: str,
+    subscription: Product,
 ) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
                 text=f'{get_localization(language_code).PAYMENT_YOOKASSA_PAYMENT_METHOD}',
-                callback_data=f'pms:{PaymentMethod.YOOKASSA}:{subscription_id}'
+                callback_data=f'pms:{PaymentMethod.YOOKASSA}:{subscription.id}'
             ),
         ],
         [
             InlineKeyboardButton(
                 text=f'{get_localization(language_code).PAYMENT_STRIPE_PAYMENT_METHOD}',
-                callback_data=f'pms:{PaymentMethod.STRIPE}:{subscription_id}'
+                callback_data=f'pms:{PaymentMethod.STRIPE}:{subscription.id}'
             ),
-        ],
-        [
-            InlineKeyboardButton(
-                text=f'{get_localization(language_code).PAYMENT_TELEGRAM_STARS_PAYMENT_METHOD}',
-                callback_data=f'pms:{PaymentMethod.TELEGRAM_STARS}:{subscription_id}'
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text=get_localization(language_code).ACTION_BACK,
-                callback_data='pms:back'
-            )
         ],
     ]
+
+    if subscription.category == ProductCategory.MONTHLY:
+        buttons.append([
+            InlineKeyboardButton(
+                text=f'{get_localization(language_code).PAYMENT_TELEGRAM_STARS_PAYMENT_METHOD}',
+                callback_data=f'pms:{PaymentMethod.TELEGRAM_STARS}:{subscription.id}'
+            ),
+        ])
+
+    buttons.append([
+        InlineKeyboardButton(
+            text=get_localization(language_code).ACTION_BACK,
+            callback_data='pms:back'
+        ),
+    ])
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 

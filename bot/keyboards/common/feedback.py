@@ -8,13 +8,6 @@ def build_feedback_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup
     buttons = [
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).TECH_SUPPORT,
-                url='https://t.me/roman_danilov',
-                callback_data='feedback:tech_support'
-            )
-        ],
-        [
-            InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_CANCEL,
                 callback_data='feedback:cancel'
             )

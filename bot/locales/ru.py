@@ -2122,7 +2122,8 @@ class Russian(Texts):
     ┣ 🎬 Kling{f': доп. {additional_usage_quota[Quota.KLING]}' if additional_usage_quota[Quota.KLING] > 0 else ''}
     ┣ 🎥 Runway{f': доп. {additional_usage_quota[Quota.RUNWAY]}' if additional_usage_quota[Quota.RUNWAY] > 0 else ''}
     ┣ 🔆 Luma Ray{f': доп. {additional_usage_quota[Quota.LUMA_RAY]}' if additional_usage_quota[Quota.LUMA_RAY] > 0 else ''}
-    ┗ 🐇 Pika{f': доп. {additional_usage_quota[Quota.PIKA]}' if additional_usage_quota[Quota.PIKA] > 0 else ''}
+    ┣ 🐇 Pika{f': доп. {additional_usage_quota[Quota.PIKA]}' if additional_usage_quota[Quota.PIKA] > 0 else ''}
+    ┗ Дневной лимит: {format_number(daily_limits[Quota.KLING])}/{format_number(subscription_limits[Quota.KLING])}
 
 ─────────────
 
@@ -2544,11 +2545,13 @@ class Russian(Texts):
         period = 'месяц' if category == ProductCategory.MONTHLY else 'год'
 
         trial_info = ''
-        if is_trial:
-            trial_info = ' с пробным периодом первые 3 дня'
+        if is_trial and currency == Currency.RUB:
+            trial_info = '1₽ первые 3 дня, затем '
+        elif is_trial and currency == Currency.USD:
+            trial_info = 'Бесплатно первые 3 дня, затем '
 
         return f"""
-Вы собираетесь активировать подписку {name} за {left_price_part}{price}{right_price_part}/{period}{trial_info}
+Вы собираетесь активировать подписку <b>{name} – {trial_info}{left_price_part}{price}{right_price_part}/{period}</b>
 
 ❗️Подписку можно отменить в любое время в разделе <b>Профиль 👤</b>
 """

@@ -56,7 +56,7 @@ async def handle_midjourney_webhook(bot: Bot, dp: Dispatcher, body: dict):
         })
 
         if not generation.details.get('is_suggestion', False):
-            if 'might be against our community standards' in generation_error:
+            if 'might be against our community standards' in generation_error or 'Banned prompt detected' in generation_error:
                 await bot.send_sticker(
                     chat_id=user.telegram_chat_id,
                     sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),

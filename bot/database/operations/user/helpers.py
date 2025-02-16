@@ -172,7 +172,7 @@ def create_user_object(
             'currency',
             Currency.RUB if telegram_user.language_code == LanguageCode.RU else Currency.USD
         ),
-        balance=user_data.get('balance', 25 if is_referred_by_user else 0),
+        balance=user_data.get('balance', 75 if is_referred_by_user else 50),
         subscription_id=user_data.get('subscription_id', ''),
         last_subscription_limit_update=user_data.get('last_subscription_limit_update', datetime.now(timezone.utc)),
         daily_limits=user_data.get('daily_limits', SUBSCRIPTION_FREE_LIMITS),
