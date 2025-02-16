@@ -33,13 +33,14 @@ async def migrate(bot: Bot):
             user_ref = firebase.db.collection(User.COLLECTION_NAME).document(user.id)
 
             if user.subscription_id:
+                user.additional_usage_quota[Quota.MIDJOURNEY] += 5
                 user.additional_usage_quota[Quota.KLING] += 5
             else:
+                user.additional_usage_quota[Quota.MIDJOURNEY] += 1
                 user.additional_usage_quota[Quota.KLING] += 1
 
             batch.update(user_ref, {
                 'additional_usage_quota': user.additional_usage_quota,
-                'settings': user.settings,
                 'edited_at': current_date,
             })
 

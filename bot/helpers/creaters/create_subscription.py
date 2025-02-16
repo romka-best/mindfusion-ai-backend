@@ -45,7 +45,8 @@ async def create_subscription(
         **({'stripe_id': stripe_id} if stripe_id else {}),
     })
 
-    user.additional_usage_quota[Quota.KLING] += product.details.get('limits').get(Quota.KLING)
+    user.additional_usage_quota[Quota.MIDJOURNEY] += product.details.get('limits').get(Quota.MIDJOURNEY, 0)
+    user.additional_usage_quota[Quota.KLING] += product.details.get('limits').get(Quota.KLING, 0)
     user.daily_limits.update(product.details.get('limits'))
     await update_user_in_transaction(transaction, user_id, {
         'subscription_id': subscription.id,
