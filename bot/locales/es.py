@@ -2082,7 +2082,8 @@ Seleccione una acción 👇
     ┣ 🎬 Kling{f': adicional {additional_usage_quota[Quota.KLING]}' if additional_usage_quota[Quota.KLING] > 0 else ''}
     ┣ 🎥 Runway{f': adicional {additional_usage_quota[Quota.RUNWAY]}' if additional_usage_quota[Quota.RUNWAY] > 0 else ''}
     ┣ 🔆 Luma Ray{f': adicional {additional_usage_quota[Quota.LUMA_RAY]}' if additional_usage_quota[Quota.LUMA_RAY] > 0 else ''}
-    ┗ 🐇 Pika{f': adicional {additional_usage_quota[Quota.PIKA]}' if additional_usage_quota[Quota.PIKA] > 0 else ''}
+    ┣ 🐇 Pika{f': adicional {additional_usage_quota[Quota.PIKA]}' if additional_usage_quota[Quota.PIKA] > 0 else ''}
+    ┗ Límite diario: {format_number(daily_limits[Quota.KLING])}/{format_number(subscription_limits[Quota.KLING])}
 
 ─────────────
 

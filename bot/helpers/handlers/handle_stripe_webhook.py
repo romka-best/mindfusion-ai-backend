@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timezone, timedelta
 
-import stripe
 from aiogram import Bot, Dispatcher
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.fsm.context import FSMContext
@@ -46,14 +45,14 @@ from bot.locales.main import get_user_language, get_localization
 from bot.locales.types import LanguageCode
 
 
-def get_net(amount: int):
+def get_net(amount: float):
     fee_percentage = 0.029  # 2.9%
-    fixed_fee = 30
+    fixed_fee = 0.30
 
-    fee = round(amount * fee_percentage) + fixed_fee
+    fee = round(amount * fee_percentage, 2) + fixed_fee
     net = amount - fee
 
-    return net
+    return round(net, 2)
 
 
 async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
@@ -62,35 +61,16 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
     request_id = request_object.get('id', '')
 
     if request_type.startswith('invoice'):
-        amount = round(request_object.get('amount_paid') / 100, 2)
+        is_trial = int(request_object.get('amount_paid')) <= 0.01
         order_id = request_object.get('lines', {}).get('data', [{}])[0].get('metadata', {}).get('order_id')
-        charge_id = request_object.get('charge')
     elif request_type.startswith('payment_intent'):
-        amount = round(request_object.get('amount_received') / 100, 2)
+        is_trial = False
         order_id = request_object.get('metadata', {}).get('order_id')
-        charge_id = request_object.get('latest_charge')
     else:
         return
 
     if not order_id:
         return
-
-    if charge_id:
-        payment_charge = await stripe.Charge.retrieve_async(
-            charge_id,
-            expand=['balance_transaction'],
-        )
-        balance_transaction = payment_charge.balance_transaction
-    else:
-        balance_transaction = 0
-
-    if balance_transaction:
-        clear_amount = balance_transaction.net / 100
-    else:
-        clear_amount = round(get_net(amount * 100) / 100, 2)
-
-    if clear_amount < 0:
-        clear_amount = 0
 
     try:
         subscription = await get_subscription(order_id)
@@ -101,7 +81,7 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
             user = await get_user(subscription.user_id)
             product = await get_product(subscription.product_id)
             if request_type == 'invoice.payment_succeeded':
-                is_trial = float(clear_amount) <= 0.01
+                clear_amount = 0 if is_trial else get_net(subscription.amount)
                 transaction = firebase.db.transaction()
                 subscription.income_amount = float(clear_amount)
                 await create_subscription(
@@ -228,6 +208,7 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                 user = await get_user(old_subscription.user_id)
                 product = await get_product(old_subscription.product_id)
                 if request_type == 'invoice.payment_succeeded':
+                    clear_amount = get_net(old_subscription.amount)
                     if old_subscription.status == SubscriptionStatus.TRIAL:
                         new_income_amount = old_subscription.income_amount + float(clear_amount)
                         old_subscription.income_amount = new_income_amount
@@ -271,7 +252,7 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                             old_subscription.period,
                             SubscriptionStatus.ACTIVE,
                             Currency.USD,
-                            float(amount),
+                            old_subscription.amount,
                             float(clear_amount),
                             PaymentMethod.STRIPE,
                             request_id,
@@ -398,6 +379,7 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
             else:
                 subscription_discount = 0
 
+            clear_amount = get_net(package.amount)
             if request_type == 'payment_intent.succeeded':
                 transaction = firebase.db.transaction()
                 package.income_amount = float(clear_amount)
@@ -572,12 +554,13 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
 
             if request_type == 'payment_intent.succeeded':
                 transaction = firebase.db.transaction()
-                total_amount = sum(float(package.amount) for package in packages)
+                amount = 0
+                clear_amount = 0
                 for package in packages:
-                    package_clear_amount = round(
-                        (float(package.amount) / total_amount) * float(clear_amount),
-                        3,
-                    )
+                    package_clear_amount = get_net(package.amount)
+                    amount += package.amount
+                    clear_amount += package_clear_amount
+
                     await create_package(
                         transaction,
                         package.id,
@@ -672,12 +655,13 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     )
                 )
             elif request_type == 'payment_intent.payment_failed' or request_type == 'payment_intent.canceled':
+                amount = 0
                 for package in packages:
-                    package.status = PackageStatus.DECLINED
+                    amount += package.amount
                     await update_package(
                         package.id,
                         {
-                            'status': package.status,
+                            'status': PackageStatus.DECLINED,
                         }
                     )
 
@@ -701,7 +685,7 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                         status=PackageStatus.ERROR,
                         user_id=user.id,
                         payment_method=PaymentMethod.STRIPE,
-                        amount=float(amount),
+                        amount=0,
                         income_amount=0,
                         currency=packages[0].currency,
                     )
