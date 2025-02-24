@@ -103,7 +103,7 @@ async def handle_midjourney(
 
     async with ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id):
         quota = user.daily_limits[Quota.MIDJOURNEY] + user.additional_usage_quota[Quota.MIDJOURNEY]
-        if quota < 1:
+        if quota < 1 and action != MidjourneyAction.UPSCALE:
             await message.answer_sticker(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
             )
@@ -145,7 +145,7 @@ async def handle_midjourney(
 
                 prompt = re.sub(r'\s*[-—]+\s*', ' ', prompt).rstrip('.')
                 if not prompt:
-                    prompt = "Generate image"
+                    prompt = 'Generate image'
 
                 if image_filename:
                     image_path = f'users/vision/{user.id}/{image_filename}'

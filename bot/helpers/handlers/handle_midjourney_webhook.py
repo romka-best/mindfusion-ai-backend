@@ -107,10 +107,13 @@ async def handle_midjourney_result(
     if not generation.has_error and not is_suggestion:
         reply_markup = build_midjourney_keyboard(generation.id) if action_type != MidjourneyAction.UPSCALE \
             else build_reaction_keyboard(generation.id)
-        footer_text = f'\n\n🖼 {user.daily_limits[Quota.MIDJOURNEY] + user.additional_usage_quota[Quota.MIDJOURNEY]}' \
-            if user.settings[Model.MIDJOURNEY][UserSettings.SHOW_USAGE_QUOTA] and \
+        footer_text = f'\n🖼 {user.daily_limits[Quota.MIDJOURNEY] + user.additional_usage_quota[Quota.MIDJOURNEY]}' \
+            if action_type != MidjourneyAction.UPSCALE and \
+               user.settings[Model.MIDJOURNEY][UserSettings.SHOW_USAGE_QUOTA] and \
                user.daily_limits[Quota.MIDJOURNEY] != float('inf') else ''
-        caption = f'{get_localization(user_language_code).GENERATION_IMAGE_SUCCESS}{footer_text}'
+        middle_text = get_localization(user_language_code).MIDJOURNEY_INFO if action_type != MidjourneyAction.UPSCALE else ''
+
+        caption = f'{get_localization(user_language_code).GENERATION_IMAGE_SUCCESS}\n{middle_text}{footer_text}'
         if user.settings[Model.MIDJOURNEY][UserSettings.SEND_TYPE] == SendType.DOCUMENT:
             await send_document(bot, user.telegram_chat_id, generation.result, reply_markup, caption)
         else:

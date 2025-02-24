@@ -127,7 +127,6 @@ async def handle_pika_webhook(bot: Bot, dp: Dispatcher, body: dict):
                 duration=duration,
                 reply_markup=reply_markup,
             )
-
     if request.status != RequestStatus.FINISHED:
         request.status = RequestStatus.FINISHED
         await update_request(request.id, {

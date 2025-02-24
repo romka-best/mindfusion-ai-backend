@@ -149,6 +149,7 @@ async def handle_runway(message: Message, state: FSMContext, user: User, video_f
             footer_text = f'\n\n📹 {user.daily_limits[Quota.RUNWAY] + user.additional_usage_quota[Quota.RUNWAY]}' \
                 if user.settings[Model.RUNWAY][UserSettings.SHOW_USAGE_QUOTA] and \
                    user.daily_limits[Quota.RUNWAY] != float('inf') else ''
+
             if user.settings[Model.RUNWAY][UserSettings.SEND_TYPE] == SendType.DOCUMENT:
                 await message.reply_document(
                     caption=f'{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}',

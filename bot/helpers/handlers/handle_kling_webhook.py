@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import uuid
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.context import FSMContext
@@ -45,10 +46,12 @@ async def handle_kling_webhook(bot: Bot, dp: Dispatcher, body: dict):
 
     generation_error = body.get('error', {}).get('raw_message', '')
     try:
-        generation_result = body.get('output', {}) \
+        body_output = body.get('output', {}) \
             .get('works', [{}])[0] \
-            .get('video', {}) \
-            .get('resource_without_watermark')
+            .get('video', {})
+        generation_result = body_output.get('resource_without_watermark')
+        generation.details['width'] = body_output.get('width')
+        generation.details['height'] = body_output.get('height')
     except TypeError:
         generation_result = None
 
@@ -60,7 +63,7 @@ async def handle_kling_webhook(bot: Bot, dp: Dispatcher, body: dict):
             'has_error': generation.has_error,
         })
 
-        if 'inappropriate image detected' in generation_error:
+        if 'inappropriate image detected' in generation_error or 'the prompt contains sensitive words' in generation_error:
             await bot.send_sticker(
                 chat_id=user.telegram_chat_id,
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
@@ -117,13 +120,15 @@ async def handle_kling(
             )
         else:
             await send_video(
-                bot,
-                user.telegram_chat_id,
-                generation.result,
-                caption,
-                get_localization(user_language_code).SETTINGS_SEND_TYPE_VIDEO,
-                generation.details.get('duration', 5),
-                reply_markup,
+                bot=bot,
+                chat_id=user.telegram_chat_id,
+                result=generation.result,
+                caption=caption,
+                filename=f'{uuid.uuid4()}.mp4',
+                duration=generation.details.get('duration', 5),
+                width=generation.details.get('width'),
+                height=generation.details.get('height'),
+                reply_markup=build_reaction_keyboard(generation.id),
             )
     elif generation.has_error:
         await bot.send_sticker(

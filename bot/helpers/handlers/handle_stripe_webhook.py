@@ -180,15 +180,6 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                         'status': subscription.status,
                     }
                 )
-
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
-                        status=SubscriptionStatus.DECLINED,
-                        subscription=subscription,
-                        product=product,
-                    ),
-                )
             else:
                 logging.exception(f'Error in handle_stripe_webhook: {request_type}')
                 await send_message_to_admins(
@@ -524,15 +515,6 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                         'status': package.status,
                     }
                 )
-
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_package_changed_status(
-                        status=PackageStatus.DECLINED,
-                        package=package,
-                        product=product,
-                    )
-                )
             else:
                 logging.exception(f'Error in handle_stripe_webhook: {request_type}')
                 await send_message_to_admins(
@@ -664,18 +646,6 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                             'status': PackageStatus.DECLINED,
                         }
                     )
-
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
-                        status=PackageStatus.DECLINED,
-                        user_id=user.id,
-                        payment_method=PaymentMethod.STRIPE,
-                        amount=float(amount),
-                        income_amount=0,
-                        currency=packages[0].currency,
-                    )
-                )
             else:
                 logging.exception(f'Error in handle_stripe_webhook: {request_type}')
 

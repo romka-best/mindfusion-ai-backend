@@ -1352,6 +1352,14 @@ For any questions, you can also contact technical support:
     MAINTENANCE_MODE = "🤖 I'm in maintenance mode. Please wait a little bit 🛠"
 
     # Midjourney
+    MIDJOURNEY_INFO = """
+<b>Image Layout:</b>
+┌1️⃣2️⃣┐
+└3️⃣4️⃣┘
+
+<b>U</b> — Upscale the image
+<b>V</b> — Variations of the image
+"""
     MIDJOURNEY_ALREADY_CHOSE_UPSCALE = "You've already chosen this image, try a new one 🙂"
 
     # Model
@@ -1826,10 +1834,10 @@ The entered number exceeds what you can purchase
     def package_info(currency: Currency, cost: str, gift_packages: list[Product]) -> str:
         if currency == Currency.USD:
             cost = f"{Currency.SYMBOLS[currency]}{cost}"
-            gift_packages_sum = f"{Currency.SYMBOLS[currency]}5"
+            gift_packages_sum = f"{Currency.SYMBOLS[currency]}4"
         else:
             cost = f"{cost}{Currency.SYMBOLS[currency]}"
-            gift_packages_sum = f"500{Currency.SYMBOLS[currency]}"
+            gift_packages_sum = f"400{Currency.SYMBOLS[currency]}"
 
         gift_packages_info = f"\n\n🎁 <span class='tg-spoiler'>Spend {gift_packages_sum} or more — get these packages as a gift:</span>"
         for gift_package in gift_packages:
@@ -1901,8 +1909,10 @@ Choose by clicking the button below 👇
 <b>Choose a Payment Method:</b>
 
 🪆 <b>YooKassa (Russian's Cards)</b>
+(Visa | MasterCard | MIR | YooMoney | SberPay | T-Pay and others)
 
 🌍 <b>Stripe (International Cards)</b>
+(Visa | MasterCard | AmEx | UnionPay | Google Pay | Apple Pay and others)
 
 ⭐️ <b>Telegram Stars (Currency in Telegram)</b>
 """

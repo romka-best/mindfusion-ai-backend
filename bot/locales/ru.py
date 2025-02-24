@@ -1382,6 +1382,14 @@ class Russian(Texts):
     MAINTENANCE_MODE = "🤖 Я в режиме тех. обслуживания. Пожалуйста, подождите, немного 🛠"
 
     # Midjourney
+    MIDJOURNEY_INFO = """
+<b>Расположение картинок:</b>
+┌1️⃣2️⃣┐
+└3️⃣4️⃣┘
+
+<b>U</b> — Увеличение картинки
+<b>V</b> — Похожие варианты картинки
+"""
     MIDJOURNEY_ALREADY_CHOSE_UPSCALE = "Вы уже выбирали эту картинку, попробуйте новую 🙂"
 
     # Model
@@ -1861,10 +1869,10 @@ class Russian(Texts):
     def package_info(currency: Currency, cost: str, gift_packages: list[Product]) -> str:
         if currency == Currency.USD:
             cost = f"{Currency.SYMBOLS[currency]}{cost}"
-            gift_packages_sum = f"{Currency.SYMBOLS[currency]}5"
+            gift_packages_sum = f"{Currency.SYMBOLS[currency]}4"
         else:
             cost = f"{cost}{Currency.SYMBOLS[currency]}"
-            gift_packages_sum = f"500{Currency.SYMBOLS[currency]}"
+            gift_packages_sum = f"400{Currency.SYMBOLS[currency]}"
 
         gift_packages_info = f"\n\n🎁 <span class='tg-spoiler'>При покупке от {gift_packages_sum} — получите эти пакеты в подарок:</span>"
         for gift_package in gift_packages:
@@ -1940,8 +1948,10 @@ class Russian(Texts):
 <b>Выберите способ оплаты:</b>
 
 🪆 <b>ЮKassa (РФ Карты)</b>
+(Visa | MasterCard | МИР | ЮMoney | SberPay | T-Pay и др.)
 
 🌍 <b>Stripe (Международные Карты)</b>
+(Visa | MasterCard | AmEx | UnionPay | Google Pay | Apple Pay и др.)
 
 ⭐️ <b>Telegram Stars (Валюта в Telegram)</b>
 """

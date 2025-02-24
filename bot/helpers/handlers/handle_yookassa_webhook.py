@@ -157,15 +157,6 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                         'status': subscription.status,
                     }
                 )
-
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
-                        status=SubscriptionStatus.DECLINED,
-                        subscription=subscription,
-                        product=product,
-                    ),
-                )
             else:
                 logging.exception(f'Error in handle_yookassa_webhook: {payment.status}')
                 await send_message_to_admins(
@@ -405,7 +396,7 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                         'discount': 0,
                     })
 
-                if package.amount >= 500:
+                if package.amount >= 400:
                     gift_products = await get_active_products_by_product_type_and_category(
                         ProductType.PACKAGE,
                         ProductCategory.OTHER,
@@ -515,15 +506,6 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     {
                         'status': package.status,
                     }
-                )
-
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_package_changed_status(
-                        status=PackageStatus.DECLINED,
-                        package=package,
-                        product=product,
-                    )
                 )
             else:
                 logging.exception(f'Error in handle_yookassa_webhook: {payment.status}')
@@ -654,18 +636,6 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                             'status': package.status,
                         }
                     )
-
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
-                        status=PackageStatus.DECLINED,
-                        user_id=user.id,
-                        payment_method=PaymentMethod.YOOKASSA,
-                        amount=float(payment.amount.value),
-                        income_amount=0,
-                        currency=packages[0].currency,
-                    )
-                )
             else:
                 logging.exception(f'Error in handle_yookassa_webhook: {payment.status}')
 

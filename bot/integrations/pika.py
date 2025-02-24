@@ -55,7 +55,7 @@ class Videos(APIResource):
             'action': 'generate',
             'prompt': prompt,
             'model': version,
-            'aspect_ratio': aspect_ratio if not image_url else '',
+            'aspect_ratio': aspect_ratio if not image_url else None,
             'image_url': [image_url] if image_url else [],
             'callback_url': WEBHOOK_PIKA_URL,
         }
