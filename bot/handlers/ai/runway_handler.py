@@ -150,25 +150,18 @@ async def handle_runway(message: Message, state: FSMContext, user: User, video_f
                 if user.settings[Model.RUNWAY][UserSettings.SHOW_USAGE_QUOTA] and \
                    user.daily_limits[Quota.RUNWAY] != float('inf') else ''
 
-            await message.reply_document(
-                caption=f'{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}',
-                document=response.get('result', [])[0],
-                allow_sending_without_reply=True,
-            )
-
-            # TODO
-            # if user.settings[Model.RUNWAY][UserSettings.SEND_TYPE] == SendType.DOCUMENT:
-            #     await message.reply_document(
-            #         caption=f'{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}',
-            #         document=response.get('result', [])[0],
-            #         allow_sending_without_reply=True,
-            #     )
-            # else:
-            #     await message.reply_video(
-            #         caption=f'{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}',
-            #         video=response.get('result', [])[0],
-            #         allow_sending_without_reply=True,
-            #     )
+            if user.settings[Model.RUNWAY][UserSettings.SEND_TYPE] == SendType.DOCUMENT:
+                await message.reply_document(
+                    caption=f'{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}',
+                    document=response.get('result', [])[0],
+                    allow_sending_without_reply=True,
+                )
+            else:
+                await message.reply_video(
+                    caption=f'{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}',
+                    video=response.get('result', [])[0],
+                    allow_sending_without_reply=True,
+                )
 
             await update_user_usage_quota(user, Quota.RUNWAY, cost)
         except runwayml.RateLimitError:

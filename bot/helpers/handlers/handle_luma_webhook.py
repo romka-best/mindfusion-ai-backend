@@ -180,33 +180,25 @@ async def handle_luma_ray(
                user.daily_limits[Quota.LUMA_RAY] != float('inf') else ''
         caption = f'{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}'
 
-        await send_document(
-            bot,
-            user.telegram_chat_id,
-            generation.result,
-            build_reaction_keyboard(generation.id),
-            caption,
-        )
-        # TODO
-        # reply_markup = build_reaction_keyboard(generation.id)
-        # if user.settings[Model.LUMA_RAY][UserSettings.SEND_TYPE] == SendType.DOCUMENT:
-        #     await send_document(
-        #         bot,
-        #         user.telegram_chat_id,
-        #         generation.result,
-        #         reply_markup,
-        #         caption,
-        #     )
-        # else:
-        #     await send_video(
-        #         bot,
-        #         user.telegram_chat_id,
-        #         generation.result,
-        #         caption,
-        #         get_localization(user_language_code).SETTINGS_SEND_TYPE_VIDEO,
-        #         generation.details.get('duration', 5),
-        #         reply_markup,
-        #     )
+        reply_markup = build_reaction_keyboard(generation.id)
+        if user.settings[Model.LUMA_RAY][UserSettings.SEND_TYPE] == SendType.DOCUMENT:
+            await send_document(
+                bot,
+                user.telegram_chat_id,
+                generation.result,
+                reply_markup,
+                caption,
+            )
+        else:
+            await send_video(
+                bot,
+                user.telegram_chat_id,
+                generation.result,
+                caption,
+                get_localization(user_language_code).SETTINGS_SEND_TYPE_VIDEO,
+                generation.details.get('duration', 5),
+                reply_markup,
+            )
     elif generation.has_error:
         await bot.send_sticker(
             chat_id=user.telegram_chat_id,
