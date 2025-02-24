@@ -4,12 +4,8 @@ from datetime import datetime, timezone, timedelta
 from aiogram import Bot
 
 from bot.database.models.subscription import SubscriptionStatus
-from bot.database.operations.product.getters import get_product
 from bot.database.operations.subscription.getters import get_subscriptions_by_status
 from bot.database.operations.subscription.updaters import update_subscription
-from bot.helpers.senders.send_message_to_admins import send_message_to_admins
-from bot.locales.main import get_localization
-from bot.locales.types import LanguageCode
 
 
 async def check_waiting_payments(bot: Bot):
@@ -32,16 +28,6 @@ async def check_waiting_payments(bot: Bot):
                     'status': not_finished_subscription.status,
                 }
             )
-        )
-
-        product = await get_product(not_finished_subscription.product_id)
-        await send_message_to_admins(
-            bot=bot,
-            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
-                status=SubscriptionStatus.DECLINED,
-                subscription=not_finished_subscription,
-                product=product,
-            ),
         )
 
     await asyncio.gather(*tasks)

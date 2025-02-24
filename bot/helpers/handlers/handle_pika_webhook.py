@@ -108,25 +108,34 @@ async def handle_pika_webhook(bot: Bot, dp: Dispatcher, body: dict):
                user.daily_limits[Quota.PIKA] != float('inf') else ''
         caption = f'{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}'
 
-        reply_markup = build_reaction_keyboard(generation.id)
-        if user.settings[Model.PIKA][UserSettings.SEND_TYPE] == SendType.DOCUMENT:
-            await send_document(
-                bot=bot,
-                chat_id=user.telegram_chat_id,
-                document=generation.result,
-                reply_markup=reply_markup,
-                caption=caption,
-            )
-        else:
-            await send_video(
-                bot=bot,
-                chat_id=user.telegram_chat_id,
-                result=video_url,
-                caption=caption,
-                filename=get_localization(user_language_code).SETTINGS_SEND_TYPE_VIDEO,
-                duration=duration,
-                reply_markup=reply_markup,
-            )
+        await send_document(
+            bot,
+            user.telegram_chat_id,
+            generation.result,
+            build_reaction_keyboard(generation.id),
+            caption,
+        )
+
+        # TODO
+        # reply_markup = build_reaction_keyboard(generation.id)
+        # if user.settings[Model.PIKA][UserSettings.SEND_TYPE] == SendType.DOCUMENT:
+        #     await send_document(
+        #         bot=bot,
+        #         chat_id=user.telegram_chat_id,
+        #         document=generation.result,
+        #         reply_markup=reply_markup,
+        #         caption=caption,
+        #     )
+        # else:
+        #     await send_video(
+        #         bot=bot,
+        #         chat_id=user.telegram_chat_id,
+        #         result=video_url,
+        #         caption=caption,
+        #         filename=get_localization(user_language_code).SETTINGS_SEND_TYPE_VIDEO,
+        #         duration=duration,
+        #         reply_markup=reply_markup,
+        #     )
 
     if request.status != RequestStatus.FINISHED:
         request.status = RequestStatus.FINISHED

@@ -1359,6 +1359,14 @@ class Hindi(Texts):
     MAINTENANCE_MODE = "🤖 मैं रखरखाव मोड में हूँ। कृपया थोड़ी देर प्रतीक्षा करें 🛠"
 
     # Midjourney
+    MIDJOURNEY_INFO = """
+<b>चित्रों की व्यवस्था:</b>
+┌1️⃣2️⃣┐
+└3️⃣4️⃣┘
+
+<b>U</b> — चित्र को बड़ा करना
+<b>V</b> — चित्र के समान विकल्प
+"""
     MIDJOURNEY_ALREADY_CHOSE_UPSCALE = "आपने पहले ही इस चित्र का चयन किया है, कृपया एक नया आज़माएँ 🙂"
 
     # Model
@@ -1833,10 +1841,10 @@ class Hindi(Texts):
     def package_info(currency: Currency, cost: str, gift_packages: list[Product]) -> str:
         if currency == Currency.USD:
             cost = f"{Currency.SYMBOLS[currency]}{cost}"
-            gift_packages_sum = f"{Currency.SYMBOLS[currency]}5"
+            gift_packages_sum = f"{Currency.SYMBOLS[currency]}4"
         else:
             cost = f"{cost}{Currency.SYMBOLS[currency]}"
-            gift_packages_sum = f"500{Currency.SYMBOLS[currency]}"
+            gift_packages_sum = f"400{Currency.SYMBOLS[currency]}"
 
         gift_packages_info = f"\n\n🎁 <span class='tg-spoiler'>{gift_packages_sum} या उससे अधिक खर्च करें — इन पैकेजों को उपहार में पाएं:</span>"
         for gift_package in gift_packages:
@@ -1908,8 +1916,10 @@ class Hindi(Texts):
 <b>भुगतान का तरीका चुनें:</b>
 
 🪆 <b>ЮKassa (रूसी कार्ड)</b>
+(Visa | MasterCard | MIR | YooMoney | SberPay | T-Pay...)
 
 🌍 <b>Stripe (अंतर्राष्ट्रीय कार्ड)</b>
+(Visa | MasterCard | AmEx | UnionPay | Google Pay | Apple Pay...)
 
 ⭐️ <b>Telegram Stars (Telegram मुद्रा)</b>
 """

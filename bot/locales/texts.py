@@ -328,6 +328,7 @@ class Texts(Protocol):
 
     # Midjourney
     MIDJOURNEY = '🎨 Midjourney'
+    MIDJOURNEY_INFO: str
     MIDJOURNEY_ALREADY_CHOSE_UPSCALE: str
 
     # Model

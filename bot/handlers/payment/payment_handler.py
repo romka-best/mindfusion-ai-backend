@@ -1281,7 +1281,7 @@ async def handle_successful_payment(message: Message, state: FSMContext):
         subscription = await get_subscription(subscription_id)
         product = await get_product(subscription.product_id)
 
-        if payment.is_recurring:
+        if not payment.is_first_recurring:
             subscription = await write_subscription(
                 None,
                 user_id,
@@ -1340,7 +1340,7 @@ async def handle_successful_payment(message: Message, state: FSMContext):
                 subscription=subscription,
                 product=product,
                 is_trial=False,
-                is_renew=payment.is_recurring,
+                is_renew=not payment.is_first_recurring,
             )
         )
     elif payment_type == PaymentType.PACKAGE:
@@ -1385,7 +1385,7 @@ async def handle_successful_payment(message: Message, state: FSMContext):
             },
         )
 
-        if package.amount >= 500:
+        if package.amount >= 400:
             gift_products = await get_active_products_by_product_type_and_category(
                 ProductType.PACKAGE,
                 ProductCategory.OTHER,
