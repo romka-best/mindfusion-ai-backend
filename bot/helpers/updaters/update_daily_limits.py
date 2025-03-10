@@ -258,6 +258,8 @@ async def update_user_subscription(bot: Bot, user: User, batch: AsyncWriteBatch,
                             get_localization(user_language_code).SUBSCRIPTION_END,
                             build_buy_motivation_keyboard(user_language_code),
                         )
+
+            return user
         else:
             current_subscription.status = SubscriptionStatus.FINISHED if current_subscription.status != SubscriptionStatus.CANCELED else current_subscription.status
 
@@ -293,10 +295,9 @@ async def update_user_subscription(bot: Bot, user: User, batch: AsyncWriteBatch,
                     build_buy_motivation_keyboard(user_language_code),
                 )
 
-        return user
+            return user
     elif (
         current_subscription and
-        current_subscription.product_id and
         current_subscription.end_date >= current_date and
         current_subscription.status != SubscriptionStatus.FINISHED
     ):

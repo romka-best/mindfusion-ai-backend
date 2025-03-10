@@ -31,7 +31,6 @@ from bot.database.models.common import (
 )
 from bot.database.models.subscription import (
     Subscription,
-    SubscriptionPeriod,
     SubscriptionStatus,
 )
 from bot.database.models.user import UserSettings
@@ -420,7 +419,7 @@ class Russian(Texts):
     ┣ ChatGPT 4.0 Omni Mini ✉️
     ┣ ChatGPT 4.0 Omni 💥
     ┣ ChatGPT o1 🧪
-    ┣ Claude 3.5 Sonnet 💫
+    ┣ Claude 3.7 Sonnet 💫
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 2.0 Flash 🏎
     ┣ Gemini 2.0 Pro 💼
@@ -440,6 +439,7 @@ class Russian(Texts):
 📹 <b>Видео Модели</b>:
     ┣ 🎬 Kling
     ┣ 🎥 Runway
+    ┣ 🔆 Luma Ray
     ┗ 🐇 Pika
 
 Чтобы переключиться на модель с поддержкой чтения изображений, используйте кнопку ниже 👇
@@ -1660,6 +1660,14 @@ class Russian(Texts):
 """
 
     @staticmethod
+    def model_unresolved_request(model: str):
+        return f"""
+🤒 <b>Я не получил ответа от {model}</b>
+
+Можете повторить ещё раз или выбрать действие:
+"""
+
+    @staticmethod
     def model_text_info():
         return f"""
 📕 <b>Инструкция</b>
@@ -1838,7 +1846,9 @@ class Russian(Texts):
     # Open
     OPEN_SETTINGS = "⚙️ Перейти к настройкам"
     OPEN_BONUS_INFO = "🎁 Перейти к бонусному балансу"
+    OPEN_BONUS_FREE_INFO = "🎁 Получить доступ бесплатно"
     OPEN_BUY_SUBSCRIPTIONS_INFO = "💎 Оформить подписку"
+    OPEN_BUY_SUBSCRIPTIONS_TRIAL_INFO = "💎 Оформить пробный период"
     OPEN_BUY_PACKAGES_INFO = "🛍 Приобрести пакеты"
 
     # Package
@@ -2080,7 +2090,7 @@ class Russian(Texts):
 <b>Продвинутые</b>:
     ┣ 💥 ChatGPT 4.0 Omni{f': доп. {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
     ┣ 🧩 ChatGPT o3-mini{f': доп. {additional_usage_quota[Quota.CHAT_GPT_O_3_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_3_MINI] > 0 else ''}
-    ┣ 💫 Claude 3.5 Sonnet{f': доп. {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
+    ┣ 💫 Claude 3.7 Sonnet{f': доп. {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 2.0 Pro{f': доп. {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
     ┣ 🐦 Grok 2.0{f': доп. {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
     ┣ 🐋 DeepSeek R1{f': доп. {additional_usage_quota[Quota.DEEP_SEEK_R1]}' if additional_usage_quota[Quota.DEEP_SEEK_R1] > 0 else ''}
@@ -2481,7 +2491,7 @@ class Russian(Texts):
     SUBSCRIPTION_END = """
 🛑 <b>Подписка истекла!</b>
 
-Твоя подписка закончилась. Но не беспокойся, путешествие в мирей нейросетей еще не окончено 🚀
+Твоя подписка закончилась. Но не беспокойся, путешествие в мире нейросетей еще не окончено 🚀
 
 Ты можешь продолжить исследование вселенной нейросетей и возобновить свой доступ нажав на кнопку ниже:
 """
@@ -3512,14 +3522,14 @@ class Russian(Texts):
                 count_expense_money[ai_product_id]['AVERAGE_EXAMPLE_PRICE']
             ):
                 ai_info += f"""    {left_part} {ai_product_name}:
-            ┣ 🎁 Средняя цена примера: ${round(count_expense_money[ai_product_id]['AVERAGE_EXAMPLE_PRICE'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['AVERAGE_EXAMPLE_PRICE'], count_expense_money_before[ai_product_id]['AVERAGE_EXAMPLE_PRICE'])}
-            ┣ 🚀 Всего за примеры: ${round(count_expense_money[ai_product_id]['EXAMPLE_ALL'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['EXAMPLE_ALL'], count_expense_money_before[ai_product_id]['EXAMPLE_ALL'])}
-            ┣ 💸 Средняя цена запроса: ${round(count_expense_money[ai_product_id]['AVERAGE_PRICE'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['AVERAGE_PRICE'], count_expense_money_before[ai_product_id]['AVERAGE_PRICE'])}
+            ┣ 🎁 СЦП: ${round(count_expense_money[ai_product_id]['AVERAGE_EXAMPLE_PRICE'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['AVERAGE_EXAMPLE_PRICE'], count_expense_money_before[ai_product_id]['AVERAGE_EXAMPLE_PRICE'])}
+            ┣ 🚀 Примеры: ${round(count_expense_money[ai_product_id]['EXAMPLE_ALL'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['EXAMPLE_ALL'], count_expense_money_before[ai_product_id]['EXAMPLE_ALL'])}
+            ┣ 💸 СЦЗ: ${round(count_expense_money[ai_product_id]['AVERAGE_PRICE'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['AVERAGE_PRICE'], count_expense_money_before[ai_product_id]['AVERAGE_PRICE'])}
             ┗ 💰 Всего: ${round(count_expense_money[ai_product_id]['ALL'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['ALL'], count_expense_money_before[ai_product_id]['ALL'])}{right_part}"""
                 continue
 
             ai_info += f"""    {left_part} {ai_product_name}:
-            ┣ 💸 Средняя цена запроса: ${round(count_expense_money[ai_product_id]['AVERAGE_PRICE'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['AVERAGE_PRICE'], count_expense_money_before[ai_product_id]['AVERAGE_PRICE'])}
+            ┣ 💸 СЦЗ: ${round(count_expense_money[ai_product_id]['AVERAGE_PRICE'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['AVERAGE_PRICE'], count_expense_money_before[ai_product_id]['AVERAGE_PRICE'])}
             ┗ 💰 Всего: ${round(count_expense_money[ai_product_id]['ALL'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['ALL'], count_expense_money_before[ai_product_id]['ALL'])}{right_part}"""
 
         return f"""
@@ -3618,12 +3628,12 @@ class Russian(Texts):
             final_sum += all_price
             final_sum_before += all_price_before
             subscription_info += f"""    {left_part} <b>{subscription_product_name}:</b>
-            ┣ 🔤 Текстовые модели: ${round(text_requests_price, 4)} {calculate_percentage_difference(is_all_time, text_requests_price, text_requests_price_before)}
-            ┣ 📝 Резюме модели: ${round(summary_requests_price, 4)} {calculate_percentage_difference(is_all_time, summary_requests_price, summary_requests_price_before)}
-            ┣ 🖼 Графические модели: ${round(image_requests_price, 4)} {calculate_percentage_difference(is_all_time, image_requests_price, image_requests_price_before)}
-            ┣ 🎵 Музыкальные модели: ${round(music_requests_price, 4)} {calculate_percentage_difference(is_all_time, music_requests_price, music_requests_price_before)}
-            ┣ 📹 Видео модели: ${round(video_requests_price, 4)} {calculate_percentage_difference(is_all_time, video_requests_price, video_requests_price_before)}
-            ┣ 💸 Средняя цена подписчика: ${round(average_price, 4)} {calculate_percentage_difference(is_all_time, average_price, average_price_before)}
+            ┣ 🔤 ${round(text_requests_price, 4)} {calculate_percentage_difference(is_all_time, text_requests_price, text_requests_price_before)}
+            ┣ 📝 ${round(summary_requests_price, 4)} {calculate_percentage_difference(is_all_time, summary_requests_price, summary_requests_price_before)}
+            ┣ 🖼 ${round(image_requests_price, 4)} {calculate_percentage_difference(is_all_time, image_requests_price, image_requests_price_before)}
+            ┣ 🎵 ${round(music_requests_price, 4)} {calculate_percentage_difference(is_all_time, music_requests_price, music_requests_price_before)}
+            ┣ 📹 ${round(video_requests_price, 4)} {calculate_percentage_difference(is_all_time, video_requests_price, video_requests_price_before)}
+            ┣ 💸 СЦП: ${round(average_price, 4)} {calculate_percentage_difference(is_all_time, average_price, average_price_before)}
             ┗ 💰 Всего: ${round(all_price, 4)} {calculate_percentage_difference(is_all_time, all_price, all_price_before)}{right_part}"""
 
         return f"""

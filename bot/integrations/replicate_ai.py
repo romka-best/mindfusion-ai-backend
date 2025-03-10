@@ -24,8 +24,8 @@ async def create_face_swap_image(target_image: str, source_image: str) -> Option
         'swap_image': source_image,
     }
 
-    model = await replicate.models.async_get('codeplugtech/face-swap')
-    version = await model.versions.async_get('278a81e7ebb22db98bcba54de985d22cc1abeead2754eb1f2af717247be69b34')
+    model = await replicate.models.async_get('cdingram/face-swap')
+    version = await model.versions.async_get('d1d6ea8c8be89d664a07a457526f7128109dee7030fdac424788d762c71ed111')
     prediction = await replicate.predictions.async_create(
         version=version,
         input=input_parameters,

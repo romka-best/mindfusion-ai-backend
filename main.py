@@ -393,7 +393,7 @@ async def migrate_webhook(background_tasks: BackgroundTasks):
 
 @app.get('/check-health')
 async def check_health(background_tasks: BackgroundTasks):
-    background_tasks.add_task(check_unresolved_requests, bot)
+    background_tasks.add_task(check_unresolved_requests, bot, dp)
 
     return {'code': 200}
 
@@ -403,8 +403,7 @@ async def run_daily_tasks(background_tasks: BackgroundTasks):
     yesterday_utc_day = datetime.now(timezone.utc) - timedelta(days=1)
     await update_daily_expenses(yesterday_utc_day)
 
-    await check_unresolved_requests(bot)
-    await check_waiting_payments(bot)
+    await check_waiting_payments()
 
     today = datetime.now()
     background_tasks.add_task(send_statistics, bot, 'day')

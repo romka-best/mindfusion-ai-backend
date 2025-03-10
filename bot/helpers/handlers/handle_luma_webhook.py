@@ -31,7 +31,7 @@ from bot.locales.types import LanguageCode
 
 
 async def handle_luma_webhook(bot: Bot, dp: Dispatcher, body: dict):
-    if body.get('state') == 'dreaming':
+    if body.get('state') == 'queued' or body.get('state') == 'dreaming':
         return
 
     generation = await get_generation(body.get('id'))
@@ -183,21 +183,21 @@ async def handle_luma_ray(
         reply_markup = build_reaction_keyboard(generation.id)
         if user.settings[Model.LUMA_RAY][UserSettings.SEND_TYPE] == SendType.DOCUMENT:
             await send_document(
-                bot,
-                user.telegram_chat_id,
-                generation.result,
-                reply_markup,
-                caption,
+                bot=bot,
+                chat_id=user.telegram_chat_id,
+                document=generation.result,
+                reply_markup=reply_markup,
+                caption=caption,
             )
         else:
             await send_video(
-                bot,
-                user.telegram_chat_id,
-                generation.result,
-                caption,
-                get_localization(user_language_code).SETTINGS_SEND_TYPE_VIDEO,
-                generation.details.get('duration', 5),
-                reply_markup,
+                bot=bot,
+                chat_id=user.telegram_chat_id,
+                result=generation.result,
+                caption=caption,
+                filename=get_localization(user_language_code).SETTINGS_SEND_TYPE_VIDEO,
+                duration=generation.details.get('duration', 5),
+                reply_markup=reply_markup,
             )
     elif generation.has_error:
         await bot.send_sticker(

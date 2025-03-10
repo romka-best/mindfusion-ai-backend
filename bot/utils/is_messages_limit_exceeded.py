@@ -59,13 +59,13 @@ async def is_messages_limit_exceeded(message: Message, state: FSMContext, user: 
             product_name = product.names.get(user_language_code) or product.names.get(LanguageCode.EN)
             await message.reply(
                 text=get_localization(user_language_code).model_restricted(product_name),
-                reply_markup=build_model_restricted_keyboard(user_language_code),
+                reply_markup=build_model_restricted_keyboard(user_language_code, user.had_subscription),
                 allow_sending_without_reply=True,
             )
         else:
             await message.reply(
                 text=get_localization(user_language_code).model_reached_usage_limit(),
-                reply_markup=build_model_limit_exceeded_keyboard(user_language_code),
+                reply_markup=build_model_limit_exceeded_keyboard(user_language_code, user.had_subscription),
                 allow_sending_without_reply=True,
             )
 

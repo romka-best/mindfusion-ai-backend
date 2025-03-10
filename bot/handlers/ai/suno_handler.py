@@ -175,7 +175,7 @@ async def suno_prompt_sent(message: Message, state: FSMContext):
 
             await message.answer(
                 text=get_localization(user_language_code).model_reached_usage_limit(),
-                reply_markup=build_model_limit_exceeded_keyboard(user_language_code),
+                reply_markup=build_model_limit_exceeded_keyboard(user_language_code, user.had_subscription),
             )
 
             await processing_sticker.delete()
@@ -388,7 +388,7 @@ async def suno_genres_sent(message: Message, state: FSMContext):
 
             await message.answer(
                 text=get_localization(user_language_code).model_reached_usage_limit(),
-                reply_markup=build_model_limit_exceeded_keyboard(user_language_code),
+                reply_markup=build_model_limit_exceeded_keyboard(user_language_code, user.had_subscription),
             )
 
             await processing_sticker.delete()

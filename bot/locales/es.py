@@ -20,10 +20,7 @@ from bot.database.models.common import (
     AspectRatio,
     SendType,
 )
-from bot.database.models.subscription import (
-    SubscriptionPeriod,
-    SubscriptionStatus,
-)
+from bot.database.models.subscription import SubscriptionStatus
 from bot.database.models.user import UserSettings
 from bot.locales.types import LanguageCode
 
@@ -399,7 +396,7 @@ Revisa el texto/la foto en busca de contenido prohibido e inténtalo de nuevo �
     ┣ ChatGPT 4.0 Omni Mini ✉️
     ┣ ChatGPT 4.0 Omni 💥
     ┣ ChatGPT o1 🧪
-    ┣ Claude 3.5 Sonnet 💫
+    ┣ Claude 3.7 Sonnet 💫
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 2.0 Flash 🏎
     ┣ Gemini 2.0 Pro 💼
@@ -419,6 +416,7 @@ Revisa el texto/la foto en busca de contenido prohibido e inténtalo de nuevo �
 📹 <b>Modelos de video:</b>
     ┣ 🎬 Kling
     ┣ 🎥 Runway
+    ┣ 🔆 Luma Ray
     ┗ 🐇 Pika
 
 Para cambiar a un modelo con soporte para lectura de imágenes, utiliza el botón de abajo 👇
@@ -1630,6 +1628,14 @@ Selecciona una acción:
 """
 
     @staticmethod
+    def model_unresolved_request(model: str):
+        return f"""
+🤒 <b>No recibí respuesta de {model}</b>
+
+Puedes intentarlo de nuevo o elegir una acción:
+"""
+
+    @staticmethod
     def model_text_info():
         return f"""
 📕 <b>Instrucción</b>
@@ -1806,7 +1812,9 @@ Introduce un número menor o utiliza /buy para obtener posibilidades ilimitadas
     # Open
     OPEN_SETTINGS = "⚙️ Ir a configuración"
     OPEN_BONUS_INFO = "🎁 Consultar saldo de bonificación"
+    OPEN_BONUS_FREE_INFO = "🎁 Obtener acceso gratis"
     OPEN_BUY_SUBSCRIPTIONS_INFO = "💎 Suscribirse"
+    OPEN_BUY_SUBSCRIPTIONS_TRIAL_INFO = "💎 Activar el período de prueba"
     OPEN_BUY_PACKAGES_INFO = "🛍 Comprar paquetes"
 
     # Package
@@ -2041,7 +2049,7 @@ Seleccione una acción 👇
 <b>Avanzados</b>:
     ┣ 💥 ChatGPT 4.0 Omni{f': adicional {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
     ┣ 🧩 ChatGPT o3-mini{f': adicional {additional_usage_quota[Quota.CHAT_GPT_O_3_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_3_MINI] > 0 else ''}
-    ┣ 💫 Claude 3.5 Sonnet{f': adicional {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
+    ┣ 💫 Claude 3.7 Sonnet{f': adicional {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 2.0 Pro{f': adicional {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
     ┣ 🐦 Grok 2.0{f': adicional {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
     ┣ 🌐 Perplexity{f': adicional {additional_usage_quota[Quota.PERPLEXITY]}' if additional_usage_quota[Quota.PERPLEXITY] > 0 else ''}

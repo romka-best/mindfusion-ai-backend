@@ -4,7 +4,7 @@ from aiogram import Router
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command, CommandStart, ChatMemberUpdatedFilter, KICKED, MEMBER
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery, ChatMemberUpdated
+from aiogram.types import Message, CallbackQuery, ChatMemberUpdated, URLInputFile
 from google.cloud.firestore_v1 import Increment
 
 from bot.config import config, MessageEffect, MessageSticker
@@ -108,6 +108,16 @@ async def start(message: Message, state: FSMContext):
                     campaign = await get_campaign(campaign_id)
                     if not campaign:
                         campaign = await get_campaign_by_name(campaign_id)
+
+                    if campaign_id == 'prompts':
+                        document_path = f'campaigns/prompts.pdf'
+                        document = await firebase.bucket.get_blob(document_path)
+                        document_link = firebase.get_public_url(document.name)
+                        tasks.append(message.bot.send_document(
+                            chat_id=message.from_user.id,
+                            document=URLInputFile(document_link, filename=f'prompts.pdf', timeout=300),
+                            disable_notification=True,
+                        ))
 
                     if campaign:
                         user_utm = campaign.utm

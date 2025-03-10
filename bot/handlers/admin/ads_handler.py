@@ -250,12 +250,11 @@ async def ads_link_sent(message: Message, state: FSMContext):
     product_cache = {}
 
     nothing_users = 0
-    only_text_users = 0
-    only_summary_users = 0
-    only_image_users = 0
-    text_and_summary_users = 0
-    summary_and_image_users = 0
-    text_and_image_users = 0
+    text_users = 0
+    summary_users = 0
+    image_users = 0
+    music_users = 0
+    video_users = 0
     all_ai_users = 0
     clients = 0
     clients_income = 0
@@ -263,6 +262,8 @@ async def ads_link_sent(message: Message, state: FSMContext):
         has_text_requests = False
         has_summary_requests = False
         has_image_requests = False
+        has_music_requests = False
+        has_video_requests = False
         has_purchases = False
 
         transactions_query = (
@@ -307,6 +308,10 @@ async def ads_link_sent(message: Message, state: FSMContext):
                         has_summary_requests = True
                     elif transaction_product.category == ProductCategory.IMAGE:
                         has_image_requests = True
+                    elif transaction_product.category == ProductCategory.MUSIC:
+                        has_music_requests = True
+                    elif transaction_product.category == ProductCategory.VIDEO:
+                        has_video_requests = True
 
             if count < config.BATCH_SIZE:
                 is_running = False
@@ -314,20 +319,23 @@ async def ads_link_sent(message: Message, state: FSMContext):
 
             last_doc = doc
 
-        if has_text_requests and has_summary_requests and has_image_requests:
+        if all([has_text_requests, has_summary_requests, has_image_requests, has_music_requests, has_video_requests]):
             all_ai_users += 1
-        elif has_text_requests and has_summary_requests:
-            text_and_summary_users += 1
-        elif has_summary_requests and has_image_requests:
-            summary_and_image_users += 1
-        elif has_text_requests and has_image_requests:
-            text_and_image_users += 1
-        elif has_text_requests:
-            only_text_users += 1
-        elif has_summary_requests:
-            only_summary_users += 1
-        elif has_image_requests:
-            only_image_users += 1
+        elif any([has_text_requests, has_summary_requests, has_image_requests, has_music_requests, has_video_requests]):
+            if has_text_requests:
+                text_users += 1
+
+            if has_summary_requests:
+                summary_users += 1
+
+            if has_image_requests:
+                image_users += 1
+
+            if has_music_requests:
+                music_users += 1
+
+            if has_video_requests:
+                video_users += 1
         else:
             nothing_users += 1
 
@@ -339,14 +347,13 @@ async def ads_link_sent(message: Message, state: FSMContext):
 
 • <b>{len(users)}</b> - Всего пришло
 • <b>{nothing_users}</b> - Не писали ничего
-• <b>{only_text_users}</b> - Сделали запрос только в текстовой модели
-• <b>{only_summary_users}</b> - Сделали запрос только в резюме модели
-• <b>{only_image_users}</b> - Сделали запрос только в графической модели
-• <b>{text_and_summary_users}</b> - Сделали запрос в текстовой и резюме моделях
-• <b>{summary_and_image_users}</b> - Сделали запрос в резюме и графической моделях
-• <b>{text_and_image_users}</b> - Сделали запрос в текстовой и графической моделях
+• <b>{text_users}</b> - Сделали запрос в текстовой модели
+• <b>{summary_users}</b> - Сделали запрос в резюме модели
+• <b>{image_users}</b> - Сделали запрос в графической модели
+• <b>{music_users}</b> - Сделали запрос в музыкальной модели
+• <b>{video_users}</b> - Сделали запрос в видео модели
 • <b>{all_ai_users}</b> - Сделали запрос во всех моделях
-• <b>{clients}</b> - Купили на сумму {clients_income}₽
+• <b>{clients}</b> - Купили на сумму {round(clients_income, 2)}₽
 ''')
 
     await state.clear()

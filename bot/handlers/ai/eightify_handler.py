@@ -120,7 +120,7 @@ async def handle_eightify(message: Message, state: FSMContext, user: User):
 
                 await message.answer(
                     text=get_localization(user_language_code).model_reached_usage_limit(),
-                    reply_markup=build_model_limit_exceeded_keyboard(user_language_code),
+                    reply_markup=build_model_limit_exceeded_keyboard(user_language_code, user.had_subscription),
                 )
 
                 await processing_sticker.delete()
