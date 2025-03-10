@@ -19,7 +19,8 @@ from bot.database.models.common import (
     GeminiGPTVersion,
     GrokGPTVersion,
     MidjourneyAction,
-    PhotoshopAIAction, )
+    PhotoshopAIAction,
+)
 from bot.database.models.face_swap_package import FaceSwapPackageStatus
 from bot.database.models.user import UserSettings
 from bot.database.operations.face_swap_package.getters import (
@@ -40,7 +41,7 @@ from bot.handlers.ai.flux_handler import handle_flux
 from bot.handlers.ai.gemini_handler import handle_gemini
 from bot.handlers.ai.grok_handler import handle_grok
 from bot.handlers.ai.kling_handler import handle_kling
-from bot.handlers.ai.luma_handler import handle_luma_photon
+from bot.handlers.ai.luma_handler import handle_luma_photon, handle_luma_ray
 from bot.handlers.ai.midjourney_handler import handle_midjourney
 from bot.handlers.ai.pika_handler import handle_pika
 from bot.handlers.ai.runway_handler import handle_runway
@@ -167,7 +168,7 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
 
             await message.answer(
                 text=get_localization(user_language_code).model_reached_usage_limit(),
-                reply_markup=build_model_limit_exceeded_keyboard(user_language_code),
+                reply_markup=build_model_limit_exceeded_keyboard(user_language_code, user.had_subscription),
             )
             return
 
@@ -304,13 +305,6 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
         user.current_model == Model.FLUX or
         user.current_model == Model.LUMA_PHOTON
     ):
-        if not (user.daily_limits[Quota.WORK_WITH_FILES] or user.additional_usage_quota[Quota.WORK_WITH_FILES]):
-            await message.answer(
-                text=get_localization(user_language_code).WORK_WITH_FILES_FORBIDDEN_ERROR,
-                reply_markup=build_buy_motivation_keyboard(user_language_code),
-            )
-            return
-
         current_time = time.time()
 
         user_quota = get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION])
@@ -415,7 +409,8 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
     elif (
         user.current_model == Model.KLING or
         user.current_model == Model.RUNWAY or
-        user.current_model == Model.PIKA
+        user.current_model == Model.PIKA or
+        user.current_model == Model.LUMA_RAY
     ):
         current_time = time.time()
 
@@ -444,6 +439,8 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
             await handle_runway(message, state, user, video_frame_photo_link)
         elif user.current_model == Model.PIKA:
             await handle_pika(message, state, user, video_frame_photo_link)
+        elif user.current_model == Model.LUMA_RAY:
+            await handle_luma_ray(message, state, user, video_frame_photo_link)
     else:
         await message.reply(
             text=get_localization(user_language_code).ERROR_PHOTO_FORBIDDEN,

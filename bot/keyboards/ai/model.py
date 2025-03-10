@@ -573,7 +573,7 @@ def build_switched_to_ai_selection_keyboard(language_code: LanguageCode, model: 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def build_model_limit_exceeded_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+def build_model_limit_exceeded_keyboard(language_code: LanguageCode, had_subscription: bool) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
@@ -583,13 +583,8 @@ def build_model_limit_exceeded_keyboard(language_code: LanguageCode) -> InlineKe
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).OPEN_BONUS_INFO,
-                callback_data='model_limit_exceeded:open_bonus_info'
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                text=get_localization(language_code).OPEN_BUY_SUBSCRIPTIONS_INFO,
+                text=get_localization(language_code).OPEN_BUY_SUBSCRIPTIONS_INFO if had_subscription
+                else get_localization(language_code).OPEN_BUY_SUBSCRIPTIONS_TRIAL_INFO,
                 callback_data='model_limit_exceeded:open_buy_subscriptions_info'
             )
         ],
@@ -599,12 +594,18 @@ def build_model_limit_exceeded_keyboard(language_code: LanguageCode) -> InlineKe
                 callback_data='model_limit_exceeded:open_buy_packages_info'
             )
         ],
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).OPEN_BONUS_FREE_INFO,
+                callback_data='model_limit_exceeded:open_bonus_info'
+            )
+        ],
     ]
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def build_model_restricted_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+def build_model_restricted_keyboard(language_code: LanguageCode, had_subscription: bool) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
@@ -620,7 +621,8 @@ def build_model_restricted_keyboard(language_code: LanguageCode) -> InlineKeyboa
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).OPEN_BUY_SUBSCRIPTIONS_INFO,
+                text=get_localization(language_code).OPEN_BUY_SUBSCRIPTIONS_INFO if had_subscription
+                else get_localization(language_code).OPEN_BUY_SUBSCRIPTIONS_TRIAL_INFO,
                 callback_data='model_restricted:open_buy_subscriptions_info'
             )
         ],
@@ -632,7 +634,7 @@ def build_model_restricted_keyboard(language_code: LanguageCode) -> InlineKeyboa
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).OPEN_BONUS_INFO,
+                text=get_localization(language_code).OPEN_BONUS_FREE_INFO,
                 callback_data='model_restricted:open_bonus_info'
             )
         ],

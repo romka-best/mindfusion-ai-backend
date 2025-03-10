@@ -31,7 +31,7 @@ from bot.database.operations.package.getters import (
 from bot.database.operations.package.updaters import update_package
 from bot.database.operations.package.writers import write_package
 from bot.database.operations.product.getters import get_active_products_by_product_type_and_category, get_product
-from bot.database.operations.subscription.getters import get_subscription, get_activated_subscriptions_by_user_id
+from bot.database.operations.subscription.getters import get_subscription
 from bot.database.operations.subscription.writers import write_subscription
 from bot.database.operations.transaction.writers import write_transaction
 from bot.database.operations.user.getters import get_user
@@ -135,16 +135,11 @@ async def handle_subscribe(message: Message, user_id: str, state: FSMContext, is
     )
     await state.update_data(product_category=ProductCategory.MONTHLY)
 
-    last_user_subscriptions = await get_activated_subscriptions_by_user_id(
-        user.id,
-        datetime(2024, 1, 1),
-    )
-
     caption = get_localization(user_language_code).subscribe(
         subscriptions,
         user.currency,
         user.discount,
-        len(last_user_subscriptions) == 0 and user.currency != Currency.XTR,
+        not user.had_subscription and user.currency != Currency.XTR,
     )
     reply_markup = build_subscriptions_keyboard(
         subscriptions,
@@ -195,17 +190,12 @@ async def handle_subscription_selection(callback_query: CallbackQuery, state: FS
             product_category,
         )
 
-        last_user_subscriptions = await get_activated_subscriptions_by_user_id(
-            user.id,
-            datetime(2024, 1, 1),
-        )
-
         await callback_query.message.edit_caption(
             caption=get_localization(user_language_code).subscribe(
                 subscriptions,
                 user.currency,
                 user.discount,
-                len(last_user_subscriptions) == 0 and user.currency != Currency.XTR,
+                not user.had_subscription and user.currency != Currency.XTR,
             ),
             reply_markup=build_subscriptions_keyboard(
                 subscriptions,
@@ -242,17 +232,12 @@ async def handle_subscription_selection(callback_query: CallbackQuery, state: FS
             product_category,
         )
 
-        last_user_subscriptions = await get_activated_subscriptions_by_user_id(
-            user.id,
-            datetime(2024, 1, 1),
-        )
-
         await callback_query.message.edit_caption(
             caption=get_localization(user_language_code).subscribe(
                 subscriptions,
                 user.currency,
                 user.discount,
-                len(last_user_subscriptions) == 0 and user.currency != Currency.XTR,
+                not user.had_subscription and user.currency != Currency.XTR,
             ),
             reply_markup=build_subscriptions_keyboard(
                 subscriptions,
@@ -309,13 +294,9 @@ async def handle_payment_method_subscription_selection(callback_query: CallbackQ
             discount,
         )
 
-        last_user_subscriptions = await get_activated_subscriptions_by_user_id(
-            user.id,
-            datetime(2024, 1, 1),
-        )
         is_trial = (
             subscription.details.get('has_trial', False) and
-            len(last_user_subscriptions) == 0 and
+            not user.had_subscription and
             payment_method != PaymentMethod.TELEGRAM_STARS
         )
 

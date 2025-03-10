@@ -20,10 +20,7 @@ from bot.database.models.common import (
     AspectRatio,
     SendType,
 )
-from bot.database.models.subscription import (
-    SubscriptionPeriod,
-    SubscriptionStatus,
-)
+from bot.database.models.subscription import SubscriptionStatus
 from bot.database.models.user import UserSettings
 from bot.locales.types import LanguageCode
 
@@ -1634,6 +1631,14 @@ class Hindi(Texts):
 """
 
     @staticmethod
+    def model_unresolved_request(model: str):
+        return f"""
+🤒 <b>मुझे {model} से कोई जवाब नहीं मिला</b>
+
+आप पुनः प्रयास कर सकते हैं या कोई कार्रवाई चुन सकते हैं:
+"""
+
+    @staticmethod
     def model_text_info():
         return f"""
 📕 <b>निर्देश</b>
@@ -1810,7 +1815,9 @@ class Hindi(Texts):
     # Open
     OPEN_SETTINGS = "⚙️ सेटिंग्स पर जाएं"
     OPEN_BONUS_INFO = "🎁 बोनस बैलेंस देखें"
+    OPEN_BONUS_FREE_INFO = "🎁 नि:शुल्क पहुँच प्राप्त करें"
     OPEN_BUY_SUBSCRIPTIONS_INFO = "💎 सब्सक्रिप्शन खरीदें"
+    OPEN_BUY_SUBSCRIPTIONS_TRIAL_INFO = "💎 परीक्षण अवधि सक्रिय करें"
     OPEN_BUY_PACKAGES_INFO = "🛍 पैकेज खरीदें"
 
     # Package

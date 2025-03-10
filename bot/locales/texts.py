@@ -388,6 +388,10 @@ class Texts(Protocol):
         raise NotImplementedError
 
     @staticmethod
+    def model_unresolved_request(model: str):
+        raise NotImplementedError
+
+    @staticmethod
     def model_text_info():
         raise NotImplementedError
 
@@ -435,7 +439,9 @@ class Texts(Protocol):
     # Open
     OPEN_SETTINGS: str
     OPEN_BONUS_INFO: str
+    OPEN_BONUS_FREE_INFO: str
     OPEN_BUY_SUBSCRIPTIONS_INFO: str
+    OPEN_BUY_SUBSCRIPTIONS_TRIAL_INFO: str
     OPEN_BUY_PACKAGES_INFO: str
 
     # Package

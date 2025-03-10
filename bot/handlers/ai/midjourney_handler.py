@@ -110,7 +110,7 @@ async def handle_midjourney(
 
             await message.reply(
                 text=get_localization(user_language_code).model_reached_usage_limit(),
-                reply_markup=build_model_limit_exceeded_keyboard(user_language_code),
+                reply_markup=build_model_limit_exceeded_keyboard(user_language_code, user.had_subscription),
                 allow_sending_without_reply=True,
             )
         else:

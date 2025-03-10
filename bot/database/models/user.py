@@ -94,6 +94,7 @@ class User:
     balance: int
     subscription_id: Optional[str]
     last_subscription_limit_update: datetime
+    had_subscription: bool
     daily_limits: dict
     additional_usage_quota: dict
     settings: dict
@@ -343,6 +344,7 @@ class User:
         balance=0,
         subscription_id='',
         last_subscription_limit_update=None,
+        had_subscription=False,
         daily_limits=None,
         additional_usage_quota=None,
         settings=None,
@@ -369,6 +371,7 @@ class User:
         self.current_chat_id = str(current_chat_id)
         self.telegram_chat_id = str(telegram_chat_id)
         self.stripe_id = stripe_id
+        self.had_subscription = had_subscription
         self.daily_limits = daily_limits if daily_limits is not None else SUBSCRIPTION_FREE_LIMITS
         self.additional_usage_quota = additional_usage_quota if additional_usage_quota is not None \
             else self.DEFAULT_ADDITIONAL_USAGE_QUOTA

@@ -20,10 +20,7 @@ from bot.database.models.common import (
     AspectRatio,
     SendType,
 )
-from bot.database.models.subscription import (
-    SubscriptionPeriod,
-    SubscriptionStatus,
-)
+from bot.database.models.subscription import SubscriptionStatus
 from bot.database.models.user import UserSettings
 from bot.locales.types import LanguageCode
 
@@ -1627,6 +1624,14 @@ Select an action:
 """
 
     @staticmethod
+    def model_unresolved_request(model: str):
+        return f"""
+🤒 <b>I did not receive a response from {model}</b>
+
+You can try again or select an action:
+"""
+
+    @staticmethod
     def model_text_info():
         return f"""
 📕 <b>Instruction</b>
@@ -1803,7 +1808,9 @@ Enter a smaller number, or use /buy for unlimited possibilities
     # Open
     OPEN_SETTINGS = "⚙️ Open Settings"
     OPEN_BONUS_INFO = "🎁 Open Bonus Balance"
+    OPEN_BONUS_FREE_INFO = "🎁 Get access for free"
     OPEN_BUY_SUBSCRIPTIONS_INFO = "💎 Subscribe"
+    OPEN_BUY_SUBSCRIPTIONS_TRIAL_INFO = "💎 Activate a trial period"
     OPEN_BUY_PACKAGES_INFO = "🛍 Purchase Packages"
 
     # Package

@@ -1,14 +1,12 @@
 import asyncio
 from datetime import datetime, timezone, timedelta
 
-from aiogram import Bot
-
 from bot.database.models.subscription import SubscriptionStatus
 from bot.database.operations.subscription.getters import get_subscriptions_by_status
 from bot.database.operations.subscription.updaters import update_subscription
 
 
-async def check_waiting_payments(bot: Bot):
+async def check_waiting_payments():
     today_utc_day = datetime.now(timezone.utc)
     yesterday_utc_day = today_utc_day - timedelta(days=1)
     not_finished_subscriptions = await get_subscriptions_by_status(
