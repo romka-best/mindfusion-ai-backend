@@ -147,7 +147,7 @@ class Texts(Protocol):
     # Claude
     CLAUDE = '📄 Claude'
     CLAUDE_3_HAIKU = '📜 Claude 3.5 Haiku'
-    CLAUDE_3_SONNET = '💫 Claude 3.5 Sonnet'
+    CLAUDE_3_SONNET = '💫 Claude 3.7 Sonnet'
     CLAUDE_3_OPUS = '🚀 Claude 3.0 Opus'
 
     # DALL-E

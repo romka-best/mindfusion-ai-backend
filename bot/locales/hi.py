@@ -400,7 +400,7 @@ class Hindi(Texts):
     ┣ ChatGPT 4.0 Omni Mini ✉️
     ┣ ChatGPT 4.0 Omni 💥
     ┣ ChatGPT o1 🧪
-    ┣ Claude 3.5 Sonnet 💫
+    ┣ Claude 3.7 Sonnet 💫
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 2.0 Flash 🏎
     ┣ Gemini 2.0 Pro 💼
@@ -420,6 +420,7 @@ class Hindi(Texts):
 📹 <b>वीडियो मॉडल्स</b>:
     ┣ 🎬 Kling
     ┣ 🎥 Runway
+    ┣ 🔆 Luma Ray
     ┗ 🐇 Pika
 
 नीचे दिए गए बटन का उपयोग करें, उस मॉडल पर स्विच करने के लिए जो इमेज पढ़ सकती है 👀
@@ -2052,7 +2053,7 @@ class Hindi(Texts):
 <b>उन्नत</b>:
     ┣ 💥 ChatGPT 4.0 Omni{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
     ┣ 🧩 ChatGPT o3-mini{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_O_3_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_3_MINI] > 0 else ''}
-    ┣ 💫 Claude 3.5 Sonnet{f': अतिरिक्त {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
+    ┣ 💫 Claude 3.7 Sonnet{f': अतिरिक्त {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 2.0 Pro{f': अतिरिक्त {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
     ┣ 🐦 Grok 2.0{f': अतिरिक्त {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
     ┣ 🌐 Perplexity{f': अतिरिक्त {additional_usage_quota[Quota.PERPLEXITY]}' if additional_usage_quota[Quota.PERPLEXITY] > 0 else ''}

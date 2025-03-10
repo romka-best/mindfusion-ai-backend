@@ -419,7 +419,7 @@ class Russian(Texts):
     ┣ ChatGPT 4.0 Omni Mini ✉️
     ┣ ChatGPT 4.0 Omni 💥
     ┣ ChatGPT o1 🧪
-    ┣ Claude 3.5 Sonnet 💫
+    ┣ Claude 3.7 Sonnet 💫
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 2.0 Flash 🏎
     ┣ Gemini 2.0 Pro 💼
@@ -439,6 +439,7 @@ class Russian(Texts):
 📹 <b>Видео Модели</b>:
     ┣ 🎬 Kling
     ┣ 🎥 Runway
+    ┣ 🔆 Luma Ray
     ┗ 🐇 Pika
 
 Чтобы переключиться на модель с поддержкой чтения изображений, используйте кнопку ниже 👇
@@ -2089,7 +2090,7 @@ class Russian(Texts):
 <b>Продвинутые</b>:
     ┣ 💥 ChatGPT 4.0 Omni{f': доп. {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
     ┣ 🧩 ChatGPT o3-mini{f': доп. {additional_usage_quota[Quota.CHAT_GPT_O_3_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_3_MINI] > 0 else ''}
-    ┣ 💫 Claude 3.5 Sonnet{f': доп. {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
+    ┣ 💫 Claude 3.7 Sonnet{f': доп. {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 2.0 Pro{f': доп. {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
     ┣ 🐦 Grok 2.0{f': доп. {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
     ┣ 🐋 DeepSeek R1{f': доп. {additional_usage_quota[Quota.DEEP_SEEK_R1]}' if additional_usage_quota[Quota.DEEP_SEEK_R1] > 0 else ''}

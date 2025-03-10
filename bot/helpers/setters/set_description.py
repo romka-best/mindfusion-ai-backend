@@ -21,7 +21,7 @@ Access to AI:
 • ChatGPT o3-mini
 • ChatGPT o1
 • Claude 3.5 Haiku
-• Claude 3.5 Sonnet
+• Claude 3.7 Sonnet
 • Claude 3 Opus
 • Gemini 2 Flash
 • Gemini 2 Pro
@@ -65,7 +65,7 @@ Access to AI:
 • ChatGPT o3-mini
 • ChatGPT o1
 • Claude 3.5 Haiku
-• Claude 3.5 Sonnet
+• Claude 3.7 Sonnet
 • Claude 3 Opus
 • Gemini 2 Flash
 • Gemini 2 Pro
@@ -110,7 +110,7 @@ Acceso a redes neuronales:
 • ChatGPT o3-mini
 • ChatGPT o1
 • Claude 3.5 Haiku
-• Claude 3.5 Sonnet
+• Claude 3.7 Sonnet
 • Claude 3 Opus
 • Gemini 2 Flash
 • Gemini 2 Pro
@@ -155,7 +155,7 @@ AI मॉडल्स तक पहुंच:
 • ChatGPT o3-mini
 • ChatGPT o1
 • Claude 3.5 Haiku
-• Claude 3.5 Sonnet
+• Claude 3.7 Sonnet
 • Claude 3 Opus
 • Gemini 2 Flash
 • Gemini 2 Pro

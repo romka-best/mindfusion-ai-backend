@@ -393,7 +393,7 @@ Please review the text/photo for prohibited content and try again 😌
     ┣ ChatGPT 4.0 Omni Mini ✉️
     ┣ ChatGPT 4.0 Omni 💥
     ┣ ChatGPT o1 🧪
-    ┣ Claude 3.5 Sonnet 💫
+    ┣ Claude 3.7 Sonnet 💫
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 1.5 Flash 🏎
     ┣ Gemini 2.0 Pro 💼
@@ -413,6 +413,7 @@ Please review the text/photo for prohibited content and try again 😌
 📹 <b>Video Models</b>:
     ┣ 🎬 Kling
     ┣ 🎥 Runway
+    ┣ 🔆 Luma Ray
     ┗ 🐇 Pika
 
 To switch to a model with image reading support, use the button below 👇
@@ -2045,7 +2046,7 @@ Choose action 👇
 <b>Advanced</b>:
     ┣ 💥 ChatGPT 4.0 Omni{f': extra {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
     ┣ 🧩 ChatGPT o3-mini{f': extra {additional_usage_quota[Quota.CHAT_GPT_O_3_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_3_MINI] > 0 else ''}
-    ┣ 💫 Claude 3.5 Sonnet{f': extra {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
+    ┣ 💫 Claude 3.7 Sonnet{f': extra {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 2.0 Pro{f': extra {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
     ┣ 🐦 Grok 2.0{f': extra {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
     ┣ 🌐 Perplexity{f': extra {additional_usage_quota[Quota.PERPLEXITY]}' if additional_usage_quota[Quota.PERPLEXITY] > 0 else ''}
