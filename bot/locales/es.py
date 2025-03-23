@@ -2570,6 +2570,13 @@ En alguna etapa, enviaste un texto demasiado largo 📝
 
 Inténtalo nuevamente, pero con un texto más corto.
 """
+    SUNO_ARTIST_NAME_ERROR = """
+🚧 <b>¡Uy!</b>
+
+Enviaste un texto que contiene el nombre de un artista 🎤
+
+Inténtalo nuevamente, pero sin el nombre del artista.
+"""
     SUNO_VALUE_ERROR = """
 🧐 <b>Esto no parece un prompt válido</b>
 

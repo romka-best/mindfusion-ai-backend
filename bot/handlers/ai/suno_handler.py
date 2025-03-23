@@ -239,13 +239,13 @@ async def suno_prompt_sent(message: Message, state: FSMContext):
                 else:
                     raise NotImplementedError('No Task Id Found in Suno Generation')
             except Exception as e:
-                if 'Too Many Requests' in str(e) or 'You have exceeded the rate limit' in str(e):
+                if 'too many requests' in str(e).lower() or 'you have exceeded the rate limit' in str(e).lower():
                     await message.answer(
                         text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
                     )
-                elif 'Prompt too long' in str(e):
+                elif 'prompt too long' in str(e).lower():
                     await message.answer(
-                        text=get_localization(user_language_code).SUNO_TOO_MANY_WORDS_ERROR,
+                        text=get_localization(user_language_code).ERROR_PROMPT_TOO_LONG,
                     )
 
                     await handle_suno(message.bot, str(message.chat.id), state, user_id)
@@ -474,16 +474,18 @@ async def suno_genres_sent(message: Message, state: FSMContext):
                 else:
                     raise NotImplementedError('No Task Id Found in Suno Generation')
             except Exception as e:
-                if 'Too Many Requests' in str(e) or 'You have exceeded the rate limit' in str(e):
+                if 'too many requests' in str(e).lower() or 'you have exceeded the rate limit' in str(e).lower():
                     await message.answer(
                         text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
                     )
-                elif 'Tags too long' in str(e):
+                elif 'tags too long' in str(e).lower():
                     await message.answer(
                         text=get_localization(user_language_code).SUNO_TOO_MANY_WORDS_ERROR,
                     )
-
-                    await handle_suno(message.bot, str(message.chat.id), state, user_id)
+                elif 'tags contained artist name' in str(e).lower():
+                    await message.answer(
+                        text=get_localization(user_language_code).SUNO_ARTIST_NAME_ERROR,
+                    )
                 else:
                     await message.answer_sticker(
                         sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),

@@ -2566,6 +2566,13 @@ At some point, you sent a text that’s too long 📝
 
 Please try again with a shorter text
 """
+    SUNO_ARTIST_NAME_ERROR = """
+🚧 <b>Oops!</b>
+
+You sent a text that contains an artist name 🎤
+
+Please try again without the artist name
+"""
     SUNO_VALUE_ERROR = """
 🧐 <b>This Doesn’t Look Like a Prompt</b>
 

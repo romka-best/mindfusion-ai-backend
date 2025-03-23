@@ -80,7 +80,7 @@ async def handle_midjourney_webhook(bot: Bot, dp: Dispatcher, body: dict):
                     bot=bot,
                     user_id=user.id,
                     info=generation_error,
-                    hashtags=['midjourney'],
+                    hashtags=['midjourney', 'webhook'],
                 )
         logging.exception(f'Error in midjourney_webhook: {generation_error}')
     else:

@@ -63,7 +63,7 @@ async def handle_kling_webhook(bot: Bot, dp: Dispatcher, body: dict):
             'has_error': generation.has_error,
         })
 
-        if 'inappropriate image detected' in generation_error or 'the prompt contains sensitive words' in generation_error:
+        if 'inappropriate image detected' in generation_error.lower() or 'the prompt contains sensitive words' in generation_error.lower():
             await bot.send_sticker(
                 chat_id=user.telegram_chat_id,
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
@@ -79,7 +79,7 @@ async def handle_kling_webhook(bot: Bot, dp: Dispatcher, body: dict):
                 bot=bot,
                 user_id=user.id,
                 info=generation_error,
-                hashtags=['kling'],
+                hashtags=['kling', 'webhook'],
             )
             logging.exception(f'Error in kling_webhook: {generation_error}')
     else:

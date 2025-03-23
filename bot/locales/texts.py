@@ -679,6 +679,7 @@ class Texts(Protocol):
     SUNO_CUSTOM_MODE_GENRES: str
     SUNO_START_AGAIN: str
     SUNO_TOO_MANY_WORDS_ERROR: str
+    SUNO_ARTIST_NAME_ERROR: str
     SUNO_VALUE_ERROR: str
     SUNO_SKIP: str
 

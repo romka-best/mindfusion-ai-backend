@@ -53,3 +53,8 @@ async def check_unresolved_requests(bot: Bot, dp: Dispatcher):
             bot,
             f'⚠️ <b>Внимание!</b>\n\nЯ нашёл генерации, которым больше 30 минут ❗️\n\nКоличество: {len(count_unresolved_requests)}\n\nМодели: {", ".join(product_names.values())}',
         )
+    else:
+        await send_message_to_admins_and_developers(
+            bot,
+            f'✅ <b>Всё хорошо!</b>',
+        )

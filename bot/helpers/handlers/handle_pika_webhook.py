@@ -73,7 +73,7 @@ async def handle_pika_webhook(bot: Bot, dp: Dispatcher, body: dict):
                 bot=bot,
                 user_id=user.id,
                 info=str(error_message),
-                hashtags=['pika'],
+                hashtags=['pika', 'webhook'],
             )
     else:
         generation_result = generations_result[0]

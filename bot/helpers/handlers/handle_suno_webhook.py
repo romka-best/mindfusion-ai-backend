@@ -74,7 +74,7 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
             bot=bot,
             user_id=user.id,
             info=str(error_message),
-            hashtags=['suno'],
+            hashtags=['suno', 'webhook'],
         )
     else:
         for i, current_generation in enumerate([first_generation, second_generation]):

@@ -74,6 +74,22 @@ async def handle_recraft(message: Message, state: FSMContext, user: User):
     if text is None:
         text = message.text
 
+    if not text:
+        await message.answer(
+            text=get_localization(user_language_code).ERROR_PROMPT_REQUIRED,
+            reply_markup=build_error_keyboard(user_language_code),
+        )
+        await state.update_data(is_processing=False)
+        return
+
+    if len(text) > 1000:
+        await message.answer(
+            text=get_localization(user_language_code).ERROR_PROMPT_TOO_LONG,
+            reply_markup=build_error_keyboard(user_language_code),
+        )
+        await state.update_data(is_processing=False)
+        return
+
     processing_sticker = await message.answer_sticker(
         sticker=config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),
     )
