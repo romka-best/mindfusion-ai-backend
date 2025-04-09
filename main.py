@@ -236,7 +236,9 @@ async def delayed_handle_update(update: Update, timeout: int):
 
     try:
         await dp.feed_update(bot=bot, update=update)
-    except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramServerError, TelegramNetworkError):
+    except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramServerError, TelegramNetworkError) as e:
+        logging.exception(repr(e))
+
         user_id = get_user_id_from_telegram_update(update)
         await handle_network_error(bot, user_id)
     except TelegramForbiddenError:
@@ -289,7 +291,9 @@ async def handle_update(update: dict):
                 if i == config.MAX_RETRIES - 1:
                     raise e
                 continue
-    except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramNetworkError):
+    except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramNetworkError) as e:
+        logging.exception(repr(e))
+
         user_id = get_user_id_from_telegram_update(telegram_update)
         await handle_network_error(bot, user_id)
     except TelegramForbiddenError:
@@ -323,6 +327,8 @@ async def handle_update(update: dict):
             await notify_admins_about_error(bot, telegram_update, dp, e)
     except TelegramServerError as e:
         if 'Bad Gateway' in e.message:
+            logging.exception(repr(e))
+
             user_id = get_user_id_from_telegram_update(telegram_update)
             await handle_network_error(bot, user_id)
         else:
