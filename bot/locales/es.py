@@ -452,6 +452,22 @@ Inténtalo de nuevo con un archivo más pequeño 😉
 Por favor, inténtalo de nuevo con un valor numérico 🔢
 """
 
+    @staticmethod
+    def runway_aspect_ratio_invalid(
+        min_ratio: str,
+        max_ratio: str,
+        actual_ratio: str,
+        image_width: str,
+        image_height: str,
+    ) -> str:
+        return f"""
+⚠️ <b>Relación de aspecto de imagen no válida</b>
+
+La relación entre el ancho y la altura de la imagen debe estar entre 0.5 y 2.0.
+Su imagen es {image_width} x {image_height}, la relación es — {actual_ratio}.
+Repita la solicitud con una imagen cuya relación de ancho/alto esté en el rango entre {min_ratio} y {max_ratio}.
+"""
+
     # Examples
     EXAMPLE_INFO = "Para acceder a esta red neuronal, presiona el botón de abajo:"
 
