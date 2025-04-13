@@ -67,7 +67,7 @@ async def handle_luma_webhook(bot: Bot, dp: Dispatcher, body: dict):
             bot=bot,
             user_id=user.id,
             info=generation_error,
-            hashtags=['luma'],
+            hashtags=['luma', 'webhook'],
         )
         logging.exception(f'Error in luma_webhook: {generation_error}')
     else:

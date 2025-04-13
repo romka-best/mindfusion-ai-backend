@@ -131,7 +131,7 @@ async def handle_chat_gpt_choose_selection(callback_query: CallbackQuery, state:
             )
 
             try:
-                await callback_query.bot.unpin_chat_message(user.telegram_chat_id)
+                await callback_query.bot.unpin_all_chat_messages(user.telegram_chat_id)
                 await callback_query.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
             except (TelegramBadRequest, TelegramRetryAfter):
                 pass

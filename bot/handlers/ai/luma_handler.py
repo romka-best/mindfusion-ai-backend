@@ -71,7 +71,7 @@ async def luma_photon(message: Message, state: FSMContext):
         )
 
         try:
-            await message.bot.unpin_chat_message(user.telegram_chat_id)
+            await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
             await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
         except (TelegramBadRequest, TelegramRetryAfter):
             pass
@@ -95,7 +95,7 @@ async def handle_luma_photon(
         else:
             prompt = ''
 
-    if not prompt:
+    if not prompt or len(prompt) <= 3:
         await message.reply(
             text=get_localization(user_language_code).ERROR_PROMPT_REQUIRED,
             allow_sending_without_reply=True,
@@ -233,7 +233,7 @@ async def luma_ray(message: Message, state: FSMContext):
         )
 
         try:
-            await message.bot.unpin_chat_message(user.telegram_chat_id)
+            await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
             await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
         except (TelegramBadRequest, TelegramRetryAfter):
             pass

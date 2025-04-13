@@ -58,7 +58,7 @@ async def recraft(message: Message, state: FSMContext):
         )
 
         try:
-            await message.bot.unpin_chat_message(user.telegram_chat_id)
+            await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
             await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
         except (TelegramBadRequest, TelegramRetryAfter):
             pass
@@ -73,6 +73,22 @@ async def handle_recraft(message: Message, state: FSMContext, user: User):
     text = user_data.get('recognized_text', None)
     if text is None:
         text = message.text
+
+    if not text:
+        await message.answer(
+            text=get_localization(user_language_code).ERROR_PROMPT_REQUIRED,
+            reply_markup=build_error_keyboard(user_language_code),
+        )
+        await state.update_data(is_processing=False)
+        return
+
+    if len(text) > 1000:
+        await message.answer(
+            text=get_localization(user_language_code).ERROR_PROMPT_TOO_LONG,
+            reply_markup=build_error_keyboard(user_language_code),
+        )
+        await state.update_data(is_processing=False)
+        return
 
     processing_sticker = await message.answer_sticker(
         sticker=config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),

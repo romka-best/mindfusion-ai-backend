@@ -65,7 +65,7 @@ async def kling(message: Message, state: FSMContext):
         )
 
         try:
-            await message.bot.unpin_chat_message(user.telegram_chat_id)
+            await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
             await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
         except (TelegramBadRequest, TelegramRetryAfter):
             pass
@@ -146,12 +146,17 @@ async def handle_kling(
                 }
             )
         except Exception as e:
-            if 'the prompt contains sensitive words' in str(e):
+            if 'the prompt contains sensitive words' in str(e).lower():
                 await message.answer_sticker(
                     sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
                 )
                 await message.reply(
                     text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
+                    allow_sending_without_reply=True,
+                )
+            elif 'too many requests' in str(e).lower():
+                await message.answer(
+                    text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
                     allow_sending_without_reply=True,
                 )
             else:

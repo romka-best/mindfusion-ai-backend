@@ -180,6 +180,14 @@ class Texts(Protocol):
     ERROR_FILE_TOO_BIG: str
     ERROR_IS_NOT_NUMBER: str
 
+    @staticmethod
+    def error_aspect_ratio_invalid(
+        min_ratio: str,
+        max_ratio: str,
+        actual_ratio: str,
+    ):
+        raise NotImplementedError
+
     # Examples
     EXAMPLE_INFO: str
 
@@ -679,6 +687,7 @@ class Texts(Protocol):
     SUNO_CUSTOM_MODE_GENRES: str
     SUNO_START_AGAIN: str
     SUNO_TOO_MANY_WORDS_ERROR: str
+    SUNO_ARTIST_NAME_ERROR: str
     SUNO_VALUE_ERROR: str
     SUNO_SKIP: str
 

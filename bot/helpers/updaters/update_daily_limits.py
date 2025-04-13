@@ -34,9 +34,7 @@ from bot.locales.main import get_localization, get_user_language
 
 
 async def update_daily_limits(bot: Bot, storage: BaseStorage):
-    users_query = firebase.db.collection(User.COLLECTION_NAME) \
-        .where(filter=FieldFilter('is_blocked', '==', False)) \
-        .limit(config.BATCH_SIZE)
+    users_query = firebase.db.collection(User.COLLECTION_NAME).limit(config.BATCH_SIZE)
     is_running = True
     last_doc = None
 

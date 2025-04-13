@@ -449,6 +449,21 @@ Please try again with a smaller file 😉
 Please try again with a numeric value 🔢
 """
 
+    @staticmethod
+    def error_aspect_ratio_invalid(
+        min_ratio: str,
+        max_ratio: str,
+        actual_ratio: str,
+    ) -> str:
+        return f"""
+⚠️ <b>Invalid Image Aspect Ratio</b>
+
+The image's width-to-height ratio must be between {min_ratio} and {max_ratio}.
+Your image's aspect ratio is {actual_ratio}.
+
+Please try again with a different image 😉
+"""
+
     # Examples
     EXAMPLE_INFO = "To gain access to this AI model, click the button below:"
 
@@ -2565,6 +2580,13 @@ To ensure your song in custom mode matches your preferences, specify the genres 
 At some point, you sent a text that’s too long 📝
 
 Please try again with a shorter text
+"""
+    SUNO_ARTIST_NAME_ERROR = """
+🚧 <b>Oops!</b>
+
+You sent a text that contains an artist name 🎤
+
+Please try again without the artist name
 """
     SUNO_VALUE_ERROR = """
 🧐 <b>This Doesn’t Look Like a Prompt</b>

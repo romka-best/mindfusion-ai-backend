@@ -641,3 +641,16 @@ def build_model_restricted_keyboard(language_code: LanguageCode, had_subscriptio
     ]
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def build_model_unresolved_request_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).MODEL_CHANGE_AI,
+                callback_data='model_unresolved_request:change_ai_model'
+            )
+        ],
+    ]
+
+    return InlineKeyboardMarkup(inline_keyboard=buttons)

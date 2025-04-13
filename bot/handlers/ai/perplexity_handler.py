@@ -72,7 +72,7 @@ async def perplexity(message: Message, state: FSMContext):
         )
 
         try:
-            await message.bot.unpin_chat_message(user.telegram_chat_id)
+            await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
             await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
         except (TelegramBadRequest, TelegramRetryAfter):
             pass

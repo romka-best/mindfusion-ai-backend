@@ -452,6 +452,21 @@ Inténtalo de nuevo con un archivo más pequeño 😉
 Por favor, inténtalo de nuevo con un valor numérico 🔢
 """
 
+    @staticmethod
+    def error_aspect_ratio_invalid(
+        min_ratio: str,
+        max_ratio: str,
+        actual_ratio: str,
+    ) -> str:
+        return f"""
+⚠️ <b>Relación de aspecto de imagen no válida</b>
+
+La relación entre ancho y alto de la imagen debe estar entre {min_ratio} y {max_ratio}.
+La relación de aspecto de tu imagen es {actual_ratio}.
+
+Por favor, inténtalo de nuevo con otra imagen 😉
+"""
+
     # Examples
     EXAMPLE_INFO = "Para acceder a esta red neuronal, presiona el botón de abajo:"
 
@@ -2569,6 +2584,13 @@ Para que tu canción en el modo avanzado se ajuste exactamente a tus preferencia
 En alguna etapa, enviaste un texto demasiado largo 📝
 
 Inténtalo nuevamente, pero con un texto más corto.
+"""
+    SUNO_ARTIST_NAME_ERROR = """
+🚧 <b>¡Uy!</b>
+
+Enviaste un texto que contiene el nombre de un artista 🎤
+
+Inténtalo nuevamente, pero sin el nombre del artista.
 """
     SUNO_VALUE_ERROR = """
 🧐 <b>Esto no parece un prompt válido</b>

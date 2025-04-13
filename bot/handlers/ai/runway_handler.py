@@ -1,4 +1,5 @@
 from typing import Optional
+import re
 
 import runwayml
 from aiogram import Router
@@ -63,7 +64,7 @@ async def runway(message: Message, state: FSMContext):
         )
 
         try:
-            await message.bot.unpin_chat_message(user.telegram_chat_id)
+            await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
             await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
         except (TelegramBadRequest, TelegramRetryAfter):
             pass
@@ -169,6 +170,38 @@ async def handle_runway(message: Message, state: FSMContext, user: User, video_f
                 text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
                 allow_sending_without_reply=True,
             )
+        except runwayml.BadRequestError as e:
+            error_message = e.body.get('error', '')
+
+            if 'invalid asset aspect ratio' in error_message.lower():
+                matches = re.search(
+                    r'between (?P<min_ratio>\d+(\.\d+)?) '
+                    r'and (?P<max_ratio>\d+(\.\d+)?)\. '
+                    r'Got (?P<actual_ratio>\d+(\.\d+)?)',
+                    error_message,
+                )
+
+                min_ratio, max_ratio, actual_ratio = matches.groupdict().values()
+
+                await message.answer_sticker(
+                    sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
+                )
+                await message.answer(
+                    text=get_localization(user_language_code).error_aspect_ratio_invalid(
+                        min_ratio,
+                        max_ratio,
+                        actual_ratio,
+                    ),
+                )
+            elif 'safety' in error_message.lower():
+                await message.answer_sticker(
+                    sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
+                )
+                await message.answer(
+                    text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
+                )
+            else:
+                raise e
         except Exception as e:
             await message.answer_sticker(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
