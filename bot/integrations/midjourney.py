@@ -62,8 +62,7 @@ class APIResource:
 class Images(APIResource):
     async def imagine(
         self,
-        prompt: str,
-        aspect_ratio: AspectRatio,
+        prompt: str
     ) -> str:
         url = f'{MIDJOURNEY_API_URL}/api/v1/task'
         payload = {
@@ -71,7 +70,6 @@ class Images(APIResource):
             'task_type': 'imagine',
             'input': {
                 'prompt': prompt,
-                'aspect_ratio': aspect_ratio,
                 'process_mode': 'fast',
             },
             'config': {
@@ -148,15 +146,9 @@ class Images(APIResource):
         return data['data']['task_id']
 
 
-async def create_midjourney_images(
-    prompt: str,
-    aspect_ratio: AspectRatio,
-) -> str:
+async def create_midjourney_images(prompt: str) -> str:
     async with Midjourney() as client:
-        task_id = await client.images.imagine(
-            prompt=prompt,
-            aspect_ratio=aspect_ratio,
-        )
+        task_id = await client.images.imagine(prompt=prompt)
 
         return task_id
 

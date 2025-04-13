@@ -60,6 +60,8 @@ from bot.states.common.profile import Profile
 from bot.utils.is_already_processing import is_already_processing
 from bot.utils.is_messages_limit_exceeded import is_messages_limit_exceeded
 from bot.utils.is_time_limit_exceeded import is_time_limit_exceeded
+from bot.src.infra.interfaces.telegram.controllers.midjourney_controller import MidjourneyController
+
 
 photo_router = Router()
 photo_router.message.middleware(AlbumMiddleware())
@@ -327,16 +329,8 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
         await photo_vision.upload(photo_data)
 
         if user.current_model == Model.MIDJOURNEY:
-            await handle_midjourney(
-                message,
-                state,
-                user,
-                message.caption,
-                MidjourneyAction.IMAGINE,
-                '',
-                0,
-                photo_vision_filename,
-            )
+            controller = await MidjourneyController.create(message, state, user)
+            await controller.imagine(message.caption, photo_vision_filename)
         elif user.current_model == Model.STABLE_DIFFUSION:
             await handle_stable_diffusion(message, state, user, user_quota, photo_vision_filename)
         elif user.current_model == Model.FLUX:

@@ -161,10 +161,7 @@ async def handle_midjourney(
                 elif action == MidjourneyAction.REROLL:
                     result_id = await create_different_midjourney_images(hash_id)
                 else:
-                    result_id = await create_midjourney_images(
-                        prompt,
-                        user.settings[Model.MIDJOURNEY][UserSettings.ASPECT_RATIO],
-                    )
+                    result_id = await create_midjourney_images(prompt)
                 await write_generation(
                     id=result_id,
                     request_id=request.id,
@@ -301,12 +298,9 @@ async def handle_midjourney_example(user: User, user_language_code: LanguageCode
         try:
             if user_language_code != LanguageCode.EN:
                 prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
-            prompt += f' --v {MidjourneyVersion.V6}'
+            prompt += f' --v {MidjourneyVersion.V6} --aspect {user.settings[user.current_model][UserSettings.ASPECT_RATIO]}'
 
-            result_id = await create_midjourney_images(
-                prompt,
-                user.settings[user.current_model][UserSettings.ASPECT_RATIO],
-            )
+            result_id = await create_midjourney_images(prompt)
             await write_generation(
                 id=result_id,
                 request_id=request.id,
