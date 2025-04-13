@@ -449,6 +449,22 @@ Please try again with a smaller file 😉
 Please try again with a numeric value 🔢
 """
 
+    @staticmethod
+    def runway_aspect_ratio_invalid(
+        min_ratio: str,
+        max_ratio: str,
+        actual_ratio: str,
+        image_width: str,
+        image_height: str,
+    ) -> str:
+        return f"""
+⚠️ <b>Invalid image aspect ratio</b>
+
+The width-to-height ratio of the image must be between 0.5 and 2.0.
+Your image is {image_width} x {image_height}, the ratio is — {actual_ratio}.
+Please resend the request with an image whose width/height ratio is within the range of {min_ratio} and {max_ratio}.
+"""
+
     # Examples
     EXAMPLE_INFO = "To gain access to this AI model, click the button below:"
 

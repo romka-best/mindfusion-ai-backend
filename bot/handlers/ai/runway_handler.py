@@ -1,4 +1,5 @@
 from typing import Optional
+import re
 
 import runwayml
 from aiogram import Router
@@ -169,6 +170,37 @@ async def handle_runway(message: Message, state: FSMContext, user: User, video_f
                 text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
                 allow_sending_without_reply=True,
             )
+        except runwayml.BadRequestError as e:
+            error_message = e.body["error"]
+
+            if "Invalid asset aspect ratio" in error_message:
+                matches = re.search(
+                    r"between (?P<min_ratio>\d+(\.\d+)?) "
+                    r"and (?P<max_ratio>\d+(\.\d+)?)\. "
+                    r"Got (?P<actual_ratio>\d+(\.\d+)?)",
+                    error_message,
+                )
+
+                min_ratio, max_ratio, actual_ratio = matches.groupdict().values()
+                image_width, image_height = (
+                    message.photo[0].width,
+                    message.photo[0].height,
+                )
+
+                await message.answer_sticker(
+                    sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
+                )
+
+                await message.answer(
+                    text=get_localization(
+                        user_language_code
+                    ).runway_aspect_ratio_invalid(
+                        min_ratio, max_ratio, actual_ratio, image_width, image_height
+                    ),
+                )
+
+            else:
+                raise e
         except Exception as e:
             await message.answer_sticker(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
