@@ -95,7 +95,7 @@ async def handle_luma_photon(
         else:
             prompt = ''
 
-    if not prompt:
+    if not prompt or len(prompt) <= 3:
         await message.reply(
             text=get_localization(user_language_code).ERROR_PROMPT_REQUIRED,
             allow_sending_without_reply=True,

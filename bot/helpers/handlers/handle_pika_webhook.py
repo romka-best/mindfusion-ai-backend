@@ -47,7 +47,7 @@ async def handle_pika_webhook(bot: Bot, dp: Dispatcher, body: dict):
             'has_error': generation.has_error,
         })
 
-        error_message = body.get('error', {}).get('message', {}).get('message', '')
+        error_message = body.get('error', {}).get('message', '')
         if 'content violation' in error_message:
             await bot.send_sticker(
                 chat_id=user.telegram_chat_id,

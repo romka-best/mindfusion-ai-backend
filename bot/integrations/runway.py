@@ -1,5 +1,7 @@
 import asyncio
 
+import runwayml
+from httpx import Request, Response
 from runwayml import AsyncRunwayML
 
 from bot.config import config
@@ -43,6 +45,16 @@ async def get_response_video(
         task = await client.tasks.retrieve(task_id)
         if task.status in ['SUCCEEDED', 'FAILED', 'CANCELLED']:
             break
+
+    if task.status == 'FAILED':
+        raise runwayml.BadRequestError(
+            message=task.failure_code,
+            body={'error': task.failure_code},
+            response=Response(
+                status_code=400,
+                request=Request('POST', 'https://api.runwayml.com'),
+            ),
+        )
 
     return {
         'status': task.status,

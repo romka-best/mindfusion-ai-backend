@@ -171,7 +171,7 @@ async def handle_runway(message: Message, state: FSMContext, user: User, video_f
                 allow_sending_without_reply=True,
             )
         except runwayml.BadRequestError as e:
-            error_message = e.body.get('error')
+            error_message = e.body.get('error', '')
 
             if 'invalid asset aspect ratio' in error_message.lower():
                 matches = re.search(
@@ -192,6 +192,13 @@ async def handle_runway(message: Message, state: FSMContext, user: User, video_f
                         max_ratio,
                         actual_ratio,
                     ),
+                )
+            elif 'safety' in error_message.lower():
+                await message.answer_sticker(
+                    sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
+                )
+                await message.answer(
+                    text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
                 )
             else:
                 raise e
