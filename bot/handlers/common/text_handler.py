@@ -36,6 +36,7 @@ from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.utils.is_already_processing import is_already_processing
 from bot.utils.is_messages_limit_exceeded import is_messages_limit_exceeded
 from bot.utils.is_time_limit_exceeded import is_time_limit_exceeded
+from bot.src.infra.interfaces.telegram.controllers.midjourney_controller import MidjourneyController
 
 text_router = Router()
 
@@ -80,7 +81,8 @@ async def handle_text(message: Message, state: FSMContext):
     elif user.current_model == Model.DALL_E:
         await handle_dall_e(message, state, user)
     elif user.current_model == Model.MIDJOURNEY:
-        await handle_midjourney(message, state, user, message.text, MidjourneyAction.IMAGINE)
+        controller = await MidjourneyController.create(message, state, user)
+        await controller.imagine(message.text)
     elif user.current_model == Model.STABLE_DIFFUSION:
         await handle_stable_diffusion(message, state, user, user_quota)
     elif user.current_model == Model.FLUX:
