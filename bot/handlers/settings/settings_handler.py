@@ -397,8 +397,16 @@ async def handle_setting_selection(callback_query: CallbackQuery, state: FSMCont
         if chosen_model == Model.RUNWAY:
             if user.settings[chosen_model][UserSettings.ASPECT_RATIO] == AspectRatio.PORTRAIT:
                 user.settings[chosen_model][UserSettings.RESOLUTION] = RunwayResolution.PORTRAIT
-            else:
+            elif user.settings[chosen_model][UserSettings.ASPECT_RATIO] == AspectRatio.LANDSCAPE:
                 user.settings[chosen_model][UserSettings.RESOLUTION] = RunwayResolution.LANDSCAPE
+            elif user.settings[chosen_model][UserSettings.ASPECT_RATIO] == AspectRatio.SQUARE:
+                user.settings[chosen_model][UserSettings.RESOLUTION] = RunwayResolution.SQUARE
+            elif user.settings[chosen_model][UserSettings.ASPECT_RATIO] == AspectRatio.CINEMASCOPE_HORIZONTAL:
+                user.settings[chosen_model][UserSettings.RESOLUTION] = RunwayResolution.CINEMASCOPE
+            elif user.settings[chosen_model][UserSettings.ASPECT_RATIO] == AspectRatio.STANDARD_HORIZONTAL:
+                user.settings[chosen_model][UserSettings.RESOLUTION] = RunwayResolution.STANDARD_HORIZONTAL
+            elif user.settings[chosen_model][UserSettings.ASPECT_RATIO] == AspectRatio.STANDARD_VERTICAL:
+                user.settings[chosen_model][UserSettings.RESOLUTION] = RunwayResolution.STANDARD_VERTICAL
         what_changed = UserSettings.ASPECT_RATIO
     elif (
         chosen_setting == SendType.TEXT or

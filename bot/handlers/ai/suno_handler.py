@@ -74,7 +74,7 @@ async def suno(message: Message, state: FSMContext):
         )
 
         try:
-            await message.bot.unpin_chat_message(user.telegram_chat_id)
+            await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
             await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
         except (TelegramBadRequest, TelegramRetryAfter):
             pass
@@ -246,6 +246,12 @@ async def suno_prompt_sent(message: Message, state: FSMContext):
                 elif 'prompt too long' in str(e).lower():
                     await message.answer(
                         text=get_localization(user_language_code).ERROR_PROMPT_TOO_LONG,
+                    )
+
+                    await handle_suno(message.bot, str(message.chat.id), state, user_id)
+                elif 'forbidden keywords' in str(e).lower():
+                    await message.answer(
+                        text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
                     )
 
                     await handle_suno(message.bot, str(message.chat.id), state, user_id)
@@ -485,6 +491,10 @@ async def suno_genres_sent(message: Message, state: FSMContext):
                 elif 'tags contained artist name' in str(e).lower():
                     await message.answer(
                         text=get_localization(user_language_code).SUNO_ARTIST_NAME_ERROR,
+                    )
+                elif 'forbidden keywords' in str(e).lower():
+                    await message.answer(
+                        text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
                     )
                 else:
                     await message.answer_sticker(

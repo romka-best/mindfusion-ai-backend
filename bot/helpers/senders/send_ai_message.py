@@ -10,8 +10,9 @@ from telegramify_markdown import markdownify, customize
 from bot.config import config
 from bot.helpers.split_message import split_message
 
-customize.markdown_symbol.head_level_3 = '🔖'
-customize.markdown_symbol.head_level_4 = '🔹'
+markdown_symbol = customize.get_runtime_config().markdown_symbol
+markdown_symbol.head_level_3 = '🔖'
+markdown_symbol.head_level_4 = '🔹'
 
 
 async def delayed_send_ai_message(message: Message, text: str, timeout: int, reply_markup=None):

@@ -1257,7 +1257,8 @@ def build_settings_keyboard(
             [
                 InlineKeyboardButton(
                     text=get_localization(language_code).SETTINGS_SHOW_USAGE_QUOTA_IN_MESSAGES + (
-                        ' ✅' if settings[model][UserSettings.SHOW_USAGE_QUOTA] else ' ❌'),
+                        ' ✅' if settings[model][UserSettings.SHOW_USAGE_QUOTA] else ' ❌'
+                    ),
                     callback_data=f'setting:{UserSettings.SHOW_USAGE_QUOTA}:{model}'
                 ),
             ],
@@ -1303,6 +1304,34 @@ def build_settings_keyboard(
             ],
             [
                 InlineKeyboardButton(
+                    text=AspectRatio.SQUARE + (
+                        ' ✅' if settings[model][UserSettings.RESOLUTION] == RunwayResolution.SQUARE else ''
+                    ),
+                    callback_data=f'setting:SQUARE:{model}'
+                ),
+                InlineKeyboardButton(
+                    text=AspectRatio.CINEMASCOPE_HORIZONTAL + (
+                        ' ✅' if settings[model][UserSettings.RESOLUTION] == RunwayResolution.CINEMASCOPE else ''
+                    ),
+                    callback_data=f'setting:CINEMASCOPE_HORIZONTAL:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=AspectRatio.STANDARD_VERTICAL + (
+                        ' ✅' if settings[model][UserSettings.RESOLUTION] == RunwayResolution.STANDARD_VERTICAL else ''
+                    ),
+                    callback_data=f'setting:STANDARD_VERTICAL:{model}'
+                ),
+                InlineKeyboardButton(
+                    text=AspectRatio.STANDARD_HORIZONTAL + (
+                        ' ✅' if settings[model][UserSettings.RESOLUTION] == RunwayResolution.STANDARD_HORIZONTAL else ''
+                    ),
+                    callback_data=f'setting:STANDARD_HORIZONTAL:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
                     text=get_localization(language_code).SETTINGS_DURATION.upper(),
                     callback_data=f'setting:nothing:{model}'
                 ),
@@ -1327,7 +1356,8 @@ def build_settings_keyboard(
             [
                 InlineKeyboardButton(
                     text=get_localization(language_code).SETTINGS_SHOW_USAGE_QUOTA_IN_MESSAGES + (
-                        ' ✅' if settings[model][UserSettings.SHOW_USAGE_QUOTA] else ' ❌'),
+                        ' ✅' if settings[model][UserSettings.SHOW_USAGE_QUOTA] else ' ❌'
+                    ),
                     callback_data=f'setting:{UserSettings.SHOW_USAGE_QUOTA}:{model}'
                 ),
             ],

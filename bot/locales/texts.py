@@ -180,6 +180,14 @@ class Texts(Protocol):
     ERROR_FILE_TOO_BIG: str
     ERROR_IS_NOT_NUMBER: str
 
+    @staticmethod
+    def error_aspect_ratio_invalid(
+        min_ratio: str,
+        max_ratio: str,
+        actual_ratio: str,
+    ):
+        raise NotImplementedError
+
     # Examples
     EXAMPLE_INFO: str
 

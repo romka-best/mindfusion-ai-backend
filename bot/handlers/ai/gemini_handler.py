@@ -47,8 +47,8 @@ gemini_router = Router()
 
 PRICE_GEMINI_2_FLASH_INPUT = 0.0000001
 PRICE_GEMINI_2_FLASH_OUTPUT = 0.0000004
-PRICE_GEMINI_2_PRO_INPUT = 0
-PRICE_GEMINI_2_PRO_OUTPUT = 0
+PRICE_GEMINI_2_PRO_INPUT = 0.00000125
+PRICE_GEMINI_2_PRO_OUTPUT = 0.00001
 PRICE_GEMINI_1_ULTRA_INPUT = 0.00000125
 PRICE_GEMINI_1_ULTRA_OUTPUT = 0.000005
 
@@ -133,7 +133,7 @@ async def handle_gemini_choose_selection(callback_query: CallbackQuery, state: F
             )
 
             try:
-                await callback_query.bot.unpin_chat_message(user.telegram_chat_id)
+                await callback_query.bot.unpin_all_chat_messages(user.telegram_chat_id)
                 await callback_query.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
             except (TelegramBadRequest, TelegramRetryAfter):
                 pass

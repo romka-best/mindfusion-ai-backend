@@ -54,7 +54,7 @@ class Settings(BaseSettings):
 
     SUPER_ADMIN_ID: str = '354543567'
     ADMIN_IDS: list[str] = field(default_factory=lambda: ['354543567', '6078317830'])
-    DEVELOPER_IDS: list[str] = field(default_factory=lambda: ['354543567'])
+    DEVELOPER_IDS: list[str] = field(default_factory=lambda: ['354543567', '1384055865', '2048756506'])
     MODERATOR_IDS: list[str] = field(default_factory=lambda: [])
 
     DEFAULT_ROLE_ID: SecretStr

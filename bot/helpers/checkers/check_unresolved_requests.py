@@ -7,6 +7,7 @@ from bot.database.operations.product.getters import get_product
 from bot.database.operations.request.getters import get_started_requests
 from bot.database.operations.request.updaters import update_request
 from bot.helpers.senders.send_message_to_admins_and_developers import send_message_to_admins_and_developers
+from bot.keyboards.ai.model import build_model_unresolved_request_keyboard
 from bot.locales.main import get_user_language, get_localization
 
 
@@ -18,8 +19,7 @@ async def check_unresolved_requests(bot: Bot, dp: Dispatcher):
     product_names = {}
     count_unresolved_requests = 0
     for not_finished_request in not_finished_requests:
-        had_error = True
-        not_finished_request.details['has_error'] = had_error
+        not_finished_request.details['has_error'] = True
 
         await update_request(
             not_finished_request.id,
@@ -41,7 +41,8 @@ async def check_unresolved_requests(bot: Bot, dp: Dispatcher):
 
             await bot.send_message(
                 chat_id=not_finished_request.user_id,
-                text=get_localization(user_language_code).model_unresolved_request(product_name)
+                text=get_localization(user_language_code).model_unresolved_request(product_name),
+                reply_markup=build_model_unresolved_request_keyboard(user_language_code),
             )
         except Exception:
             pass
@@ -51,7 +52,7 @@ async def check_unresolved_requests(bot: Bot, dp: Dispatcher):
     if count_unresolved_requests > 0:
         await send_message_to_admins_and_developers(
             bot,
-            f'⚠️ <b>Внимание!</b>\n\nЯ нашёл генерации, которым больше 30 минут ❗️\n\nКоличество: {len(count_unresolved_requests)}\n\nМодели: {", ".join(product_names.values())}',
+            f'⚠️ <b>Внимание!</b>\n\nЯ нашёл генерации, которым больше 30 минут ❗️\n\nКоличество: {count_unresolved_requests}\n\nМодели: {", ".join(product_names.values())}',
         )
     else:
         await send_message_to_admins_and_developers(

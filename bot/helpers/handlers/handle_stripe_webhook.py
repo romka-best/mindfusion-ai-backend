@@ -142,7 +142,7 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                 )
 
                 try:
-                    await bot.unpin_chat_message(user.telegram_chat_id)
+                    await bot.unpin_all_chat_messages(user.telegram_chat_id)
                     await bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
                 except (TelegramBadRequest, TelegramRetryAfter):
                     pass
@@ -478,7 +478,7 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                 )
 
                 try:
-                    await bot.unpin_chat_message(user.telegram_chat_id)
+                    await bot.unpin_all_chat_messages(user.telegram_chat_id)
                     await bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
                 except (TelegramBadRequest, TelegramRetryAfter):
                     pass
@@ -604,7 +604,7 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                 )
 
                 try:
-                    await bot.unpin_chat_message(user.telegram_chat_id)
+                    await bot.unpin_all_chat_messages(user.telegram_chat_id)
                     await bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
                 except (TelegramBadRequest, TelegramRetryAfter):
                     pass

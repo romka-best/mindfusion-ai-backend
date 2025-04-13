@@ -220,7 +220,7 @@ async def handle_model_selection(callback_query: CallbackQuery, state: FSMContex
         )
 
         try:
-            await callback_query.bot.unpin_chat_message(user.telegram_chat_id)
+            await callback_query.bot.unpin_all_chat_messages(user.telegram_chat_id)
             await callback_query.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
         except (TelegramBadRequest, TelegramRetryAfter):
             pass
@@ -339,3 +339,12 @@ async def model_restricted_selection(callback_query: CallbackQuery, state: FSMCo
         await handle_subscribe(callback_query.message, str(callback_query.from_user.id), state)
     elif action == 'open_buy_packages_info':
         await handle_package(callback_query.message, str(callback_query.from_user.id), state)
+
+
+@model_router.callback_query(lambda c: c.data.startswith('model_unresolved_request:'))
+async def model_unresolved_request_selection(callback_query: CallbackQuery, state: FSMContext):
+    await callback_query.answer()
+
+    action = callback_query.data.split(':')[1]
+    if action == 'change_ai_model':
+        await handle_model(callback_query.message, str(callback_query.from_user.id), state)

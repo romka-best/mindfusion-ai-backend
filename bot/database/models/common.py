@@ -101,7 +101,7 @@ class ClaudeGPTVersion:
 class GeminiGPTVersion:
     V2_Flash = 'gemini-2.0-flash'
     V1_Pro = 'gemini-1.5-pro'
-    V2_Pro = 'gemini-2.0-pro-exp-02-05'
+    V2_Pro = 'gemini-2.5-pro-preview-03-25'
     V1_Ultra = 'gemini-1.0-ultra'
 
 
@@ -249,7 +249,7 @@ class KlingDuration:
 
 
 class RunwayVersion:
-    V3_Alpha_Turbo = 'gen3a_turbo'
+    V4_Turbo = 'gen4_turbo'
 
 
 class RunwayDuration:
@@ -258,8 +258,12 @@ class RunwayDuration:
 
 
 class RunwayResolution:
-    LANDSCAPE = '1280:768'
-    PORTRAIT = '768:1280'
+    LANDSCAPE = '1280:720'
+    PORTRAIT = '720:1280'
+    SQUARE = '960:960'
+    STANDARD_HORIZONTAL = '1104:832'
+    STANDARD_VERTICAL = '832:1104'
+    CINEMASCOPE = '1584:672'
 
 
 class LumaRayVersion:

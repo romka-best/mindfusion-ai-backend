@@ -301,7 +301,7 @@ class User:
         Model.RUNWAY: {
             UserSettings.SHOW_USAGE_QUOTA: True,
             UserSettings.SEND_TYPE: SendType.VIDEO,
-            UserSettings.VERSION: RunwayVersion.V3_Alpha_Turbo,
+            UserSettings.VERSION: RunwayVersion.V4_Turbo,
             UserSettings.RESOLUTION: RunwayResolution.LANDSCAPE,
             UserSettings.ASPECT_RATIO: AspectRatio.LANDSCAPE,
             UserSettings.DURATION: RunwayDuration.SECONDS_5,
