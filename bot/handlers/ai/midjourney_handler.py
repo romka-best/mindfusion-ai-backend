@@ -97,8 +97,8 @@ async def handle_midjourney(
         version = user.settings[Model.MIDJOURNEY][UserSettings.VERSION]
         prompt.params["version"] = version
     if (
-        prompt.params.aspect_ratio == midjourney.prompt.NullParameter
-        or prompt.params.aspect_ratio not in MidjourneyVersion.__dict__.values()
+        prompt.params.aspect == midjourney.prompt.NullParameter
+        or prompt.params.aspect not in MidjourneyVersion.__dict__.values()
     ):
         aspect_ratio = user.settings[Model.MIDJOURNEY][UserSettings.ASPECT_RATIO]
         prompt.params["aspect"] = aspect_ratio
