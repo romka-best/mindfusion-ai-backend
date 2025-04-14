@@ -1,0 +1,2 @@
+class NullParameter:
+    pass

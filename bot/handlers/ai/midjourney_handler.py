@@ -89,6 +89,8 @@ async def handle_midjourney(
     choice=0,
     image_filename: Optional[str] = None,
 ):
+    prompt = midjourney.prompt.Parser().parse(prompt)
+
     user_language_code = await get_user_language(user.id, state.storage)
 
     version = user.settings[Model.MIDJOURNEY][UserSettings.VERSION]
