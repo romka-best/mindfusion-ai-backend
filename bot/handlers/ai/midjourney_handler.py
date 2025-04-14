@@ -90,14 +90,19 @@ async def handle_midjourney(
     choice=0,
     image_filename: Optional[str] = None,
 ):
-    version = user.settings[Model.MIDJOURNEY][UserSettings.VERSION]
     prompt = midjourney.prompt.Parser().parse(prompt)
 
     if prompt.params.version == midjourney.prompt.NullParameter:
+        version = user.settings[Model.MIDJOURNEY][UserSettings.VERSION]
         prompt.params["version"] = version
+    if (
+        prompt.params.aspect_ratio == midjourney.prompt.NullParameter
+        or prompt.params.aspect_ratio not in MidjourneyVersion.__dict__.values()
+    ):
+        aspect_ratio = user.settings[Model.MIDJOURNEY][UserSettings.ASPECT_RATIO]
+        prompt.params["aspect"] = aspect_ratio
 
     user_language_code = await get_user_language(user.id, state.storage)
-
 
     processing_sticker = await message.answer_sticker(
         sticker=config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),
@@ -168,8 +173,7 @@ async def handle_midjourney(
                 else:
                     result_id = await create_midjourney_images(
                         prompt,
-                        'turbo' if version == MidjourneyVersion.V7 else 'fast',
-                        user.settings[Model.MIDJOURNEY][UserSettings.ASPECT_RATIO],
+                        'turbo' if prompt.params.version == MidjourneyVersion.V7 else 'fast'
 
                     )
                 await write_generation(
@@ -178,7 +182,7 @@ async def handle_midjourney(
                     product_id=product.id,
                     has_error=result_id is None,
                     details={
-                        'prompt': prompt,
+                        'prompt': str(prompt),
                         'action': action,
                         'version': prompt.params.version,
                         'is_suggestion': False,
