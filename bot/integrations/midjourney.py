@@ -1,3 +1,6 @@
+import logging
+import json
+
 from aiogram.client.session import aiohttp
 
 from bot.config import config
@@ -69,7 +72,12 @@ class APIResource:
         self._client = client
 
     async def request(self, method: str, url: str, **kwargs):
-        return await self._client.request(method, url, **kwargs)
+        logging.debug(f"{method}: {url}\n{json.dumps(kwargs, indent=2)}")
+
+        response = await self._client.request(method, url, **kwargs)
+
+        logging.debug(f"Response: {url}\n{json.dumps(response, indent=2)}")
+        return response
 
 
 class Images(APIResource):

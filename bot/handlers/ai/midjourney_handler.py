@@ -1,4 +1,4 @@
-import re
+import logging
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -189,6 +189,8 @@ async def handle_midjourney(
                     }
                 )
             except Exception as e:
+                logging.debug(e, exc_info=True)
+
                 if action == MidjourneyAction.IMAGINE:
                     await message.answer_sticker(
                         sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
