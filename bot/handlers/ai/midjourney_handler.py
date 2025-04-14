@@ -163,8 +163,9 @@ async def handle_midjourney(
                 else:
                     result_id = await create_midjourney_images(
                         prompt,
-                        user.settings[Model.MIDJOURNEY][UserSettings.ASPECT_RATIO],
                         'turbo' if version == MidjourneyVersion.V7 else 'fast',
+                        user.settings[Model.MIDJOURNEY][UserSettings.ASPECT_RATIO],
+
                     )
                 await write_generation(
                     id=result_id,
@@ -306,8 +307,8 @@ async def handle_midjourney_example(user: User, user_language_code: LanguageCode
 
             result_id = await create_midjourney_images(
                 prompt,
-                user.settings[user.current_model][UserSettings.ASPECT_RATIO],
-                'fast'
+                'fast',
+                user.settings[user.current_model][UserSettings.ASPECT_RATIO]
             )
             await write_generation(
                 id=result_id,
