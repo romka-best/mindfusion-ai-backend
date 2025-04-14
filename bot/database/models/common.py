@@ -163,6 +163,7 @@ class DALLEQuality:
 class MidjourneyVersion:
     V5 = '5.2'
     V6 = '6.1'
+    V7 = '7.0'
 
 
 class MidjourneyAction:

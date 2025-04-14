@@ -9,6 +9,7 @@ from bot.database.operations.product.getters import get_product, get_product_by_
 from bot.database.operations.subscription.getters import get_subscription
 from bot.integrations.kling import Kling
 from bot.integrations.luma import get_cost_for_video as get_cost_for_luma_ray_video
+from bot.integrations.midjourney import Midjourney
 from bot.integrations.open_ai import get_cost_for_image
 from bot.integrations.runway import get_cost_for_video as get_cost_for_runway_video
 from bot.keyboards.ai.model import build_model_limit_exceeded_keyboard, build_model_restricted_keyboard
@@ -22,6 +23,10 @@ async def is_messages_limit_exceeded(message: Message, state: FSMContext, user: 
         generation_cost = get_cost_for_image(
             user.settings[Model.DALL_E][UserSettings.QUALITY],
             user.settings[Model.DALL_E][UserSettings.RESOLUTION],
+        )
+    elif user.current_model == Model.MIDJOURNEY:
+        generation_cost = Midjourney.get_cost_for_image(
+            user.settings[Model.MIDJOURNEY][UserSettings.VERSION],
         )
     elif user.current_model == Model.KLING:
         generation_cost = Kling.get_cost_for_video(

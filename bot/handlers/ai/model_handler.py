@@ -24,6 +24,7 @@ from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_mode
 from bot.helpers.handlers.handle_model_info import handle_model_info
 from bot.integrations.kling import Kling
 from bot.integrations.luma import get_cost_for_video as get_cost_for_luma_ray_video
+from bot.integrations.midjourney import Midjourney
 from bot.integrations.open_ai import get_cost_for_image
 from bot.integrations.runway import get_cost_for_video as get_cost_for_runway_video
 from bot.keyboards.ai.model import (
@@ -261,6 +262,10 @@ async def handle_switched_to_ai_selection(callback_query: CallbackQuery, state: 
             generation_cost = get_cost_for_image(
                 user.settings[Model.DALL_E][UserSettings.QUALITY],
                 user.settings[Model.DALL_E][UserSettings.RESOLUTION],
+            )
+        elif model == Model.MIDJOURNEY:
+            generation_cost = Midjourney.get_cost_for_image(
+                user.settings[Model.MIDJOURNEY][UserSettings.VERSION],
             )
         elif model == Model.KLING:
             generation_cost = Kling.get_cost_for_video(

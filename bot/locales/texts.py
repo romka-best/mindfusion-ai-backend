@@ -239,7 +239,7 @@ class Texts(Protocol):
     # Gemini
     GEMINI = '✨ Gemini'
     GEMINI_2_FLASH = '🏎 Gemini 2.0 Flash'
-    GEMINI_2_PRO = '💼 Gemini 2.0 Pro'
+    GEMINI_2_PRO = '💼 Gemini 2.5 Pro'
     GEMINI_1_ULTRA = '🛡️ Gemini 1.0 Ultra'
 
     # Gemini Video

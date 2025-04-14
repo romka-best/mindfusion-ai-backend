@@ -399,7 +399,7 @@ Revisa el texto/la foto en busca de contenido prohibido e inténtalo de nuevo �
     ┣ Claude 3.7 Sonnet 💫
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 2.0 Flash 🏎
-    ┣ Gemini 2.0 Pro 💼
+    ┣ Gemini 2.5 Pro 💼
     ┣ Gemini 1.0 Ultra 🛡️
     ┗ Grok 2.0 🐦
 
@@ -2065,7 +2065,7 @@ Seleccione una acción 👇
     ┣ 💥 ChatGPT 4.0 Omni{f': adicional {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
     ┣ 🧩 ChatGPT o3-mini{f': adicional {additional_usage_quota[Quota.CHAT_GPT_O_3_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_3_MINI] > 0 else ''}
     ┣ 💫 Claude 3.7 Sonnet{f': adicional {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
-    ┣ 💼 Gemini 2.0 Pro{f': adicional {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
+    ┣ 💼 Gemini 2.5 Pro{f': adicional {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
     ┣ 🐦 Grok 2.0{f': adicional {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
     ┣ 🌐 Perplexity{f': adicional {additional_usage_quota[Quota.PERPLEXITY]}' if additional_usage_quota[Quota.PERPLEXITY] > 0 else ''}
     ┗ Límite diario: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}
@@ -2094,7 +2094,7 @@ Seleccione una acción 👇
 
 <b>Avanzados</b>:
     ┣ 👨‍🎨 DALL-E 3{f': adicional {additional_usage_quota[Quota.DALL_E]}' if additional_usage_quota[Quota.DALL_E] > 0 else ''}
-    ┣ 🎨 Midjourney 6.1{f': adicional {additional_usage_quota[Quota.MIDJOURNEY]}' if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ''}
+    ┣ 🎨 Midjourney 7{f': adicional {additional_usage_quota[Quota.MIDJOURNEY]}' if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ''}
     ┣ 🧑‍🚀 Stable Diffusion 3.5{f': adicional {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ''}
     ┣ 🏔 Flux 1.1 Pro{f': adicional {additional_usage_quota[Quota.FLUX_1_PRO]}' if additional_usage_quota[Quota.FLUX_1_PRO] > 0 else ''}
     ┣ 🐼 Recraft 3{f': adicional {additional_usage_quota[Quota.RECRAFT]}' if additional_usage_quota[Quota.RECRAFT] > 0 else ''}
@@ -2208,7 +2208,7 @@ Ya has usado este código promocional. Es magia de un solo uso, y ya la utilizas
     # Settings
     @staticmethod
     def settings_info(human_model: str, current_model: Model, generation_cost=1) -> str:
-        if current_model == Model.DALL_E:
+        if current_model == Model.DALL_E or current_model == Model.MIDJOURNEY:
             additional_text = f"\nCon la configuración actual, 1 solicitud cuesta: {generation_cost} 🖼"
         elif current_model == Model.KLING or current_model == Model.RUNWAY or current_model == Model.LUMA_RAY:
             additional_text = f"\nCon la configuración actual, 1 solicitud cuesta: {generation_cost} 📹"

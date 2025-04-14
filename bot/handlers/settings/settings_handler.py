@@ -45,6 +45,7 @@ from bot.helpers.getters.get_human_model import get_human_model
 from bot.helpers.getters.get_model_type import get_model_type
 from bot.integrations.kling import Kling
 from bot.integrations.luma import get_cost_for_video as get_cost_for_luma_ray_video
+from bot.integrations.midjourney import Midjourney
 from bot.integrations.open_ai import get_cost_for_image
 from bot.integrations.runway import get_cost_for_video as get_cost_for_runway_video
 from bot.keyboards.settings.chats import (
@@ -88,6 +89,10 @@ async def handle_settings(message: Message, user_id: str, state: FSMContext, adv
             generation_cost = get_cost_for_image(
                 user.settings[Model.DALL_E][UserSettings.QUALITY],
                 user.settings[Model.DALL_E][UserSettings.RESOLUTION],
+            )
+        elif user.current_model == Model.MIDJOURNEY:
+            generation_cost = Midjourney.get_cost_for_image(
+                user.settings[Model.MIDJOURNEY][UserSettings.VERSION],
             )
         elif user.current_model == Model.KLING:
             generation_cost = Kling.get_cost_for_video(
@@ -212,6 +217,10 @@ async def handle_settings_choose_image_model_selection(callback_query: CallbackQ
         generation_cost = get_cost_for_image(
             user.settings[Model.DALL_E][UserSettings.QUALITY],
             user.settings[Model.DALL_E][UserSettings.RESOLUTION],
+        )
+    elif chosen_model == Model.MIDJOURNEY:
+        generation_cost = Midjourney.get_cost_for_image(
+            user.settings[Model.MIDJOURNEY][UserSettings.VERSION],
         )
 
     human_model = get_human_model(chosen_model, user_language_code)
@@ -353,7 +362,7 @@ async def handle_setting_selection(callback_query: CallbackQuery, state: FSMCont
     elif chosen_setting == DALLEQuality.STANDARD or chosen_setting == DALLEQuality.HD:
         user.settings[Model.DALL_E][UserSettings.QUALITY] = chosen_setting
         what_changed = UserSettings.QUALITY
-    elif chosen_setting == MidjourneyVersion.V5 or chosen_setting == MidjourneyVersion.V6:
+    elif chosen_setting == MidjourneyVersion.V5 or chosen_setting == MidjourneyVersion.V6 or chosen_setting == MidjourneyVersion.V7:
         user.settings[Model.MIDJOURNEY][UserSettings.VERSION] = chosen_setting
         what_changed = UserSettings.VERSION
     elif (
@@ -445,7 +454,7 @@ async def handle_setting_selection(callback_query: CallbackQuery, state: FSMCont
                     text += ' ✅'
                     keyboard_changed = True
                 elif (
-                    callback_data == MidjourneyVersion.V5 or callback_data == MidjourneyVersion.V6
+                    callback_data == MidjourneyVersion.V5 or callback_data == MidjourneyVersion.V6 or callback_data == MidjourneyVersion.V7
                 ) or (
                     callback_data == SunoVersion.V3 or callback_data == SunoVersion.V4
                 ):
@@ -591,6 +600,10 @@ async def handle_setting_selection(callback_query: CallbackQuery, state: FSMCont
             generation_cost = get_cost_for_image(
                 user.settings[Model.DALL_E][UserSettings.QUALITY],
                 user.settings[Model.DALL_E][UserSettings.RESOLUTION],
+            )
+        elif chosen_model == Model.MIDJOURNEY:
+            generation_cost = Midjourney.get_cost_for_image(
+                user.settings[Model.MIDJOURNEY][UserSettings.VERSION],
             )
         elif chosen_model == Model.KLING:
             generation_cost = Kling.get_cost_for_video(
