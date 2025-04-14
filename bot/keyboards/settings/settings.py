@@ -598,6 +598,12 @@ def build_settings_keyboard(
                     ),
                     callback_data=f'setting:{MidjourneyVersion.V6}:{model}'
                 ),
+                InlineKeyboardButton(
+                    text=MidjourneyVersion.V7 + (
+                        ' ✅' if settings[model][UserSettings.VERSION] == MidjourneyVersion.V7 else ''
+                    ),
+                    callback_data=f'setting:{MidjourneyVersion.V7}:{model}'
+                ),
             ],
         ]
     elif model == Model.STABLE_DIFFUSION:

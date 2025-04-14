@@ -155,11 +155,12 @@ async def handle_midjourney_result(
     ]
 
     if not generation.has_error and not is_suggestion and action_type != MidjourneyAction.UPSCALE:
+        generation_cost = Midjourney.get_cost_for_image(generation.details.get('version'))
         update_tasks.append(
             update_user_usage_quota(
                 user,
                 Quota.MIDJOURNEY,
-                1,
+                generation_cost,
             )
         )
 

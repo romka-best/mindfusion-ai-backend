@@ -47,8 +47,21 @@ class Midjourney:
             MidjourneyAction.VARIATION,
         ]:
             return 0.07
+        elif version == MidjourneyVersion.V7 and action in [
+            MidjourneyAction.IMAGINE,
+            MidjourneyAction.REROLL,
+            MidjourneyAction.VARIATION,
+        ]:
+            return 0.12
 
         return 0
+
+    @staticmethod
+    def get_cost_for_image(version: MidjourneyVersion):
+        if version == MidjourneyVersion.V7:
+            return 2
+
+        return 1
 
 
 class APIResource:
@@ -64,6 +77,7 @@ class Images(APIResource):
         self,
         prompt: str,
         aspect_ratio: AspectRatio,
+        process_mode: str
     ) -> str:
         url = f'{MIDJOURNEY_API_URL}/api/v1/task'
         payload = {
@@ -72,7 +86,7 @@ class Images(APIResource):
             'input': {
                 'prompt': prompt,
                 'aspect_ratio': aspect_ratio,
-                'process_mode': 'fast',
+                'process_mode': process_mode,
             },
             'config': {
                 'webhook_config': {
@@ -151,11 +165,13 @@ class Images(APIResource):
 async def create_midjourney_images(
     prompt: str,
     aspect_ratio: AspectRatio,
+    process_mode: str,
 ) -> str:
     async with Midjourney() as client:
         task_id = await client.images.imagine(
             prompt=prompt,
             aspect_ratio=aspect_ratio,
+            process_mode=process_mode,
         )
 
         return task_id
