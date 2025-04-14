@@ -3,7 +3,7 @@ from .prompt import Prompt
 
 
 class Parser:
-    def parse(self, prompt):
+    def parse(self, prompt: str) -> Prompt:
         # Normalized
         # Telegram on desktop replace '--' with '—', we should keep that in mind
         normalized_prompt = re.sub(r"—", "--", prompt)
