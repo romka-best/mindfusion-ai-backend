@@ -97,7 +97,7 @@ async def handle_midjourney(
         version = user.settings[Model.MIDJOURNEY][UserSettings.VERSION]
         prompt.params["version"] = version
     if (
-        prompt.params.aspect == midjourney.prompt.NullParameter
+        prompt.params.aspect == midjourney_helper.prompt.NullParameter
         or prompt.params.aspect not in MidjourneyVersion.__dict__.values()
     ):
         aspect_ratio = user.settings[Model.MIDJOURNEY][UserSettings.ASPECT_RATIO]
@@ -172,7 +172,7 @@ async def handle_midjourney(
                     result_id = await create_different_midjourney_images(hash_id)
                 else:
                     result_id = await create_midjourney_images(
-                        prompt,
+                        str(prompt),
                         'turbo' if prompt.params.version == MidjourneyVersion.V7 else 'fast'
 
                     )
