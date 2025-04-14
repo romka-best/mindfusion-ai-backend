@@ -38,6 +38,7 @@ from bot.integrations.midjourney import (
 from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
+from bot.helpers import midjourney
 
 midjourney_router = Router()
 
@@ -89,11 +90,14 @@ async def handle_midjourney(
     choice=0,
     image_filename: Optional[str] = None,
 ):
+    version = user.settings[Model.MIDJOURNEY][UserSettings.VERSION]
     prompt = midjourney.prompt.Parser().parse(prompt)
+
+    if prompt.params.version == midjourney.prompt.NullParameter:
+        prompt.params["version"] = version
 
     user_language_code = await get_user_language(user.id, state.storage)
 
-    version = user.settings[Model.MIDJOURNEY][UserSettings.VERSION]
 
     processing_sticker = await message.answer_sticker(
         sticker=config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),
@@ -136,7 +140,7 @@ async def handle_midjourney(
                 details={
                     'prompt': prompt,
                     'action': action,
-                    'version': version,
+                    'version': prompt.params.version,
                     'is_suggestion': False,
                 }
             )
@@ -154,7 +158,6 @@ async def handle_midjourney(
                     image = await firebase.bucket.get_blob(image_path)
                     image_link = firebase.get_public_url(image.name)
                     prompt = f'{image_link} {prompt}'
-                prompt += f' --v {version}'
 
                 if action == MidjourneyAction.UPSCALE:
                     result_id = await create_midjourney_image(hash_id, choice)
@@ -177,7 +180,7 @@ async def handle_midjourney(
                     details={
                         'prompt': prompt,
                         'action': action,
-                        'version': version,
+                        'version': prompt.params.version,
                         'is_suggestion': False,
                     }
                 )
