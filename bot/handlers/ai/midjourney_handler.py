@@ -1,4 +1,4 @@
-import re
+import logging
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -38,6 +38,7 @@ from bot.integrations.midjourney import (
 from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
+from bot.helpers import midjourney as midjourney_helper
 
 midjourney_router = Router()
 
@@ -89,9 +90,23 @@ async def handle_midjourney(
     choice=0,
     image_filename: Optional[str] = None,
 ):
-    user_language_code = await get_user_language(user.id, state.storage)
+    # Prepare prompt
+    prompt = midjourney_helper.prompt.Parser().parse(prompt)
 
-    version = user.settings[Model.MIDJOURNEY][UserSettings.VERSION]
+    if prompt.params.version == midjourney_helper.prompt.NullParameter:
+        version = user.settings[Model.MIDJOURNEY][UserSettings.VERSION]
+        prompt.params["version"] = version
+    if (
+        prompt.params.aspect == midjourney_helper.prompt.NullParameter
+        or prompt.params.aspect not in MidjourneyVersion.__dict__.values()
+    ):
+        aspect_ratio = user.settings[Model.MIDJOURNEY][UserSettings.ASPECT_RATIO]
+        prompt.params["aspect"] = aspect_ratio
+
+    midjourney_helper.prompt.RemoveUnsupportedParams.execute(prompt)
+    # Prepare prompt end
+
+    user_language_code = await get_user_language(user.id, state.storage)
 
     processing_sticker = await message.answer_sticker(
         sticker=config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),
@@ -132,27 +147,22 @@ async def handle_midjourney(
                 product_id=product.id,
                 requested=1,
                 details={
-                    'prompt': prompt,
+                    'prompt': str(prompt),
                     'action': action,
-                    'version': version,
+                    'version': prompt.params.version,
                     'is_suggestion': False,
                 }
             )
 
             try:
                 if user_language_code != LanguageCode.EN:
-                    prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
-
-                prompt = re.sub(r'\s*[-—]+\s*', ' ', prompt).rstrip('.')
-                if not prompt:
-                    prompt = 'Generate image'
+                    prompt.text = await translate_text(prompt.text, user_language_code, LanguageCode.EN)
 
                 if image_filename:
                     image_path = f'users/vision/{user.id}/{image_filename}'
                     image = await firebase.bucket.get_blob(image_path)
                     image_link = firebase.get_public_url(image.name)
-                    prompt = f'{image_link} {prompt}'
-                prompt += f' --v {version}'
+                    prompt.reference_images += image_link
 
                 if action == MidjourneyAction.UPSCALE:
                     result_id = await create_midjourney_image(hash_id, choice)
@@ -162,9 +172,9 @@ async def handle_midjourney(
                     result_id = await create_different_midjourney_images(hash_id)
                 else:
                     result_id = await create_midjourney_images(
-                        prompt,
-                        user.settings[Model.MIDJOURNEY][UserSettings.ASPECT_RATIO],
-                        'turbo' if version == MidjourneyVersion.V7 else 'fast',
+                        str(prompt),
+                        'turbo' if prompt.params.version == MidjourneyVersion.V7 else 'fast'
+
                     )
                 await write_generation(
                     id=result_id,
@@ -172,13 +182,15 @@ async def handle_midjourney(
                     product_id=product.id,
                     has_error=result_id is None,
                     details={
-                        'prompt': prompt,
+                        'prompt': str(prompt),
                         'action': action,
-                        'version': version,
+                        'version': prompt.params.version,
                         'is_suggestion': False,
                     }
                 )
             except Exception as e:
+                logging.debug(e, exc_info=True)
+
                 if action == MidjourneyAction.IMAGINE:
                     await message.answer_sticker(
                         sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
@@ -306,8 +318,8 @@ async def handle_midjourney_example(user: User, user_language_code: LanguageCode
 
             result_id = await create_midjourney_images(
                 prompt,
-                user.settings[user.current_model][UserSettings.ASPECT_RATIO],
-                'fast'
+                'fast',
+                user.settings[user.current_model][UserSettings.ASPECT_RATIO]
             )
             await write_generation(
                 id=result_id,
