@@ -42,6 +42,7 @@ from bot.keyboards.common.common import (
 )
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.types import LanguageCode
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 claude_router = Router()
 
@@ -354,14 +355,7 @@ async def handle_claude(
                     allow_sending_without_reply=True,
                 )
             else:
-                await message.answer_sticker(
-                    sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
-                )
-
-                await message.answer(
-                    text=get_localization(user_language_code).ERROR,
-                    reply_markup=build_error_keyboard(user_language_code),
-                )
+                await send_internal_ai_model_error(user_language_code, message, Model.CLAUDE)
 
                 await send_error_info(
                     bot=message.bot,
