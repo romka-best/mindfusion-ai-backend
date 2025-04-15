@@ -60,6 +60,8 @@ from bot.states.common.profile import Profile
 from bot.utils.is_already_processing import is_already_processing
 from bot.utils.is_messages_limit_exceeded import is_messages_limit_exceeded
 from bot.utils.is_time_limit_exceeded import is_time_limit_exceeded
+from replicate.exceptions import ReplicateError
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 photo_router = Router()
 photo_router.message.middleware(AlbumMiddleware())
@@ -401,11 +403,13 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
                     photo_link = firebase.get_public_url(example_photo.name)
 
                     await message.answer_photo(
-                        photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
-                        caption=get_localization(user_language_code).PROFILE_SEND_ME_YOUR_PICTURE,
-                        reply_markup=build_cancel_keyboard(user_language_code)
                     )
                     await state.set_state(Profile.waiting_for_photo)
+                except ReplicateError as e:
+                    if e.status == 500:
+                        await send_internal_ai_model_error(
+                            user_language_code, message, Model.FACE_SWAP
+                        )
     elif (
         user.current_model == Model.KLING or
         user.current_model == Model.RUNWAY or
