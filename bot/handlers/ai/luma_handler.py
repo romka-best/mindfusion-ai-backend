@@ -317,6 +317,10 @@ async def handle_luma_ray(
                     'quality': user.settings[Model.LUMA_RAY][UserSettings.QUALITY],
                 }
             )
+        except lumaai.InternalServerError:
+            await send_internal_ai_model_error(
+                user_language_code, message, Model.LUMA_RAY
+            )
         except Exception as e:
             await message.answer_sticker(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
