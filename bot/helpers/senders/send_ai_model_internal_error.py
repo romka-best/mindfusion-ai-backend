@@ -1,6 +1,7 @@
 from aiogram.types import Message
 from bot.config import config, MessageSticker
-from .types import LanguageCode, get_localization
+from bot.locales.types import LanguageCode
+from bot.locales.main import get_localization
 
 
 async def send_internal_ai_model_error(
