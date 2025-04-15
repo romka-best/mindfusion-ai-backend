@@ -214,28 +214,34 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
             photo_link = firebase.get_public_url(photo_path)
             photo_photoshop = firebase.bucket.new_blob(photo_path)
             await photo_photoshop.upload(photo_data)
+            try:
+                result = await create_photoshop_ai_image(photoshop_ai_action_name, photo_link)
+                request = await write_request(
+                    user_id=user_id,
+                    processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
+                    product_id=product.id,
+                    requested=1,
+                    details={
+                        'type': photoshop_ai_action_name,
+                    },
+                )
+                await write_generation(
+                    id=result,
+                    request_id=request.id,
+                    product_id=product.id,
+                    has_error=result is None,
+                    details={
+                        'type': photoshop_ai_action_name,
+                    }
+                )
 
-            result = await create_photoshop_ai_image(photoshop_ai_action_name, photo_link)
-            request = await write_request(
-                user_id=user_id,
-                processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
-                product_id=product.id,
-                requested=1,
-                details={
-                    'type': photoshop_ai_action_name,
-                },
-            )
-            await write_generation(
-                id=result,
-                request_id=request.id,
-                product_id=product.id,
-                has_error=result is None,
-                details={
-                    'type': photoshop_ai_action_name,
-                }
-            )
+                await state.clear()
+            except ReplicateError as e:
+                if e.status == 500:
+                    await send_internal_ai_model_error(
+                        user_language_code, message, Model.PHOTOSHOP_AI
+                    )
 
-            await state.clear()
     elif (
         user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_Omni_Mini or
         user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_Omni or
