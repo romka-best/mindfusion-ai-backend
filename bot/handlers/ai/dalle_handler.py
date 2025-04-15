@@ -22,6 +22,7 @@ from bot.integrations.open_ai import get_response_image, get_cost_for_image
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard, build_model_limit_exceeded_keyboard
 from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_localization, get_user_language
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 dall_e_router = Router()
 
@@ -155,6 +156,8 @@ async def handle_dall_e(message: Message, state: FSMContext, user: User):
                     info=str(e),
                     hashtags=['dalle'],
                 )
+        except openai.InternalServerError:
+            await send_internal_ai_model_error(user_language_code, message, Model.DALL_E)
         except Exception as e:
             await message.answer_sticker(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
