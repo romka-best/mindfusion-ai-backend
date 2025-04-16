@@ -104,7 +104,7 @@ async def get_statistics_by_transactions_query(
 
     count_income_money_total = 0
     count_income_money = {
-            product.id: {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, "net": 0} for product in products
+        product.id: {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, "net": 0} for product in products
         if product.id not in {
             ServiceType.SERVER,
             ServiceType.DATABASE,
