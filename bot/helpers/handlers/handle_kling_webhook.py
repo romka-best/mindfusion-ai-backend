@@ -1,3 +1,4 @@
+import re
 import asyncio
 import logging
 import uuid
@@ -73,7 +74,34 @@ async def handle_kling_webhook(bot: Bot, dp: Dispatcher, body: dict):
                 text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
             )
 
-            generation.has_error = False
+            generation.has_error = False  # This stupid
+        elif 'image aspect ratio must be between' in generation_error:
+            matches = re.search(
+                r"between (?P<min_artio>\d*:\d*) and (?P<max_ratio>\d*:\d*)", generation_error
+            )
+
+            min_ratio, max_ratio = matches.groupdict().values()
+
+            min_width, min_height = map(float, min_ratio.split(":"))
+            max_width, max_height = map(float, max_ratio.split(":"))
+
+            min_ratio = round(min_width / min_height, 2)
+            max_ratio = round(max_width / max_height, 2)
+
+            await bot.send_sticker(
+                chat_id=user.telegram_chat_id,
+                sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
+            )
+
+            await bot.send_message(
+                chat_id=user.telegram_chat_id,
+                text=get_localization(user_language_code).error_aspect_ratio_invalid(
+                    min_ratio,
+                    max_ratio
+                )
+            )
+
+            generation.has_error = False  # This stupid
         else:
             await send_error_info(
                 bot=bot,

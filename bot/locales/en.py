@@ -1,5 +1,5 @@
 import random
-from typing import Union
+from typing import Union, Optional
 
 from bot.database.models.product import Product, ProductCategory, ProductType
 from bot.database.models.prompt import Prompt
@@ -453,16 +453,22 @@ Please try again with a numeric value 🔢
     def error_aspect_ratio_invalid(
         min_ratio: str,
         max_ratio: str,
-        actual_ratio: str,
+        actual_ratio: Optional[str] = None,
     ) -> str:
-        return f"""
-⚠️ <b>Invalid Image Aspect Ratio</b>
+        text = f"""⚠️ <b>Invalid Image Aspect Ratio</b>
 
 The image's width-to-height ratio must be between {min_ratio} and {max_ratio}.
-Your image's aspect ratio is {actual_ratio}.
-
-Please try again with a different image 😉
 """
+
+        if actual_ratio:
+            text += f"\n\nYour image's aspect ratio is {actual_ratio}."
+
+        text += "\n\n Please try again with a different image 😉"
+        return text
+
+    @staticmethod
+    def error_internal_ai_model(ai_model_name) -> str:
+        return f"⚠️ An error occurred on the {ai_model_name} side. Please try again later."
 
     # Examples
     EXAMPLE_INFO = "To gain access to this AI model, click the button below:"

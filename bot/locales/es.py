@@ -1,5 +1,5 @@
 import random
-from typing import Union
+from typing import Union, Optional
 
 from bot.database.models.product import Product, ProductType, ProductCategory
 from bot.database.models.prompt import Prompt
@@ -456,16 +456,22 @@ Por favor, inténtalo de nuevo con un valor numérico 🔢
     def error_aspect_ratio_invalid(
         min_ratio: str,
         max_ratio: str,
-        actual_ratio: str,
+        actual_ratio: Optional[str] = None,
     ) -> str:
-        return f"""
-⚠️ <b>Relación de aspecto de imagen no válida</b>
+        text = f"""⚠️ <b>Relación de aspecto de imagen no válida</b>
 
 La relación entre ancho y alto de la imagen debe estar entre {min_ratio} y {max_ratio}.
-La relación de aspecto de tu imagen es {actual_ratio}.
-
-Por favor, inténtalo de nuevo con otra imagen 😉
 """
+
+        if actual_ratio:
+            text += f"\n\nLa relación de aspecto de tu imagen es {actual_ratio}."
+
+        text += "\n\nPor favor, inténtalo de nuevo con otra imagen 😉"
+        return text
+
+    @staticmethod
+    def error_internal_ai_model(ai_model_name) -> str:
+        return f"⚠️ Se produjo un error en el modelo {ai_model_name}. Por favor, inténtalo de nuevo más tarde."
 
     # Examples
     EXAMPLE_INFO = "Para acceder a esta red neuronal, presiona el botón de abajo:"
