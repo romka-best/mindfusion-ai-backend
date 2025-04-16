@@ -469,10 +469,6 @@ La relación entre ancho y alto de la imagen debe estar entre {min_ratio} y {max
         text += "\n\nPor favor, inténtalo de nuevo con otra imagen 😉"
         return text
 
-    @staticmethod
-    def error_internal_ai_model(ai_model_name) -> str:
-        return f"⚠️ Se produjo un error en el modelo {ai_model_name}. Por favor, inténtalo de nuevo más tarde."
-
     # Examples
     EXAMPLE_INFO = "Para acceder a esta red neuronal, presiona el botón de abajo:"
 
