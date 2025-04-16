@@ -466,6 +466,12 @@ Por favor, inténtalo de nuevo con un valor numérico 🔢
 La relación entre ancho y alto de la imagen debe estar entre {min_ratio} y {max_ratio}.
 """
 
+        if actual_ratio:
+            text += f"\n\nLa relación de aspecto de tu imagen es {actual_ratio}."
+
+        text += "\n\nPor favor, inténtalo de nuevo con otra imagen 😉"
+        return text
+
     @staticmethod
     def error_internal_ai_model(ai_model_name) -> str:
         return f"⚠️ Se produjo un error en el modelo {ai_model_name}. Por favor, inténtalo de nuevo más tarde."

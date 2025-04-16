@@ -470,6 +470,12 @@ class Hindi(Texts):
 चित्र की चौड़ाई और ऊँचाई का अनुपात {min_ratio} और {max_ratio} के बीच होना चाहिए।
 """
 
+        if actual_ratio:
+            text += f"\n\nआपके चित्र का अनुपात {actual_ratio} है।"
+
+        text += "\n\nकृपया किसी अन्य चित्र के साथ पुनः प्रयास करें 😉"
+        return text
+
     @staticmethod
     def error_internal_ai_model(ai_model_name) -> str:
         return f"⚠️ मॉडल {ai_model_name} में एक त्रुटि हुई है। कृपया बाद में पुनः प्रयास करें।"

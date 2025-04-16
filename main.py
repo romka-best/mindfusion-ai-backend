@@ -28,7 +28,7 @@ from aiogram.fsm.strategy import FSMStrategy
 from redis.backoff import FullJitterBackoff
 from redis.retry import Retry
 from redis.exceptions import ConnectionError
-
+breakpoint()
 from bot.config import config
 from bot.database.main import firebase
 from bot.handlers.admin.admin_handler import admin_router
@@ -102,7 +102,6 @@ from bot.locales.main import get_localization
 from bot.middlewares.AuthMiddleware import AuthMessageMiddleware, AuthCallbackQueryMiddleware
 from bot.middlewares.LoggingMiddleware import LoggingMessageMiddleware, LoggingCallbackQueryMiddleware
 from bot.utils.migrate import migrate
-
 WEBHOOK_BOT_PATH = f'/bot/{config.BOT_TOKEN.get_secret_value()}'
 WEBHOOK_YOOKASSA_PATH = '/payment/yookassa'
 WEBHOOK_STRIPE_PATH = '/payment/stripe'
