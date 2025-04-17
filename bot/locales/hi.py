@@ -399,7 +399,10 @@ class Hindi(Texts):
 🔤 <b>टेक्स्ट मॉडल्स</b>:
     ┣ ChatGPT 4.0 Omni Mini ✉️
     ┣ ChatGPT 4.0 Omni 💥
-    ┣ ChatGPT o1 🧪
+    ┣ ChatGPT 4.1 Mini 👽
+    ┣ ChatGPT 4.1 🛸
+    ┣ ChatGPT o4-mini 🧩
+    ┣ ChatGPT o3 🧪
     ┣ Claude 3.7 Sonnet 💫
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 2.0 Flash 🏎
@@ -848,34 +851,8 @@ class Hindi(Texts):
 • MMMU: 69.1%
 • MathVista: 63.8%
 """
-    INFO_CHAT_GPT_O_3_MINI = f"""
-<b>{Texts.CHAT_GPT_O_3_MINI}</b>
-
-<b>निर्माता:</b> OpenAI
-
-💡<b>उपयोग के विकल्प:</b>
-• सामग्री निर्माण
-• जटिल अवधारणाओं की व्याख्या
-• प्रश्नों का उत्तर
-• एक भाषा से दूसरी भाषा में अनुवाद
-• अध्ययन में सहायता
-• समस्याओं को हल करने में सहायता
-• पाठ के साथ काम करना
-• कोड के साथ काम करना
-
-🚦 <b>रेटिंग:</b>
-• छवियों पर काम: नहीं 🔴
-• उत्तरों की गुणवत्ता: उच्च 🟢
-• उत्तर की गति: औसत 🟡
-
-📊 <b>परीक्षण:</b>
-• MMLU: 86.9%
-• GPQA: 79.7%
-• MATH: 97.9%
-• HumanEval: 92.4%
-"""
-    INFO_CHAT_GPT_O_1 = f"""
-<b>{Texts.CHAT_GPT_O_1}</b>
+    INFO_CHAT_GPT_O_4_MINI = f"""
+<b>{Texts.CHAT_GPT_O_4_MINI}</b>
 
 <b>निर्माता:</b> OpenAI
 
@@ -893,15 +870,36 @@ class Hindi(Texts):
 • छवियों पर काम: हां 🟢
 • उत्तरों की गुणवत्ता: उच्च 🟢
 • उत्तर की गति: औसत 🟡
+"""
+    INFO_CHAT_GPT_O_3 = f"""
+<b>{Texts.CHAT_GPT_O_3}</b>
 
-📊 <b>परीक्षण:</b>
-• MMLU: 92.3%
-• GPQA: 75.7%
-• MGSM: 89.3%
-• MATH: 96.4%
-• HumanEval: 92.4%
-• MMMU: 78.2%
-• MathVista: 73.9%
+<b>निर्माता:</b> OpenAI
+
+💡<b>उपयोग के विकल्प:</b>
+• सामग्री निर्माण
+• जटिल अवधारणाओं की व्याख्या
+• प्रश्नों का उत्तर
+• एक भाषा से दूसरी भाषा में अनुवाद
+• अध्ययन में सहायता
+• समस्याओं को हल करने में सहायता
+• पाठ के साथ काम करना
+• कोड के साथ काम करना
+
+🚦 <b>रेटिंग:</b>
+• छवियों पर काम: हां 🟢
+• उत्तरों की गुणवत्ता: उच्च 🟢
+• उत्तर की गति: औसत 🟡
+"""
+    INFO_CHAT_GPT_4_1_MINI = f"""
+<b>{Texts.CHAT_GPT_4_1_MINI}</b>
+
+<b>निर्माता:</b> OpenAI
+"""
+    INFO_CHAT_GPT_4_1 = f"""
+<b>{Texts.CHAT_GPT_4_1}</b>
+
+<b>निर्माता:</b> OpenAI
 """
     INFO_CLAUDE = "🤖 <b>Claude मॉडल का चयन करें</b>, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:"
     INFO_CLAUDE_3_HAIKU = f"""
@@ -2061,13 +2059,15 @@ class Hindi(Texts):
 🔤 <b>पाठ्य मॉडल</b>:
 <b>मूलभूत</b>:
     ┣ ✉️ ChatGPT 4.0 Omni Mini{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI] > 0 else ''}
+    ┣ 👽 ChatGPT 4.1 Mini{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_4_1_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_4_1_MINI] > 0 else ''}
     ┣ 📜 Claude 3.5 Haiku{f': अतिरिक्त {additional_usage_quota[Quota.CLAUDE_3_HAIKU]}' if additional_usage_quota[Quota.CLAUDE_3_HAIKU] > 0 else ''}
     ┣ 🏎 Gemini 2.0 Flash{f': अतिरिक्त {additional_usage_quota[Quota.GEMINI_2_FLASH]}' if additional_usage_quota[Quota.GEMINI_2_FLASH] > 0 else ''}
     ┗ दैनिक सीमा: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI_MINI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI_MINI])}
 
 <b>उन्नत</b>:
     ┣ 💥 ChatGPT 4.0 Omni{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
-    ┣ 🧩 ChatGPT o3-mini{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_O_3_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_3_MINI] > 0 else ''}
+    ┣ 🛸 ChatGPT 4.1{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_4_1]}' if additional_usage_quota[Quota.CHAT_GPT_4_1] > 0 else ''}
+    ┣ 🧩 ChatGPT o4-mini{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ''}
     ┣ 💫 Claude 3.7 Sonnet{f': अतिरिक्त {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 2.5 Pro{f': अतिरिक्त {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
     ┣ 🐦 Grok 2.0{f': अतिरिक्त {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
@@ -2075,10 +2075,10 @@ class Hindi(Texts):
     ┗ दैनिक सीमा: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}
 
 <b>फ्लैगशिप</b>:
-    ┣ 🧪 ChatGPT o1{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_O_1]}' if additional_usage_quota[Quota.CHAT_GPT_O_1] > 0 else ''}
+    ┣ 🧪 ChatGPT o3{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_O_3]}' if additional_usage_quota[Quota.CHAT_GPT_O_3] > 0 else ''}
     ┣ 🚀 Claude 3.0 Opus{f': अतिरिक्त {additional_usage_quota[Quota.CLAUDE_3_OPUS]}' if additional_usage_quota[Quota.CLAUDE_3_OPUS] > 0 else ''}
     ┣ 🛡️ Gemini 1.0 Ultra{f': अतिरिक्त {additional_usage_quota[Quota.GEMINI_1_ULTRA]}' if additional_usage_quota[Quota.GEMINI_1_ULTRA] > 0 else ''}
-    ┗ दैनिक सीमा: {format_number(daily_limits[Quota.CHAT_GPT_O_1])}/{format_number(subscription_limits[Quota.CHAT_GPT_O_1])}
+    ┗ दैनिक सीमा: {format_number(daily_limits[Quota.CHAT_GPT_O_3])}/{format_number(subscription_limits[Quota.CHAT_GPT_O_3])}
 
 ─────────────
 

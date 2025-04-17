@@ -235,9 +235,7 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
 
             await state.clear()
     elif (
-        user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_Omni_Mini or
-        user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_Omni or
-        user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V1_O or
+        user.current_model == Model.CHAT_GPT or
         user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Sonnet or
         user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Opus or
         user.current_model == Model.GEMINI or
@@ -254,8 +252,14 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
             quota = Quota.CHAT_GPT4_OMNI_MINI
         elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_Omni:
             quota = Quota.CHAT_GPT4_OMNI
-        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V1_O:
-            quota = Quota.CHAT_GPT_O_1
+        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_O_Mini:
+            quota = Quota.CHAT_GPT_O_4_MINI
+        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V3_O:
+            quota = Quota.CHAT_GPT_O_3
+        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_1_Mini:
+            quota = Quota.CHAT_GPT_4_1_MINI
+        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_1:
+            quota = Quota.CHAT_GPT_4_1
         elif user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Sonnet:
             quota = Quota.CLAUDE_3_SONNET
         elif user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Opus:

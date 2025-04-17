@@ -49,8 +49,10 @@ class ModelType(StrEnum):
 class Quota:
     CHAT_GPT4_OMNI = 'gpt4_omni'
     CHAT_GPT4_OMNI_MINI = 'gpt4_omni_mini'
-    CHAT_GPT_O_3_MINI = 'o3_mini'
-    CHAT_GPT_O_1 = 'o1'
+    CHAT_GPT_O_4_MINI = 'o4_mini'
+    CHAT_GPT_O_3 = 'o3'
+    CHAT_GPT_4_1 = 'gpt4_1'
+    CHAT_GPT_4_1_MINI = 'gpt4_1_mini'
     CLAUDE_3_HAIKU = 'claude_3_haiku'
     CLAUDE_3_SONNET = 'claude_3_sonnet'
     CLAUDE_3_OPUS = 'claude_3_opus'
@@ -88,8 +90,11 @@ class Quota:
 class ChatGPTVersion:
     V4_Omni = 'gpt-4o'
     V4_Omni_Mini = 'gpt-4o-mini'
-    V3_O_Mini = 'o3-mini'
-    V1_O = 'o1'
+    V4_O_Mini = 'o4-mini'
+    V3_O = 'o3'
+    V4_1 = 'gpt-4.1'
+    V4_1_Mini = 'gpt-4.1-mini'
+    # V4_1_Nano = 'gpt-4.1-nano'
 
 
 class ClaudeGPTVersion:
