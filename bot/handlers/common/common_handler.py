@@ -125,8 +125,10 @@ async def start(message: Message, state: FSMContext):
                 elif sub_param_key == 'm' and sub_param_value in [
                     'chatgpt4omnimini',
                     'chatgpt4omni',
-                    'chatgpto3mini',
-                    'chatgpto1',
+                    'chatgpto4mini',
+                    'chatgpto3',
+                    'chatgpt41mini',
+                    'chatgpt41',
                     'claude3haiku',
                     'claude3sonnet',
                     'claude3opus',
@@ -160,10 +162,14 @@ async def start(message: Message, state: FSMContext):
                         default_quota = Quota.CHAT_GPT4_OMNI_MINI
                     elif sub_param_value == 'chatgpt4omni':
                         default_quota = Quota.CHAT_GPT4_OMNI
-                    elif sub_param_value == 'chatgpto3mini':
-                        default_quota = Quota.CHAT_GPT_O_3_MINI
-                    elif sub_param_value == 'chatgpto1':
-                        default_quota = Quota.CHAT_GPT_O_1
+                    elif sub_param_value == 'chatgpto4mini':
+                        default_quota = Quota.CHAT_GPT_O_4_MINI
+                    elif sub_param_value == 'chatgpto3':
+                        default_quota = Quota.CHAT_GPT_O_3
+                    elif sub_param_value == 'chatgpt41mini':
+                        default_quota = Quota.CHAT_GPT_4_1_MINI
+                    elif sub_param_value == 'chatgpt41':
+                        default_quota = Quota.CHAT_GPT_4_1
                     elif sub_param_value == 'claude3haiku':
                         default_quota = Quota.CLAUDE_3_HAIKU
                     elif sub_param_value == 'claude3sonnet':
@@ -388,10 +394,14 @@ async def handle_continue_generation_choose_selection(callback_query: CallbackQu
             user_quota = Quota.CHAT_GPT4_OMNI_MINI
         elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_Omni:
             user_quota = Quota.CHAT_GPT4_OMNI
-        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V3_O_Mini:
-            user_quota = Quota.CHAT_GPT_O_3_MINI
-        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V1_O:
-            user_quota = Quota.CHAT_GPT_O_1
+        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_O_Mini:
+            user_quota = Quota.CHAT_GPT_O_4_MINI
+        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V3_O:
+            user_quota = Quota.CHAT_GPT_O_3
+        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_1_Mini:
+            user_quota = Quota.CHAT_GPT_4_1_MINI
+        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_1:
+            user_quota = Quota.CHAT_GPT_4_1
         elif user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Haiku:
             user_quota = Quota.CLAUDE_3_HAIKU
         elif user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Sonnet:

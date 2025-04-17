@@ -395,7 +395,10 @@ Revisa el texto/la foto en busca de contenido prohibido e inténtalo de nuevo �
 🔤 <b>Modelos de texto:</b>
     ┣ ChatGPT 4.0 Omni Mini ✉️
     ┣ ChatGPT 4.0 Omni 💥
-    ┣ ChatGPT o1 🧪
+    ┣ ChatGPT 4.1 Mini 👽
+    ┣ ChatGPT 4.1 🛸
+    ┣ ChatGPT o4-mini 🧩
+    ┣ ChatGPT o3 🧪
     ┣ Claude 3.7 Sonnet 💫
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 2.0 Flash 🏎
@@ -844,34 +847,8 @@ Para cualquier consulta también puedes contactar al soporte técnico:
 • MMMU: 69.1%
 • MathVista: 63.8%
 """
-    INFO_CHAT_GPT_O_3_MINI = f"""
-<b>{Texts.CHAT_GPT_O_3_MINI}</b>
-
-<b>Creador:</b> OpenAI
-
-💡<b>Usos:</b>
-• Generación de contenido
-• Explicación de conceptos complejos
-• Respuesta a preguntas
-• Traducción entre idiomas
-• Asistencia en aprendizaje
-• Resolución de problemas
-• Procesamiento de texto
-• Trabajo con código
-
-🚦 <b>Evaluaciones:</b>
-• Trabajo con imágenes: No 🔴
-• Calidad de respuestas: Alta 🟢
-• Velocidad de respuesta: Media 🟡
-
-📊 <b>Pruebas:</b>
-• MMLU: 86.9%
-• GPQA: 79.7%
-• MATH: 97.9%
-• HumanEval: 92.4%
-"""
-    INFO_CHAT_GPT_O_1 = f"""
-<b>{Texts.CHAT_GPT_O_1}</b>
+    INFO_CHAT_GPT_O_4_MINI = f"""
+<b>{Texts.CHAT_GPT_O_4_MINI}</b>
 
 <b>Creador:</b> OpenAI
 
@@ -889,15 +866,36 @@ Para cualquier consulta también puedes contactar al soporte técnico:
 • Trabajo con imágenes: Sí 🟢
 • Calidad de respuestas: Alta 🟢
 • Velocidad de respuesta: Media 🟡
+"""
+    INFO_CHAT_GPT_O_3 = f"""
+<b>{Texts.CHAT_GPT_O_3}</b>
 
-📊 <b>Pruebas:</b>
-• MMLU: 92.3%
-• GPQA: 75.7%
-• MGSM: 89.3%
-• MATH: 96.4%
-• HumanEval: 92.4%
-• MMMU: 78.2%
-• MathVista: 73.9%
+<b>Creador:</b> OpenAI
+
+💡<b>Usos:</b>
+• Generación de contenido
+• Explicación de conceptos complejos
+• Respuesta a preguntas
+• Traducción entre idiomas
+• Asistencia en aprendizaje
+• Resolución de problemas
+• Procesamiento de texto
+• Trabajo con código
+
+🚦 <b>Evaluaciones:</b>
+• Trabajo con imágenes: Sí 🟢
+• Calidad de respuestas: Alta 🟢
+• Velocidad de respuesta: Media 🟡
+"""
+    INFO_CHAT_GPT_4_1 = f"""
+<b>{Texts.CHAT_GPT_4_1}</b>
+
+<b>Creador:</b> OpenAI
+"""
+    INFO_CHAT_GPT_4_1_MINI = f"""
+<b>{Texts.CHAT_GPT_4_1_MINI}</b>
+
+<b>Creador:</b> OpenAI
 """
     INFO_CLAUDE = "🤖 <b>Selecciona el modelo Claude</b> sobre el cual deseas obtener información:"
     INFO_CLAUDE_3_HAIKU = f"""
@@ -2057,13 +2055,15 @@ Seleccione una acción 👇
 🔤 <b>Modelos de Texto</b>:
 <b>Básicos</b>:
     ┣ ✉️ ChatGPT 4.0 Omni Mini{f': adicional {additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI] > 0 else ''}
+    ┣ 👽 ChatGPT 4.1 Mini{f': adicional {additional_usage_quota[Quota.CHAT_GPT_4_1_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_4_1_MINI] > 0 else ''}
     ┣ 📜 Claude 3.5 Haiku{f': adicional {additional_usage_quota[Quota.CLAUDE_3_HAIKU]}' if additional_usage_quota[Quota.CLAUDE_3_HAIKU] > 0 else ''}
     ┣ 🏎 Gemini 2.0 Flash{f': adicional {additional_usage_quota[Quota.GEMINI_2_FLASH]}' if additional_usage_quota[Quota.GEMINI_2_FLASH] > 0 else ''}
     ┗ Límite diario: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI_MINI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI_MINI])}
 
 <b>Avanzados</b>:
     ┣ 💥 ChatGPT 4.0 Omni{f': adicional {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
-    ┣ 🧩 ChatGPT o3-mini{f': adicional {additional_usage_quota[Quota.CHAT_GPT_O_3_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_3_MINI] > 0 else ''}
+    ┣ 🛸 ChatGPT 4.1{f': adicional {additional_usage_quota[Quota.CHAT_GPT_4_1]}' if additional_usage_quota[Quota.CHAT_GPT_4_1] > 0 else ''}
+    ┣ 🧩 ChatGPT o4-mini{f': adicional {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ''}
     ┣ 💫 Claude 3.7 Sonnet{f': adicional {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 2.5 Pro{f': adicional {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
     ┣ 🐦 Grok 2.0{f': adicional {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
@@ -2071,10 +2071,10 @@ Seleccione una acción 👇
     ┗ Límite diario: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}
 
 <b>Premium</b>:
-    ┣ 🧪 ChatGPT o1{f': adicional {additional_usage_quota[Quota.CHAT_GPT_O_1]}' if additional_usage_quota[Quota.CHAT_GPT_O_1] > 0 else ''}
+    ┣ 🧪 ChatGPT o3{f': adicional {additional_usage_quota[Quota.CHAT_GPT_O_3]}' if additional_usage_quota[Quota.CHAT_GPT_O_3] > 0 else ''}
     ┣ 🚀 Claude 3.0 Opus{f': adicional {additional_usage_quota[Quota.CLAUDE_3_OPUS]}' if additional_usage_quota[Quota.CLAUDE_3_OPUS] > 0 else ''}
     ┣ 🛡️ Gemini 1.0 Ultra{f': adicional {additional_usage_quota[Quota.GEMINI_1_ULTRA]}' if additional_usage_quota[Quota.GEMINI_1_ULTRA] > 0 else ''}
-    ┗ Límite diario: {format_number(daily_limits[Quota.CHAT_GPT_O_1])}/{format_number(subscription_limits[Quota.CHAT_GPT_O_1])}
+    ┗ Límite diario: {format_number(daily_limits[Quota.CHAT_GPT_O_3])}/{format_number(subscription_limits[Quota.CHAT_GPT_O_3])}
 
 ─────────────
 

@@ -418,7 +418,10 @@ class Russian(Texts):
 🔤 <b>Текстовые Модели</b>:
     ┣ ChatGPT 4.0 Omni Mini ✉️
     ┣ ChatGPT 4.0 Omni 💥
-    ┣ ChatGPT o1 🧪
+    ┣ ChatGPT 4.1 Mini 👽
+    ┣ ChatGPT 4.1 🛸
+    ┣ ChatGPT o4-mini 🧩
+    ┣ ChatGPT o3 🧪
     ┣ Claude 3.7 Sonnet 💫
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 2.0 Flash 🏎
@@ -873,34 +876,8 @@ class Russian(Texts):
 • MMMU: 69.1%
 • MathVista: 63.8%
 """
-    INFO_CHAT_GPT_O_3_MINI = f"""
-<b>{Texts.CHAT_GPT_O_3_MINI}</b>
-
-<b>Создатель:</b> OpenAI
-
-💡<b>Варианты использования:</b>
-• Генерация контента
-• Объяснение сложных концепций
-• Ответы на вопросы
-• Перевод с одного языка на другой
-• Помощь в обучении
-• Помощь в решении задач
-• Работа с текстом
-• Работа с кодом
-
-🚦 <b>Оценки:</b>
-• Работа с изображениями: Нет 🔴
-• Качество ответов: Высокое 🟢
-• Скорость ответа: Средняя 🟡
-
-📊 <b>Тесты:</b>
-• MMLU: 86.9%
-• GPQA: 79.7%
-• MATH: 97.9%
-• HumanEval: 92.4%
-"""
-    INFO_CHAT_GPT_O_1 = f"""
-<b>{Texts.CHAT_GPT_O_1}</b>
+    INFO_CHAT_GPT_O_4_MINI = f"""
+<b>{Texts.CHAT_GPT_O_4_MINI}</b>
 
 <b>Создатель:</b> OpenAI
 
@@ -918,15 +895,36 @@ class Russian(Texts):
 • Работа с изображениями: Да 🟢
 • Качество ответов: Высокое 🟢
 • Скорость ответа: Средняя 🟡
+"""
+    INFO_CHAT_GPT_O_3 = f"""
+<b>{Texts.CHAT_GPT_O_3}</b>
 
-📊 <b>Тесты:</b>
-• MMLU: 92.3%
-• GPQA: 75.7%
-• MGSM: 89.3%
-• MATH: 96.4%
-• HumanEval: 92.4%
-• MMMU: 78.2%
-• MathVista: 73.9%
+<b>Создатель:</b> OpenAI
+
+💡<b>Варианты использования:</b>
+• Генерация контента
+• Объяснение сложных концепций
+• Ответы на вопросы
+• Перевод с одного языка на другой
+• Помощь в обучении
+• Помощь в решении задач
+• Работа с текстом
+• Работа с кодом
+
+🚦 <b>Оценки:</b>
+• Работа с изображениями: Да 🟢
+• Качество ответов: Высокое 🟢
+• Скорость ответа: Средняя 🟡
+"""
+    INFO_CHAT_GPT_4_1 = f"""
+<b>{Texts.CHAT_GPT_4_1}</b>
+
+<b>Создатель:</b> OpenAI
+"""
+    INFO_CHAT_GPT_4_1_MINI = f"""
+<b>{Texts.CHAT_GPT_4_1_MINI}</b>
+
+<b>Создатель:</b> OpenAI
 """
     INFO_CLAUDE = "🤖 <b>Выберите Claude модель</b>, про которую вы хотите получить информацию:"
     INFO_CLAUDE_3_HAIKU = f"""
@@ -2097,6 +2095,7 @@ class Russian(Texts):
 🔤 <b>Текстовые Модели</b>:
 <b>Базовые</b>:
     ┣ ✉️ ChatGPT 4.0 Omni Mini{f': доп. {additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI] > 0 else ''}
+    ┣ 👽 ChatGPT 4.1 Mini{f': доп. {additional_usage_quota[Quota.CHAT_GPT_4_1_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_4_1_MINI] > 0 else ''}
     ┣ 📜 Claude 3.5 Haiku{f': доп. {additional_usage_quota[Quota.CLAUDE_3_HAIKU]}' if additional_usage_quota[Quota.CLAUDE_3_HAIKU] > 0 else ''}
     ┣ 🏎 Gemini 2.0 Flash{f': доп. {additional_usage_quota[Quota.GEMINI_2_FLASH]}' if additional_usage_quota[Quota.GEMINI_2_FLASH] > 0 else ''}
     ┣ 🐬 DeepSeek V3{f': доп. {additional_usage_quota[Quota.DEEP_SEEK_V3]}' if additional_usage_quota[Quota.DEEP_SEEK_V3] > 0 else ''}
@@ -2104,7 +2103,8 @@ class Russian(Texts):
 
 <b>Продвинутые</b>:
     ┣ 💥 ChatGPT 4.0 Omni{f': доп. {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
-    ┣ 🧩 ChatGPT o3-mini{f': доп. {additional_usage_quota[Quota.CHAT_GPT_O_3_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_3_MINI] > 0 else ''}
+    ┣ 🛸 ChatGPT 4.1{f': доп. {additional_usage_quota[Quota.CHAT_GPT_4_1]}' if additional_usage_quota[Quota.CHAT_GPT_4_1] > 0 else ''}
+    ┣ 🧩 ChatGPT o4-mini{f': доп. {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ''}
     ┣ 💫 Claude 3.7 Sonnet{f': доп. {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 2.5 Pro{f': доп. {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
     ┣ 🐦 Grok 2.0{f': доп. {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
@@ -2113,10 +2113,10 @@ class Russian(Texts):
     ┗ Дневной лимит: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}
 
 <b>Флагманские</b>:
-    ┣ 🧪 ChatGPT o1{f': доп. {additional_usage_quota[Quota.CHAT_GPT_O_1]}' if additional_usage_quota[Quota.CHAT_GPT_O_1] > 0 else ''}
+    ┣ 🧪 ChatGPT o3{f': доп. {additional_usage_quota[Quota.CHAT_GPT_O_3]}' if additional_usage_quota[Quota.CHAT_GPT_O_3] > 0 else ''}
     ┣ 🚀 Claude 3.0 Opus{f': доп. {additional_usage_quota[Quota.CLAUDE_3_OPUS]}' if additional_usage_quota[Quota.CLAUDE_3_OPUS] > 0 else ''}
     ┣ 🛡️ Gemini 1.0 Ultra{f': доп. {additional_usage_quota[Quota.GEMINI_1_ULTRA]}' if additional_usage_quota[Quota.GEMINI_1_ULTRA] > 0 else ''}
-    ┗ Дневной лимит: {format_number(daily_limits[Quota.CHAT_GPT_O_1])}/{format_number(subscription_limits[Quota.CHAT_GPT_O_1])}
+    ┗ Дневной лимит: {format_number(daily_limits[Quota.CHAT_GPT_O_3])}/{format_number(subscription_limits[Quota.CHAT_GPT_O_3])}
 
 ─────────────
 

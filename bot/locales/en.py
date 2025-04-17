@@ -392,7 +392,10 @@ Please review the text/photo for prohibited content and try again 😌
 🔤 <b>Text Models</b>:
     ┣ ChatGPT 4.0 Omni Mini ✉️
     ┣ ChatGPT 4.0 Omni 💥
-    ┣ ChatGPT o1 🧪
+    ┣ ChatGPT 4.1 Mini 👽
+    ┣ ChatGPT 4.1 🛸
+    ┣ ChatGPT o4-mini 🧩
+    ┣ ChatGPT o3 🧪
     ┣ Claude 3.7 Sonnet 💫
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 1.5 Flash 🏎
@@ -841,34 +844,8 @@ For any questions, you can also contact technical support:
 • MMMU: 69.1%
 • MathVista: 63.8%
 """
-    INFO_CHAT_GPT_O_3_MINI = f"""
-<b>{Texts.CHAT_GPT_O_3_MINI}</b>
-
-<b>Creator:</b> OpenAI
-
-💡 <b>Use Cases:</b>
-• Content generation
-• Explaining complex concepts
-• Answering questions
-• Translating between languages
-• Learning assistance
-• Problem-solving
-• Text processing
-• Coding assistance
-
-🚦 <b>Ratings:</b>
-• Vision: No 🔴
-• Answer Quality: High 🟢
-• Response Speed: Moderate 🟡
-
-📊 <b>Benchmarks:</b>
-• MMLU: 86.9%
-• GPQA: 79.7%
-• MATH: 97.9%
-• HumanEval: 92.4%
-"""
-    INFO_CHAT_GPT_O_1 = f"""
-<b>{Texts.CHAT_GPT_O_1}</b>
+    INFO_CHAT_GPT_O_4_MINI = f"""
+<b>{Texts.CHAT_GPT_O_4_MINI}</b>
 
 <b>Creator:</b> OpenAI
 
@@ -886,15 +863,36 @@ For any questions, you can also contact technical support:
 • Vision: Yes 🟢
 • Answer Quality: High 🟢
 • Response Speed: Moderate 🟡
+"""
+    INFO_CHAT_GPT_O_3 = f"""
+<b>{Texts.CHAT_GPT_O_3}</b>
 
-📊 <b>Benchmarks:</b>
-• MMLU: 92.3%
-• GPQA: 75.7%
-• MGSM: 89.3%
-• MATH: 96.4%
-• HumanEval: 92.4%
-• MMMU: 78.2%
-• MathVista: 73.9%
+<b>Creator:</b> OpenAI
+
+💡 <b>Use Cases:</b>
+• Content generation
+• Explaining complex concepts
+• Answering questions
+• Translating between languages
+• Learning assistance
+• Problem-solving
+• Text processing
+• Coding assistance
+
+🚦 <b>Ratings:</b>
+• Vision: Yes 🟢
+• Answer Quality: High 🟢
+• Response Speed: Moderate 🟡
+"""
+    INFO_CHAT_GPT_4_1 = f"""
+<b>{Texts.CHAT_GPT_4_1}</b>
+
+<b>Creator:</b> OpenAI
+"""
+    INFO_CHAT_GPT_4_1_MINI = f"""
+<b>{Texts.CHAT_GPT_4_1_MINI}</b>
+
+<b>Creator:</b> OpenAI
 """
     INFO_CLAUDE = "🤖 <b>Select the Claude model</b> you want to learn more about:"
     INFO_CLAUDE_3_HAIKU = f"""
@@ -2054,13 +2052,15 @@ Choose action 👇
 🔤 <b>Text Models</b>:
 <b>Basic</b>:
     ┣ ✉️ ChatGPT 4.0 Omni Mini{f': extra {additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI] > 0 else ''}
+    ┣ 👽 ChatGPT 4.1 Mini{f': extra {additional_usage_quota[Quota.CHAT_GPT_4_1_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_4_1_MINI] > 0 else ''}
     ┣ 📜 Claude 3.5 Haiku{f': extra {additional_usage_quota[Quota.CLAUDE_3_HAIKU]}' if additional_usage_quota[Quota.CLAUDE_3_HAIKU] > 0 else ''}
     ┣ 🏎 Gemini 2.0 Flash{f': extra {additional_usage_quota[Quota.GEMINI_2_FLASH]}' if additional_usage_quota[Quota.GEMINI_2_FLASH] > 0 else ''}
     ┗ Daily Limits: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI_MINI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI_MINI])}
 
 <b>Advanced</b>:
     ┣ 💥 ChatGPT 4.0 Omni{f': extra {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
-    ┣ 🧩 ChatGPT o3-mini{f': extra {additional_usage_quota[Quota.CHAT_GPT_O_3_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_3_MINI] > 0 else ''}
+    ┣ 🛸 ChatGPT 4.1{f': extra {additional_usage_quota[Quota.CHAT_GPT_4_1]}' if additional_usage_quota[Quota.CHAT_GPT_4_1] > 0 else ''}
+    ┣ 🧩 ChatGPT o4-mini{f': extra {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ''}
     ┣ 💫 Claude 3.7 Sonnet{f': extra {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 2.5 Pro{f': extra {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
     ┣ 🐦 Grok 2.0{f': extra {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
@@ -2068,10 +2068,10 @@ Choose action 👇
     ┗ Daily Limits: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}
 
 <b>Flagship</b>:
-    ┣ 🧪 ChatGPT o1{f': extra {additional_usage_quota[Quota.CHAT_GPT_O_1]}' if additional_usage_quota[Quota.CHAT_GPT_O_1] > 0 else ''}
+    ┣ 🧪 ChatGPT o3{f': extra {additional_usage_quota[Quota.CHAT_GPT_O_3]}' if additional_usage_quota[Quota.CHAT_GPT_O_3] > 0 else ''}
     ┣ 🚀 Claude 3.0 Opus{f': extra {additional_usage_quota[Quota.CLAUDE_3_OPUS]}' if additional_usage_quota[Quota.CLAUDE_3_OPUS] > 0 else ''}
     ┣ 🛡️ Gemini 1.0 Ultra{f': extra {additional_usage_quota[Quota.GEMINI_1_ULTRA]}' if additional_usage_quota[Quota.GEMINI_1_ULTRA] > 0 else ''}
-    ┗ Daily Limits: {format_number(daily_limits[Quota.CHAT_GPT_O_1])}/{format_number(subscription_limits[Quota.CHAT_GPT_O_1])}
+    ┗ Daily Limits: {format_number(daily_limits[Quota.CHAT_GPT_O_3])}/{format_number(subscription_limits[Quota.CHAT_GPT_O_3])}
 
 ─────────────
 
