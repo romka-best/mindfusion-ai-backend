@@ -31,6 +31,7 @@ from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_continue_generating_keyboard, build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.types import LanguageCode
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 perplexity_router = Router()
 
@@ -247,6 +248,8 @@ async def handle_perplexity(message: Message, state: FSMContext, user: User, pho
                     info=str(e),
                     hashtags=['perplexity'],
                 )
+        except openai.InternalServerError:
+            await send_internal_ai_model_error(user_language_code, message, Model.PERPLEXITY)
         except Exception as e:
             await message.answer_sticker(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),

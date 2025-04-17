@@ -34,6 +34,8 @@ from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
+from replicate.exceptions import ReplicateError
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 stable_diffusion_router = Router()
 
@@ -211,6 +213,11 @@ async def handle_stable_diffusion(
                     'prompt': prompt,
                 }
             )
+        except ReplicateError as e:
+            if e.status == 500:
+                await send_internal_ai_model_error(
+                    user_language_code, message, Model.STABLE_DIFFUSION
+                )
         except Exception as e:
             await message.answer_sticker(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),

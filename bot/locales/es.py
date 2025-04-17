@@ -470,6 +470,10 @@ La relación de aspecto de tu imagen es {actual_ratio}.
 Por favor, inténtalo de nuevo con otra imagen 😉
 """
 
+    @staticmethod
+    def error_internal_ai_model(ai_model_name) -> str:
+        return f"⚠️ Se produjo un error en el modelo {ai_model_name}. Por favor, inténtalo de nuevo más tarde."
+
     # Examples
     EXAMPLE_INFO = "Para acceder a esta red neuronal, presiona el botón de abajo:"
 

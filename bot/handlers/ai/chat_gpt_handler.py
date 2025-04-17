@@ -38,6 +38,7 @@ from bot.keyboards.common.common import (
 )
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 chat_gpt_router = Router()
 
@@ -335,6 +336,8 @@ async def handle_chatgpt(message: Message, state: FSMContext, user: User, user_q
                     info=str(e),
                     hashtags=['chatgpt'],
                 )
+        except openai.InternalServerError:
+            await send_internal_ai_model_error(user_language_code, message, Model.CHAT_GPT)
         except Exception as e:
             await message.answer_sticker(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),

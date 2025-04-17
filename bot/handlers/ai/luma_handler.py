@@ -33,6 +33,8 @@ from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
+import lumaai
 
 luma_router = Router()
 
@@ -155,6 +157,10 @@ async def handle_luma_photon(
                 details={
                     'prompt': prompt,
                 }
+            )
+        except lumaai.InternalServerError:
+            await send_internal_ai_model_error(
+                user_language_code, message, Model.LUMA_PHOTON
             )
         except Exception as e:
             await message.answer_sticker(
@@ -310,6 +316,10 @@ async def handle_luma_ray(
                     'duration': user.settings[Model.LUMA_RAY][UserSettings.DURATION],
                     'quality': user.settings[Model.LUMA_RAY][UserSettings.QUALITY],
                 }
+            )
+        except lumaai.InternalServerError:
+            await send_internal_ai_model_error(
+                user_language_code, message, Model.LUMA_RAY
             )
         except Exception as e:
             await message.answer_sticker(
