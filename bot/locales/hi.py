@@ -891,13 +891,13 @@ class Hindi(Texts):
 • उत्तरों की गुणवत्ता: उच्च 🟢
 • उत्तर की गति: औसत 🟡
 """
-    INFO_CHAT_GPT_4_1 = f"""
-<b>{Texts.CHAT_GPT_4_1}</b>
+    INFO_CHAT_GPT_4_1_MINI = f"""
+<b>{Texts.CHAT_GPT_4_1_MINI}</b>
 
 <b>निर्माता:</b> OpenAI
 """
-    INFO_CHAT_GPT_4_1_MINI = f"""
-<b>{Texts.CHAT_GPT_4_1_MINI}</b>
+    INFO_CHAT_GPT_4_1 = f"""
+<b>{Texts.CHAT_GPT_4_1}</b>
 
 <b>निर्माता:</b> OpenAI
 """

@@ -45,18 +45,18 @@ def build_chat_gpt_keyboard(
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).CHAT_GPT_4_1 + (
-                    ' ✅' if model == Model.CHAT_GPT and model_version == ChatGPTVersion.V4_1 else ''
-                ),
-                callback_data=f'chat_gpt:{ChatGPTVersion.V4_1}'
-            ),
-        ],
-        [
-            InlineKeyboardButton(
                 text=get_localization(language_code).CHAT_GPT_4_1_MINI + (
                     ' ✅' if model == Model.CHAT_GPT and model_version == ChatGPTVersion.V4_1_Mini else ''
                 ),
                 callback_data=f'chat_gpt:{ChatGPTVersion.V4_1_Mini}'
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).CHAT_GPT_4_1 + (
+                    ' ✅' if model == Model.CHAT_GPT and model_version == ChatGPTVersion.V4_1 else ''
+                ),
+                callback_data=f'chat_gpt:{ChatGPTVersion.V4_1}'
             ),
         ],
     ]

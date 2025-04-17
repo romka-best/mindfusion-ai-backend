@@ -884,13 +884,13 @@ For any questions, you can also contact technical support:
 • Answer Quality: High 🟢
 • Response Speed: Moderate 🟡
 """
-    INFO_CHAT_GPT_4_1 = f"""
-<b>{Texts.CHAT_GPT_4_1}</b>
+    INFO_CHAT_GPT_4_1_MINI = f"""
+<b>{Texts.CHAT_GPT_4_1_MINI}</b>
 
 <b>Creator:</b> OpenAI
 """
-    INFO_CHAT_GPT_4_1_MINI = f"""
-<b>{Texts.CHAT_GPT_4_1_MINI}</b>
+    INFO_CHAT_GPT_4_1 = f"""
+<b>{Texts.CHAT_GPT_4_1}</b>
 
 <b>Creator:</b> OpenAI
 """

@@ -916,13 +916,13 @@ class Russian(Texts):
 • Качество ответов: Высокое 🟢
 • Скорость ответа: Средняя 🟡
 """
-    INFO_CHAT_GPT_4_1 = f"""
-<b>{Texts.CHAT_GPT_4_1}</b>
+    INFO_CHAT_GPT_4_1_MINI = f"""
+<b>{Texts.CHAT_GPT_4_1_MINI}</b>
 
 <b>Создатель:</b> OpenAI
 """
-    INFO_CHAT_GPT_4_1_MINI = f"""
-<b>{Texts.CHAT_GPT_4_1_MINI}</b>
+    INFO_CHAT_GPT_4_1 = f"""
+<b>{Texts.CHAT_GPT_4_1}</b>
 
 <b>Создатель:</b> OpenAI
 """

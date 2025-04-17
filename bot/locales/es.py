@@ -887,13 +887,13 @@ Para cualquier consulta también puedes contactar al soporte técnico:
 • Calidad de respuestas: Alta 🟢
 • Velocidad de respuesta: Media 🟡
 """
-    INFO_CHAT_GPT_4_1 = f"""
-<b>{Texts.CHAT_GPT_4_1}</b>
+    INFO_CHAT_GPT_4_1_MINI = f"""
+<b>{Texts.CHAT_GPT_4_1_MINI}</b>
 
 <b>Creador:</b> OpenAI
 """
-    INFO_CHAT_GPT_4_1_MINI = f"""
-<b>{Texts.CHAT_GPT_4_1_MINI}</b>
+    INFO_CHAT_GPT_4_1 = f"""
+<b>{Texts.CHAT_GPT_4_1}</b>
 
 <b>Creador:</b> OpenAI
 """
