@@ -104,7 +104,7 @@ async def get_statistics_by_transactions_query(
 
     count_income_money_total = 0
     count_income_money = {
-        product.id: 0 for product in products
+        product.id: {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, "net": 0} for product in products
         if product.id not in {
             ServiceType.SERVER,
             ServiceType.DATABASE,
@@ -200,7 +200,8 @@ async def get_statistics_by_transactions_query(
                 elif transaction.currency == Currency.XTR:
                     transaction_net *= 2
 
-                count_income_money[transaction.product_id] += transaction_net
+                count_income_money[transaction.product_id][transaction.currency] += transaction.clear_amount
+                count_income_money[transaction.product_id]["net"] += transaction_net
                 if transaction.product_id in service_subscriptions:
                     count_income_money['SUBSCRIPTION_ALL'] += transaction_net
                 elif transaction.product_id in service_packages:
@@ -280,7 +281,6 @@ async def get_statistics_by_transactions_query(
         count_expense_money[key]['AVERAGE_PRICE'] = (
             count_expense_money[key]['ALL'] / len(value)
         ) if len(value) else 0
-
     return (
         paid_users,
         activated_users,
@@ -942,7 +942,6 @@ async def handle_get_statistics(language_code: LanguageCode, period: str):
             count_income_money_before=count_income_money_before,
         ),
     }
-
     return texts
 
 
