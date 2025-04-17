@@ -1,5 +1,5 @@
 import random
-from typing import Union
+from typing import Union, Optional
 
 from bot.database.models.product import Product, ProductType, ProductCategory
 from bot.database.models.prompt import Prompt
@@ -463,16 +463,18 @@ class Hindi(Texts):
     def error_aspect_ratio_invalid(
         min_ratio: str,
         max_ratio: str,
-        actual_ratio: str,
+        actual_ratio: Optional[str] = None,
     ) -> str:
-        return f"""
-⚠️ <b>अमान्य इमेज अनुपात</b>
+        text = f"""⚠️ <b>अमान्य इमेज अनुपात</b>
 
 चित्र की चौड़ाई और ऊँचाई का अनुपात {min_ratio} और {max_ratio} के बीच होना चाहिए।
-आपके चित्र का अनुपात {actual_ratio} है।
-
-कृपया किसी अन्य चित्र के साथ पुनः प्रयास करें 😉
 """
+
+        if actual_ratio:
+            text += f"\n\nआपके चित्र का अनुपात {actual_ratio} है।"
+
+        text += "\n\nकृपया किसी अन्य चित्र के साथ पुनः प्रयास करें 😉"
+        return text
 
     # Examples
     EXAMPLE_INFO = "यहाँ वह है जो आप इस न्यूरल नेटवर्क तक पहुँचने के लिए कर सकते हैं:"
