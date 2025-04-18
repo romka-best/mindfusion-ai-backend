@@ -2,24 +2,24 @@ import asyncio
 import random
 
 import aiohttp
-from aiogram import Router, Bot, F
+from aiogram import Bot, F, Router
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
-    Message,
     CallbackQuery,
+    Message,
     URLInputFile,
 )
 from aiogram.utils.chat_action import ChatActionSender
 
-from bot.config import config, MessageEffect, MessageSticker
+from bot.config import MessageEffect, MessageSticker, config
 from bot.database.main import firebase
-from bot.database.models.common import Model, Quota, SendType, Currency
+from bot.database.models.common import Currency, Model, Quota, SendType
 from bot.database.models.face_swap_package import (
+    FaceSwapFileData,
     FaceSwapPackage,
     FaceSwapPackageStatus,
-    FaceSwapFileData,
     UsedFaceSwapPackage,
 )
 from bot.database.models.generation import GenerationStatus
@@ -28,17 +28,21 @@ from bot.database.models.transaction import TransactionType
 from bot.database.models.user import User, UserGender, UserSettings
 from bot.database.operations.face_swap_package.getters import (
     get_face_swap_package,
-    get_face_swap_packages_by_gender,
     get_face_swap_package_by_name_and_gender,
-    get_used_face_swap_packages_by_user_id,
+    get_face_swap_packages_by_gender,
     get_used_face_swap_package_by_user_id_and_package_id,
+    get_used_face_swap_packages_by_user_id,
 )
-from bot.database.operations.face_swap_package.writers import write_used_face_swap_package
+from bot.database.operations.face_swap_package.writers import (
+    write_used_face_swap_package,
+)
 from bot.database.operations.generation.getters import get_generations_by_request_id
 from bot.database.operations.generation.updaters import update_generation
 from bot.database.operations.generation.writers import write_generation
 from bot.database.operations.product.getters import get_product_by_quota
-from bot.database.operations.request.getters import get_started_requests_by_user_id_and_product_id
+from bot.database.operations.request.getters import (
+    get_started_requests_by_user_id_and_product_id,
+)
 from bot.database.operations.request.updaters import update_request
 from bot.database.operations.request.writers import write_request
 from bot.database.operations.transaction.writers import write_transaction
@@ -48,13 +52,19 @@ from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
-from bot.integrations.face_swap import generate_face_swap_video, get_face_swap_video_generation
-from bot.integrations.replicate_ai import create_face_swap_images, create_flux_face_swap_image
+from bot.integrations.face_swap import (
+    generate_face_swap_video,
+    get_face_swap_video_generation,
+)
+from bot.integrations.replicate_ai import (
+    create_face_swap_images,
+    create_flux_face_swap_image,
+)
 from bot.keyboards.ai.face_swap import (
-    build_face_swap_keyboard,
-    build_face_swap_chosen_keyboard,
     build_face_swap_choose_package_keyboard,
+    build_face_swap_chosen_keyboard,
     build_face_swap_chosen_package_keyboard,
+    build_face_swap_keyboard,
 )
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_cancel_keyboard, build_error_keyboard
@@ -73,13 +83,16 @@ PRICE_FACE_SWAP_VIDEO = 0.02
 
 def count_active_files(files_list: list[FaceSwapFileData]) -> int:
     active_count = sum(
-        1 for file in files_list if file.get('status', FaceSwapPackageStatus.LEGACY) == FaceSwapPackageStatus.PUBLIC
+        1
+        for file in files_list
+        if file.get("status", FaceSwapPackageStatus.LEGACY)
+        == FaceSwapPackageStatus.PUBLIC
     )
 
     return active_count
 
 
-@face_swap_router.message(Command('face_swap'))
+@face_swap_router.message(Command("face_swap"))
 async def face_swap(message: Message, state: FSMContext):
     await state.clear()
 
@@ -89,29 +102,43 @@ async def face_swap(message: Message, state: FSMContext):
 
     if user.current_model == Model.FACE_SWAP:
         await message.answer(
-            text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
-            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.FACE_SWAP),
+            text=get_localization(
+                user_language_code
+            ).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
+            reply_markup=build_switched_to_ai_keyboard(
+                user_language_code, Model.FACE_SWAP
+            ),
         )
     else:
         user.current_model = Model.FACE_SWAP
-        await update_user(user_id, {
-            'current_model': user.current_model,
-        })
+        await update_user(
+            user_id,
+            {
+                "current_model": user.current_model,
+            },
+        )
 
         text = await get_switched_to_ai_model(
             user,
-            get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
+            get_quota_by_model(
+                user.current_model,
+                user.settings[user.current_model][UserSettings.VERSION],
+            ),
             user_language_code,
         )
         answered_message = await message.answer(
             text=text,
-            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.FACE_SWAP),
+            reply_markup=build_switched_to_ai_keyboard(
+                user_language_code, Model.FACE_SWAP
+            ),
             message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
         )
 
         try:
             await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
-            await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+            await message.bot.pin_chat_message(
+                user.telegram_chat_id, answered_message.message_id
+            )
         except (TelegramBadRequest, TelegramRetryAfter):
             pass
 
@@ -130,14 +157,14 @@ async def handle_face_swap(bot: Bot, chat_id: str, state: FSMContext, user_id: s
         )
     else:
         try:
-            blobs = await firebase.bucket.list_blobs(prefix=f'users/avatars/{user_id}.')
+            blobs = await firebase.bucket.list_blobs(prefix=f"users/avatars/{user_id}.")
             if len(blobs) > 0:
                 user_photo = blobs[-1]
             else:
-                user_photo = f'users/avatars/{user_id}.jpeg'
+                user_photo = f"users/avatars/{user_id}.jpeg"
             await firebase.bucket.get_blob(user_photo)
 
-            photo_path = f'face_swap/main.png'
+            photo_path = "face_swap/main.png"
             photo = await firebase.bucket.get_blob(photo_path)
             photo_link = firebase.get_public_url(photo.name)
 
@@ -148,20 +175,22 @@ async def handle_face_swap(bot: Bot, chat_id: str, state: FSMContext, user_id: s
                 reply_markup=build_face_swap_keyboard(user_language_code),
             )
         except aiohttp.ClientResponseError:
-            photo_path = 'users/avatars/example.png'
+            photo_path = "users/avatars/example.png"
             photo = await firebase.bucket.get_blob(photo_path)
             photo_link = firebase.get_public_url(photo.name)
 
             await bot.send_photo(
                 chat_id=chat_id,
                 photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
-                caption=get_localization(user_language_code).PROFILE_SEND_ME_YOUR_PICTURE,
+                caption=get_localization(
+                    user_language_code
+                ).PROFILE_SEND_ME_YOUR_PICTURE,
                 reply_markup=build_cancel_keyboard(user_language_code),
             )
             await state.set_state(Profile.waiting_for_photo)
 
 
-@face_swap_router.callback_query(lambda c: c.data.startswith('face_swap:'))
+@face_swap_router.callback_query(lambda c: c.data.startswith("face_swap:"))
 async def face_swap_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
@@ -169,18 +198,18 @@ async def face_swap_selection(callback_query: CallbackQuery, state: FSMContext):
     user = await get_user(user_id)
     user_language_code = await get_user_language(user.id, state.storage)
 
-    action = callback_query.data.split(':')[1]
-    if action == 'photo':
+    action = callback_query.data.split(":")[1]
+    if action == "photo":
         await callback_query.message.edit_caption(
             caption=get_localization(user_language_code).FACE_SWAP_CHOOSE_PHOTO_INFO,
             reply_markup=build_face_swap_chosen_keyboard(user_language_code),
         )
-    elif action == 'prompt':
+    elif action == "prompt":
         await callback_query.message.edit_caption(
             caption=get_localization(user_language_code).FACE_SWAP_CHOOSE_PROMPT_INFO,
             reply_markup=build_face_swap_chosen_keyboard(user_language_code),
         )
-    elif action == 'package':
+    elif action == "package":
         used_face_swap_packages = await get_used_face_swap_packages_by_user_id(user_id)
         face_swap_packages = await get_face_swap_packages_by_gender(
             gender=user.settings[Model.FACE_SWAP][UserSettings.GENDER],
@@ -188,38 +217,52 @@ async def face_swap_selection(callback_query: CallbackQuery, state: FSMContext):
         )
         has_more = False
         for used_face_swap_package in used_face_swap_packages:
-            face_swap_package_files = await get_face_swap_package(used_face_swap_package.package_id)
-            face_swap_package_quantity = count_active_files(face_swap_package_files.files)
+            face_swap_package_files = await get_face_swap_package(
+                used_face_swap_package.package_id
+            )
+            face_swap_package_quantity = count_active_files(
+                face_swap_package_files.files
+            )
             face_swap_package_used_images = len(used_face_swap_package.used_images)
             remain_images = face_swap_package_quantity - face_swap_package_used_images
             if remain_images > 0:
                 has_more = True
                 break
-        if has_more or not used_face_swap_packages or len(face_swap_packages) > len(used_face_swap_packages):
+        if (
+            has_more
+            or not used_face_swap_packages
+            or len(face_swap_packages) > len(used_face_swap_packages)
+        ):
             face_swap_packages = await get_face_swap_packages_by_gender(
                 gender=user.settings[Model.FACE_SWAP][UserSettings.GENDER],
                 status=FaceSwapPackageStatus.PUBLIC,
             )
             await callback_query.message.edit_caption(
-                caption=get_localization(user_language_code).FACE_SWAP_CHOOSE_PACKAGE_INFO,
-                reply_markup=build_face_swap_choose_package_keyboard(user_language_code, face_swap_packages),
+                caption=get_localization(
+                    user_language_code
+                ).FACE_SWAP_CHOOSE_PACKAGE_INFO,
+                reply_markup=build_face_swap_choose_package_keyboard(
+                    user_language_code, face_swap_packages
+                ),
             )
         else:
             await callback_query.message.edit_caption(
-                caption=get_localization(user_language_code).FACE_SWAP_GENERATIONS_IN_PACKAGES_ENDED,
+                caption=get_localization(
+                    user_language_code
+                ).FACE_SWAP_GENERATIONS_IN_PACKAGES_ENDED,
                 reply_markup=build_face_swap_chosen_keyboard(user_language_code),
             )
 
 
-@face_swap_router.callback_query(lambda c: c.data.startswith('face_swap_chosen:'))
+@face_swap_router.callback_query(lambda c: c.data.startswith("face_swap_chosen:"))
 async def face_swap_chosen_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
     user = await get_user(str(callback_query.from_user.id))
     user_language_code = await get_user_language(user.id, state.storage)
 
-    action = callback_query.data.split(':')[1]
-    if action == 'back':
+    action = callback_query.data.split(":")[1]
+    if action == "back":
         await callback_query.message.edit_caption(
             caption=get_localization(user_language_code).FACE_SWAP_INFO,
             reply_markup=build_face_swap_keyboard(user_language_code),
@@ -234,14 +277,14 @@ async def handle_face_swap_prompt(
     user_language_code = await get_user_language(user.id, state.storage)
     user_data = await state.get_data()
 
-    prompt = user_data.get('recognized_text', None)
+    prompt = user_data.get("recognized_text", None)
     if prompt is None:
         if message.caption:
             prompt = message.caption
         elif message.text:
             prompt = message.text
         else:
-            prompt = ''
+            prompt = ""
 
     processing_sticker = await message.answer_sticker(
         sticker=config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),
@@ -254,7 +297,9 @@ async def handle_face_swap_prompt(
     async with ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id):
         product = await get_product_by_quota(Quota.FACE_SWAP)
 
-        user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
+        user_not_finished_requests = (
+            await get_started_requests_by_user_id_and_product_id(user.id, product.id)
+        )
 
         if len(user_not_finished_requests):
             await message.reply(
@@ -267,18 +312,27 @@ async def handle_face_swap_prompt(
             return
 
         try:
-            user_photo_blobs = await firebase.bucket.list_blobs(prefix=f'users/avatars/{user.id}.')
+            user_photo_blobs = await firebase.bucket.list_blobs(
+                prefix=f"users/avatars/{user.id}."
+            )
             if len(user_photo_blobs) > 0:
                 user_photo = user_photo_blobs[-1]
             else:
-                user_photo = f'users/avatars/{user.id}.jpeg'
+                user_photo = f"users/avatars/{user.id}.jpeg"
             user_photo = await firebase.bucket.get_blob(user_photo)
             user_photo_link = firebase.get_public_url(user_photo.name)
 
             if prompt and user_language_code != LanguageCode.EN:
-                prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
-            user_gender = 'male' if user.settings[Model.FACE_SWAP][UserSettings.GENDER] == UserGender.MALE else 'female'
-            prompt += f'. A photo of a {user_gender} person img'
+                prompt = await translate_text(
+                    prompt, user_language_code, LanguageCode.EN
+                )
+            user_gender = (
+                "male"
+                if user.settings[Model.FACE_SWAP][UserSettings.GENDER]
+                == UserGender.MALE
+                else "female"
+            )
+            prompt += f". A photo of a {user_gender} person img"
             result_id = await create_flux_face_swap_image(
                 prompt,
                 user_photo_link,
@@ -286,7 +340,10 @@ async def handle_face_swap_prompt(
 
             request = await write_request(
                 user_id=user.id,
-                processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
+                processing_message_ids=[
+                    processing_sticker.message_id,
+                    processing_message.message_id,
+                ],
                 product_id=product.id,
                 requested=1,
             )
@@ -297,17 +354,19 @@ async def handle_face_swap_prompt(
                 product_id=product.id,
                 has_error=result_id is None,
                 details={
-                    'prompt': prompt,
-                }
+                    "prompt": prompt,
+                },
             )
         except aiohttp.ClientResponseError:
-            photo_path = 'users/avatars/example.png'
+            photo_path = "users/avatars/example.png"
             photo = await firebase.bucket.get_blob(photo_path)
             photo_link = firebase.get_public_url(photo.name)
 
             await message.answer_photo(
                 photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
-                caption=get_localization(user_language_code).PROFILE_SEND_ME_YOUR_PICTURE,
+                caption=get_localization(
+                    user_language_code
+                ).PROFILE_SEND_ME_YOUR_PICTURE,
                 reply_markup=build_cancel_keyboard(user_language_code),
             )
             await state.set_state(Profile.waiting_for_photo)
@@ -327,23 +386,21 @@ async def handle_face_swap_prompt(
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
-                hashtags=['face_swap'],
+                hashtags=["face_swap"],
             )
 
             request.status = RequestStatus.FINISHED
-            await update_request(request.id, {
-                'status': request.status
-            })
+            await update_request(request.id, {"status": request.status})
 
             generations = await get_generations_by_request_id(request.id)
             for generation in generations:
-                generation.status = GenerationStatus.FINISHED,
+                generation.status = (GenerationStatus.FINISHED,)
                 generation.has_error = True
                 await update_generation(
                     generation.id,
                     {
-                        'status': generation.status,
-                        'has_error': generation.has_error,
+                        "status": generation.status,
+                        "has_error": generation.has_error,
                     },
                 )
 
@@ -371,7 +428,9 @@ async def handle_face_swap_video(
     async with ChatActionSender.upload_video(bot=message.bot, chat_id=message.chat.id):
         product = await get_product_by_quota(Quota.FACE_SWAP)
 
-        user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
+        user_not_finished_requests = (
+            await get_started_requests_by_user_id_and_product_id(user.id, product.id)
+        )
 
         if len(user_not_finished_requests):
             await message.reply(
@@ -384,21 +443,25 @@ async def handle_face_swap_video(
             return
 
         try:
-            user_photo_blobs = await firebase.bucket.list_blobs(prefix=f'users/avatars/{user.id}.')
+            user_photo_blobs = await firebase.bucket.list_blobs(
+                prefix=f"users/avatars/{user.id}."
+            )
             if len(user_photo_blobs) > 0:
                 user_photo = user_photo_blobs[-1]
             else:
-                user_photo = f'users/avatars/{user.id}.jpeg'
+                user_photo = f"users/avatars/{user.id}.jpeg"
             user_photo = await firebase.bucket.get_blob(user_photo)
             user_photo_link = firebase.get_public_url(user_photo.name)
         except aiohttp.ClientResponseError:
-            photo_path = 'users/avatars/example.png'
+            photo_path = "users/avatars/example.png"
             photo = await firebase.bucket.get_blob(photo_path)
             photo_link = firebase.get_public_url(photo.name)
 
             await message.answer_photo(
                 photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
-                caption=get_localization(user_language_code).PROFILE_SEND_ME_YOUR_PICTURE,
+                caption=get_localization(
+                    user_language_code
+                ).PROFILE_SEND_ME_YOUR_PICTURE,
                 reply_markup=build_cancel_keyboard(user_language_code),
             )
             await state.set_state(Profile.waiting_for_photo)
@@ -409,7 +472,10 @@ async def handle_face_swap_video(
 
         request = await write_request(
             user_id=user.id,
-            processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
+            processing_message_ids=[
+                processing_sticker.message_id,
+                processing_message.message_id,
+            ],
             product_id=product.id,
             requested=1,
         )
@@ -426,41 +492,55 @@ async def handle_face_swap_video(
                 product_id=product.id,
                 has_error=result_id is None,
                 details={
-                    'video_link': video_link,
-                }
+                    "video_link": video_link,
+                },
             )
 
-            for i in range(10):
+            for _ in range(10):
                 await asyncio.sleep(30)
 
                 video_generation = await get_face_swap_video_generation(result_id)
-                if video_generation.get('progress') == 100:
-                    video_result_url = video_generation.get('output')[0]
-                    footer_text = f'\n\n📹 {user.daily_limits[Quota.FACE_SWAP] + user.additional_usage_quota[Quota.FACE_SWAP]}' \
-                        if user.settings[Model.FACE_SWAP][UserSettings.SHOW_USAGE_QUOTA] and \
-                           user.daily_limits[Quota.FACE_SWAP] != float('inf') else ''
-                    if user.settings[Model.FACE_SWAP][UserSettings.SEND_TYPE] == SendType.DOCUMENT:
+                if video_generation.get("progress") == 100:
+                    video_result_url = video_generation.get("output")[0]
+                    footer_text = (
+                        f"\n\n📹 {user.daily_limits[Quota.FACE_SWAP] + user.additional_usage_quota[Quota.FACE_SWAP]}"
+                        if user.settings[Model.FACE_SWAP][UserSettings.SHOW_USAGE_QUOTA]
+                        and user.daily_limits[Quota.FACE_SWAP] != float("inf")
+                        else ""
+                    )
+                    if (
+                        user.settings[Model.FACE_SWAP][UserSettings.SEND_TYPE]
+                        == SendType.DOCUMENT
+                    ):
                         await message.reply_document(
-                            caption=f'{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}',
+                            caption=f"{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}",
                             document=video_result_url,
                             allow_sending_without_reply=True,
                         )
                     else:
                         await message.reply_video(
-                            caption=f'{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}',
+                            caption=f"{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}",
                             video=video_result_url,
                             allow_sending_without_reply=True,
                         )
 
-                    total_price = PRICE_FACE_SWAP_VIDEO * video_generation.get('need_credits')
+                    total_price = PRICE_FACE_SWAP_VIDEO * video_generation.get(
+                        "need_credits"
+                    )
                     update_tasks = [
-                        update_generation(generation.id, {
-                            'status': GenerationStatus.FINISHED,
-                            'result': video_result_url,
-                        }),
-                        update_request(request.id, {
-                            'status': RequestStatus.FINISHED,
-                        }),
+                        update_generation(
+                            generation.id,
+                            {
+                                "status": GenerationStatus.FINISHED,
+                                "result": video_result_url,
+                            },
+                        ),
+                        update_request(
+                            request.id,
+                            {
+                                "status": RequestStatus.FINISHED,
+                            },
+                        ),
                         write_transaction(
                             user_id=user.id,
                             type=TransactionType.EXPENSE,
@@ -470,9 +550,9 @@ async def handle_face_swap_video(
                             currency=Currency.USD,
                             quantity=1,
                             details={
-                                'result': video_result_url,
-                                'video_link': video_link,
-                                'has_error': False,
+                                "result": video_result_url,
+                                "video_link": video_link,
+                                "has_error": False,
                             },
                         ),
                         update_user_usage_quota(
@@ -485,7 +565,7 @@ async def handle_face_swap_video(
                     await asyncio.gather(*update_tasks)
                     break
             else:
-                raise TimeoutError('Timeout Error')
+                raise TimeoutError("Timeout Error")
         except Exception as e:
             await message.answer_sticker(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
@@ -499,12 +579,10 @@ async def handle_face_swap_video(
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
-                hashtags=['face_swap'],
+                hashtags=["face_swap"],
             )
 
-            await update_request(request.id, {
-                'status': RequestStatus.FINISHED
-            })
+            await update_request(request.id, {"status": RequestStatus.FINISHED})
 
             generations = await get_generations_by_request_id(request.id)
             for generation in generations:
@@ -513,8 +591,8 @@ async def handle_face_swap_video(
                 await update_generation(
                     generation.id,
                     {
-                        'status': generation.status,
-                        'has_error': generation.has_error,
+                        "status": generation.status,
+                        "has_error": generation.has_error,
                     },
                 )
 
@@ -522,23 +600,30 @@ async def handle_face_swap_video(
             await processing_message.delete()
 
 
-@face_swap_router.callback_query(lambda c: c.data.startswith('face_swap_choose:'))
+@face_swap_router.callback_query(lambda c: c.data.startswith("face_swap_choose:"))
 async def face_swap_choose_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
     user = await get_user(str(callback_query.from_user.id))
     user_language_code = await get_user_language(user.id, state.storage)
-    user_available_images = user.daily_limits[Quota.FACE_SWAP] + user.additional_usage_quota[Quota.FACE_SWAP]
+    user_available_images = (
+        user.daily_limits[Quota.FACE_SWAP]
+        + user.additional_usage_quota[Quota.FACE_SWAP]
+    )
 
-    package_name = callback_query.data.split(':')[1]
+    package_name = callback_query.data.split(":")[1]
 
     face_swap_package = await get_face_swap_package_by_name_and_gender(
         package_name,
         user.settings[Model.FACE_SWAP][UserSettings.GENDER],
     )
-    used_face_swap_package = await get_used_face_swap_package_by_user_id_and_package_id(user.id, face_swap_package.id)
+    used_face_swap_package = await get_used_face_swap_package_by_user_id_and_package_id(
+        user.id, face_swap_package.id
+    )
     if used_face_swap_package is None:
-        used_face_swap_package = await write_used_face_swap_package(user.id, face_swap_package.id, [])
+        used_face_swap_package = await write_used_face_swap_package(
+            user.id, face_swap_package.id, []
+        )
     face_swap_package_quantity = count_active_files(face_swap_package.files)
     face_swap_package_used_images = len(used_face_swap_package.used_images)
 
@@ -555,12 +640,16 @@ async def face_swap_choose_selection(callback_query: CallbackQuery, state: FSMCo
 
     await callback_query.message.edit_caption(
         caption=get_localization(user_language_code).face_swap_choose_package(
-            name=face_swap_package.translated_names.get(user_language_code, face_swap_package.name),
+            name=face_swap_package.translated_names.get(
+                user_language_code, face_swap_package.name
+            ),
             available_images=user_available_images,
             total_images=face_swap_package_quantity,
-            used_images=face_swap_package_used_images
+            used_images=face_swap_package_used_images,
         ),
-        reply_markup=build_face_swap_chosen_package_keyboard(user_language_code, sorted(list(suggested_quantities))),
+        reply_markup=build_face_swap_chosen_package_keyboard(
+            user_language_code, sorted(suggested_quantities)
+        ),
     )
 
     await state.update_data(face_swap_package_name=face_swap_package.name)
@@ -569,15 +658,17 @@ async def face_swap_choose_selection(callback_query: CallbackQuery, state: FSMCo
         await state.set_state(FaceSwap.waiting_for_face_swap_quantity)
 
 
-@face_swap_router.callback_query(lambda c: c.data.startswith('face_swap_package:'))
-async def handle_face_swap_package_selection(callback_query: CallbackQuery, state: FSMContext):
+@face_swap_router.callback_query(lambda c: c.data.startswith("face_swap_package:"))
+async def handle_face_swap_package_selection(
+    callback_query: CallbackQuery, state: FSMContext
+):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
 
-    action = callback_query.data.split(':')[1]
+    action = callback_query.data.split(":")[1]
 
-    if action == 'back':
+    if action == "back":
         user = await get_user(user_id)
         user_language_code = await get_user_language(user_id, state.storage)
 
@@ -587,7 +678,9 @@ async def handle_face_swap_package_selection(callback_query: CallbackQuery, stat
         )
         await callback_query.message.edit_caption(
             caption=get_localization(user_language_code).FACE_SWAP_CHOOSE_PACKAGE_INFO,
-            reply_markup=build_face_swap_choose_package_keyboard(user_language_code, face_swap_packages),
+            reply_markup=build_face_swap_choose_package_keyboard(
+                user_language_code, face_swap_packages
+            ),
         )
 
         await state.clear()
@@ -603,14 +696,16 @@ def select_unique_images(
     unique_images = []
 
     available_images = [
-        file for file in face_swap_package.files if file['name'] not in used_face_swap_package.used_images
+        file
+        for file in face_swap_package.files
+        if file["name"] not in used_face_swap_package.used_images
     ]
 
     while len(unique_images) < quantity and available_images:
         selected_image = random.choice(available_images)
-        unique_images.append(selected_image['name'])
+        unique_images.append(selected_image["name"])
         available_images.remove(selected_image)
-        used_face_swap_package.used_images.append(selected_image['name'])
+        used_face_swap_package.used_images.append(selected_image["name"])
 
     return unique_images
 
@@ -620,23 +715,28 @@ async def generate_face_swap_images(
     gender: str,
     face_swap_package: FaceSwapPackage,
     used_face_swap_package: UsedFaceSwapPackage,
-    user_photo_link: str
+    user_photo_link: str,
 ):
-    random_names = select_unique_images(face_swap_package, used_face_swap_package, quantity)
+    random_names = select_unique_images(
+        face_swap_package, used_face_swap_package, quantity
+    )
     random_images = [
         {
-            'target_image': firebase.get_public_url(
-                f'face_swap/{gender}/{face_swap_package.name.lower()}/{random_names[i]}'
+            "target_image": firebase.get_public_url(
+                f"face_swap/{gender}/{face_swap_package.name.lower()}/{random_names[i]}"
             ),
-            'source_image': user_photo_link,
-        } for i in range(quantity)
+            "source_image": user_photo_link,
+        }
+        for i in range(quantity)
     ]
 
     results = await create_face_swap_images(random_images)
     return results, random_names
 
 
-async def face_swap_quantity_handler(message: Message, state: FSMContext, user_id: str, chosen_quantity: str):
+async def face_swap_quantity_handler(
+    message: Message, state: FSMContext, user_id: str, chosen_quantity: str
+):
     user = await get_user(str(user_id))
     user_language_code = await get_user_language(str(user_id), state.storage)
     user_data = await state.get_data()
@@ -661,9 +761,12 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
     )
 
     async with ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id):
-        quota = user.daily_limits[Quota.FACE_SWAP] + user.additional_usage_quota[Quota.FACE_SWAP]
-        name = user_data.get('face_swap_package_name')
-        face_swap_package_quantity = user_data.get('maximum_quantity')
+        quota = (
+            user.daily_limits[Quota.FACE_SWAP]
+            + user.additional_usage_quota[Quota.FACE_SWAP]
+        )
+        name = user_data.get("face_swap_package_name")
+        face_swap_package_quantity = user_data.get("maximum_quantity")
         if not name or not face_swap_package_quantity:
             await handle_face_swap(message.bot, user.telegram_chat_id, state, user_id)
 
@@ -673,13 +776,14 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
             return
 
         face_swap_package = await get_face_swap_package_by_name_and_gender(
-            name,
-            user.settings[Model.FACE_SWAP][UserSettings.GENDER]
+            name, user.settings[Model.FACE_SWAP][UserSettings.GENDER]
         )
 
         if quota < quantity:
             await message.answer(
-                text=get_localization(user_language_code).face_swap_package_forbidden_error(quota),
+                text=get_localization(
+                    user_language_code
+                ).face_swap_package_forbidden_error(quota),
                 reply_markup=build_cancel_keyboard(user_language_code),
             )
             await processing_sticker.delete()
@@ -701,11 +805,17 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
         else:
             product = await get_product_by_quota(Quota.FACE_SWAP)
 
-            user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
+            user_not_finished_requests = (
+                await get_started_requests_by_user_id_and_product_id(
+                    user.id, product.id
+                )
+            )
 
             if len(user_not_finished_requests):
                 await message.reply(
-                    text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
+                    text=get_localization(
+                        user_language_code
+                    ).MODEL_ALREADY_MAKE_REQUEST,
                     allow_sending_without_reply=True,
                 )
 
@@ -713,23 +823,30 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
                 await processing_message.delete()
                 return
 
-            user_photo_blobs = await firebase.bucket.list_blobs(prefix=f'users/avatars/{user_id}.')
+            user_photo_blobs = await firebase.bucket.list_blobs(
+                prefix=f"users/avatars/{user_id}."
+            )
             user_photo = await firebase.bucket.get_blob(user_photo_blobs[-1])
             user_photo_link = firebase.get_public_url(user_photo.name)
-            used_face_swap_package = await get_used_face_swap_package_by_user_id_and_package_id(
-                user.id,
-                face_swap_package.id,
+            used_face_swap_package = (
+                await get_used_face_swap_package_by_user_id_and_package_id(
+                    user.id,
+                    face_swap_package.id,
+                )
             )
 
             request = await write_request(
                 user_id=user.id,
-                processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
+                processing_message_ids=[
+                    processing_sticker.message_id,
+                    processing_message.message_id,
+                ],
                 product_id=product.id,
                 requested=quantity,
                 details={
-                    'is_test': False,
-                    'face_swap_package_id': face_swap_package.id,
-                    'face_swap_package_name': face_swap_package.name,
+                    "is_test": False,
+                    "face_swap_package_id": face_swap_package.id,
+                    "face_swap_package_name": face_swap_package.name,
                 },
             )
 
@@ -742,7 +859,7 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
                     user_photo_link,
                 )
                 tasks = []
-                for (i, result) in enumerate(results):
+                for i, result in enumerate(results):
                     if result is not None:
                         tasks.append(
                             write_generation(
@@ -751,14 +868,18 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
                                 product_id=product.id,
                                 has_error=result is None,
                                 details={
-                                    'used_face_swap_package_id': used_face_swap_package.id,
-                                    'used_face_swap_package_used_image': random_names[i],
-                                }
+                                    "used_face_swap_package_id": used_face_swap_package.id,
+                                    "used_face_swap_package_used_image": random_names[
+                                        i
+                                    ],
+                                },
                             )
                         )
                 await asyncio.gather(*tasks)
 
-                await state.update_data(maximum_quantity=face_swap_package_quantity - quantity)
+                await state.update_data(
+                    maximum_quantity=face_swap_package_quantity - quantity
+                )
             except Exception as e:
                 await message.answer_sticker(
                     sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
@@ -773,13 +894,11 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
                     bot=message.bot,
                     user_id=user.id,
                     info=str(e),
-                    hashtags=['face_swap'],
+                    hashtags=["face_swap"],
                 )
 
                 request.status = RequestStatus.FINISHED
-                await update_request(request.id, {
-                    'status': request.status
-                })
+                await update_request(request.id, {"status": request.status})
 
                 generations = await get_generations_by_request_id(request.id)
                 for generation in generations:
@@ -788,8 +907,8 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
                     await update_generation(
                         generation.id,
                         {
-                            'status': generation.status,
-                            'has_error': generation.has_error,
+                            "status": generation.status,
+                            "has_error": generation.has_error,
                         },
                     )
 
@@ -797,6 +916,10 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
                 await processing_message.delete()
 
 
-@face_swap_router.message(FaceSwap.waiting_for_face_swap_quantity, ~F.text.startswith('/'))
+@face_swap_router.message(
+    FaceSwap.waiting_for_face_swap_quantity, ~F.text.startswith("/")
+)
 async def face_swap_quantity_sent(message: Message, state: FSMContext):
-    await face_swap_quantity_handler(message, state, str(message.from_user.id), message.text)
+    await face_swap_quantity_handler(
+        message, state, str(message.from_user.id), message.text
+    )

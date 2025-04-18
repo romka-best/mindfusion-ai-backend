@@ -3,7 +3,12 @@ import logging
 import traceback
 
 from aiogram import Bot
-from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter, TelegramForbiddenError, TelegramNetworkError
+from aiogram.exceptions import (
+    TelegramBadRequest,
+    TelegramForbiddenError,
+    TelegramNetworkError,
+    TelegramRetryAfter,
+)
 from aiohttp import ClientOSError
 from redis.exceptions import ConnectionError
 
@@ -16,7 +21,9 @@ BATCH_SIZE = 30
 DELAY_SECONDS = 1
 
 
-async def delayed_send_message_to_user(bot: Bot, chat_id: str, text: str, timeout: int, reply_markup=None):
+async def delayed_send_message_to_user(
+    bot: Bot, chat_id: str, text: str, timeout: int, reply_markup=None
+):
     await asyncio.sleep(timeout)
 
     try:
@@ -27,12 +34,20 @@ async def delayed_send_message_to_user(bot: Bot, chat_id: str, text: str, timeou
             disable_notification=True,
         )
     except TelegramForbiddenError:
-        asyncio.create_task(update_user(chat_id, {'is_blocked': True}))
+        asyncio.create_task(update_user(chat_id, {"is_blocked": True}))
     except TelegramRetryAfter as e:
         asyncio.create_task(
-            delayed_send_message_to_user(bot, chat_id, text, e.retry_after + 30, reply_markup)
+            delayed_send_message_to_user(
+                bot, chat_id, text, e.retry_after + 30, reply_markup
+            )
         )
-    except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramNetworkError):
+    except (
+        ConnectionResetError,
+        OSError,
+        ClientOSError,
+        ConnectionError,
+        TelegramNetworkError,
+    ):
         asyncio.create_task(
             delayed_send_message_to_user(bot, chat_id, text, 60, reply_markup)
         )
@@ -40,7 +55,7 @@ async def delayed_send_message_to_user(bot: Bot, chat_id: str, text: str, timeou
         logging.error(error)
     except Exception:
         error_trace = traceback.format_exc()
-        logging.exception(f'Error in delayed_send_message: {error_trace}')
+        logging.exception(f"Error in delayed_send_message: {error_trace}")
 
 
 async def send_message_to_user(bot: Bot, user: User, message: str, reply_markup=None):
@@ -53,33 +68,49 @@ async def send_message_to_user(bot: Bot, user: User, message: str, reply_markup=
                 disable_notification=True,
             )
     except TelegramForbiddenError:
-        asyncio.create_task(update_user(user.id, {'is_blocked': True}))
+        asyncio.create_task(update_user(user.id, {"is_blocked": True}))
     except TelegramRetryAfter as e:
         asyncio.create_task(
-            delayed_send_message_to_user(bot, user.telegram_chat_id, message, e.retry_after + 30, reply_markup)
+            delayed_send_message_to_user(
+                bot, user.telegram_chat_id, message, e.retry_after + 30, reply_markup
+            )
         )
-    except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramNetworkError):
+    except (
+        ConnectionResetError,
+        OSError,
+        ClientOSError,
+        ConnectionError,
+        TelegramNetworkError,
+    ):
         asyncio.create_task(
-            delayed_send_message_to_user(bot, user.telegram_chat_id, message, 60, reply_markup)
+            delayed_send_message_to_user(
+                bot, user.telegram_chat_id, message, 60, reply_markup
+            )
         )
     except TelegramBadRequest as error:
         logging.exception(error)
     except Exception:
         error_trace = traceback.format_exc()
-        logging.exception(f'Error in send_message: {error_trace}')
+        logging.exception(f"Error in send_message: {error_trace}")
 
 
-async def send_message_to_users(bot: Bot, user_type: str, language_code: LanguageCode, message: str, reply_markup=None):
+async def send_message_to_users(
+    bot: Bot,
+    user_type: str,
+    language_code: LanguageCode,
+    message: str,
+    reply_markup=None,
+):
     users = await get_users_by_language_code(language_code)
     for i in range(0, len(users), BATCH_SIZE):
-        batch_users = users[i:i + BATCH_SIZE]
+        batch_users = users[i : i + BATCH_SIZE]
 
         tasks = []
         for user in batch_users:
             if (
-                user_type == 'all' or
-                (user_type == 'free' and not user.subscription_id) or
-                (user_type == 'paid' and user.subscription_id)
+                user_type == "all"
+                or (user_type == "free" and not user.subscription_id)
+                or (user_type == "paid" and user.subscription_id)
             ):
                 tasks.append(send_message_to_user(bot, user, message, reply_markup))
 

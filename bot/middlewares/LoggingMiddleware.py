@@ -1,8 +1,8 @@
 import logging
-from typing import Callable, Any, Awaitable
+from typing import Any, Awaitable, Callable
 
 from aiogram import BaseMiddleware
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 
 
 class LoggingMessageMiddleware(BaseMiddleware):
@@ -19,7 +19,7 @@ class LoggingMessageMiddleware(BaseMiddleware):
         else:
             text = None
 
-        logging.info(f'Received message from {message.from_user.id}: {text}')
+        logging.info(f"Received message from {message.from_user.id}: {text}")
         await handler(message, data)
 
 
@@ -30,5 +30,7 @@ class LoggingCallbackQueryMiddleware(BaseMiddleware):
         callback_query: CallbackQuery,
         data: dict[str, Any],
     ):
-        logging.info(f'Received callback_query from {callback_query.from_user.id}: {callback_query.data}')
+        logging.info(
+            f"Received callback_query from {callback_query.from_user.id}: {callback_query.data}"
+        )
         await handler(callback_query, data)

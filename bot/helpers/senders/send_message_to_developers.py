@@ -2,8 +2,13 @@ import asyncio
 import logging
 import traceback
 
-from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError, TelegramRetryAfter, TelegramNetworkError
 from aiogram import Bot
+from aiogram.exceptions import (
+    TelegramBadRequest,
+    TelegramForbiddenError,
+    TelegramNetworkError,
+    TelegramRetryAfter,
+)
 from aiohttp import ClientOSError
 from redis.exceptions import ConnectionError
 
@@ -29,18 +34,26 @@ async def delayed_send_message_to_developers(
         logging.error(error)
     except TelegramRetryAfter as e:
         asyncio.create_task(
-            delayed_send_message_to_developers(bot, chat_id, text, parse_mode, e.retry_after + 30)
+            delayed_send_message_to_developers(
+                bot, chat_id, text, parse_mode, e.retry_after + 30
+            )
         )
-    except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramNetworkError):
+    except (
+        ConnectionResetError,
+        OSError,
+        ClientOSError,
+        ConnectionError,
+        TelegramNetworkError,
+    ):
         asyncio.create_task(
             delayed_send_message_to_developers(bot, chat_id, text, parse_mode, 60)
         )
     except Exception:
         error_trace = traceback.format_exc()
-        logging.exception(f'Error in delayed_send_message_to_developers: {error_trace}')
+        logging.exception(f"Error in delayed_send_message_to_developers: {error_trace}")
 
 
-async def send_message_to_developers(bot: Bot, message: str, parse_mode='HTML'):
+async def send_message_to_developers(bot: Bot, message: str, parse_mode="HTML"):
     for chat_id in config.DEVELOPER_IDS:
         try:
             await bot.send_message(
@@ -52,12 +65,22 @@ async def send_message_to_developers(bot: Bot, message: str, parse_mode='HTML'):
             logging.error(error)
         except TelegramRetryAfter as e:
             asyncio.create_task(
-                delayed_send_message_to_developers(bot, chat_id, message, parse_mode, e.retry_after + 30)
+                delayed_send_message_to_developers(
+                    bot, chat_id, message, parse_mode, e.retry_after + 30
+                )
             )
-        except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramNetworkError):
+        except (
+            ConnectionResetError,
+            OSError,
+            ClientOSError,
+            ConnectionError,
+            TelegramNetworkError,
+        ):
             asyncio.create_task(
-                delayed_send_message_to_developers(bot, chat_id, message, parse_mode, 60)
+                delayed_send_message_to_developers(
+                    bot, chat_id, message, parse_mode, 60
+                )
             )
         except Exception:
             error_trace = traceback.format_exc()
-            logging.exception(f'Error in send_message_to_developers: {error_trace}')
+            logging.exception(f"Error in send_message_to_developers: {error_trace}")

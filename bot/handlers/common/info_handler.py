@@ -3,32 +3,32 @@ from typing import cast
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 
-from bot.database.models.common import ModelType, Model
+from bot.database.models.common import Model, ModelType
 from bot.database.models.user import UserSettings
 from bot.database.operations.user.getters import get_user
 from bot.helpers.getters.get_info_by_model import get_info_by_model
 from bot.keyboards.common.info import (
-    build_info_keyboard,
-    build_info_text_models_keyboard,
     build_info_chat_gpt_models_keyboard,
-    build_info_claude_models_keyboard,
-    build_info_gemini_models_keyboard,
-    build_info_deep_seek_models_keyboard,
-    build_info_image_models_keyboard,
-    build_info_stable_diffusion_models_keyboard,
-    build_info_flux_models_keyboard,
-    build_info_music_models_keyboard,
-    build_info_video_models_keyboard,
     build_info_chosen_model_type_keyboard,
+    build_info_claude_models_keyboard,
+    build_info_deep_seek_models_keyboard,
+    build_info_flux_models_keyboard,
+    build_info_gemini_models_keyboard,
+    build_info_image_models_keyboard,
+    build_info_keyboard,
+    build_info_music_models_keyboard,
+    build_info_stable_diffusion_models_keyboard,
+    build_info_text_models_keyboard,
+    build_info_video_models_keyboard,
 )
-from bot.locales.main import get_user_language, get_localization
+from bot.locales.main import get_localization, get_user_language
 
 info_router = Router()
 
 
-@info_router.message(Command('info'))
+@info_router.message(Command("info"))
 async def info(message: Message, state: FSMContext):
     await state.clear()
 
@@ -49,14 +49,18 @@ async def info(message: Message, state: FSMContext):
     )
 
 
-@info_router.callback_query(lambda c: c.data.startswith('info:'))
+@info_router.callback_query(lambda c: c.data.startswith("info:"))
 async def info_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
-    await handle_info_selection(callback_query, state, callback_query.data.split(':')[1], True)
+    await handle_info_selection(
+        callback_query, state, callback_query.data.split(":")[1], True
+    )
 
 
-async def handle_info_selection(callback_query: CallbackQuery, state: FSMContext, model_type: str, is_edit=False):
+async def handle_info_selection(
+    callback_query: CallbackQuery, state: FSMContext, model_type: str, is_edit=False
+):
     user_id = str(callback_query.from_user.id)
     user_language_code = await get_user_language(user_id, state.storage)
 
@@ -87,15 +91,15 @@ async def handle_info_selection(callback_query: CallbackQuery, state: FSMContext
         )
 
 
-@info_router.callback_query(lambda c: c.data.startswith('info_text_models:'))
+@info_router.callback_query(lambda c: c.data.startswith("info_text_models:"))
 async def info_text_models_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    model = cast(Model, callback_query.data.split(':')[1])
-    if model == 'back':
+    model = cast(Model, callback_query.data.split(":")[1])
+    if model == "back":
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).INFO,
             reply_markup=build_info_keyboard(user_language_code),
@@ -127,11 +131,13 @@ async def info_text_models_selection(callback_query: CallbackQuery, state: FSMCo
                 None,
                 user_language_code,
             ),
-            reply_markup=build_info_chosen_model_type_keyboard(user_language_code, ModelType.TEXT),
+            reply_markup=build_info_chosen_model_type_keyboard(
+                user_language_code, ModelType.TEXT
+            ),
         )
 
 
-@info_router.callback_query(lambda c: c.data.startswith('info_text_model:'))
+@info_router.callback_query(lambda c: c.data.startswith("info_text_model:"))
 async def info_text_model_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
@@ -142,10 +148,10 @@ async def info_text_model_selection(callback_query: CallbackQuery, state: FSMCon
         model,
         model_version,
     ) = (
-        cast(Model, callback_query.data.split(':')[1]),
-        callback_query.data.split(':')[2],
+        cast(Model, callback_query.data.split(":")[1]),
+        callback_query.data.split(":")[2],
     )
-    if model_version == 'back':
+    if model_version == "back":
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).INFO_TEXT_MODELS,
             reply_markup=build_info_text_models_keyboard(user_language_code),
@@ -157,19 +163,21 @@ async def info_text_model_selection(callback_query: CallbackQuery, state: FSMCon
                 model_version,
                 user_language_code,
             ),
-            reply_markup=build_info_chosen_model_type_keyboard(user_language_code, model),
+            reply_markup=build_info_chosen_model_type_keyboard(
+                user_language_code, model
+            ),
         )
 
 
-@info_router.callback_query(lambda c: c.data.startswith('info_image_models:'))
+@info_router.callback_query(lambda c: c.data.startswith("info_image_models:"))
 async def info_image_models_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    model = cast(Model, callback_query.data.split(':')[1])
-    if model == 'back':
+    model = cast(Model, callback_query.data.split(":")[1])
+    if model == "back":
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).INFO,
             reply_markup=build_info_keyboard(user_language_code),
@@ -177,7 +185,9 @@ async def info_image_models_selection(callback_query: CallbackQuery, state: FSMC
     elif model == Model.STABLE_DIFFUSION:
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).INFO_STABLE_DIFFUSION,
-            reply_markup=build_info_stable_diffusion_models_keyboard(user_language_code),
+            reply_markup=build_info_stable_diffusion_models_keyboard(
+                user_language_code
+            ),
         )
     elif model == Model.FLUX:
         await callback_query.message.edit_text(
@@ -191,11 +201,13 @@ async def info_image_models_selection(callback_query: CallbackQuery, state: FSMC
                 None,
                 user_language_code,
             ),
-            reply_markup=build_info_chosen_model_type_keyboard(user_language_code, ModelType.IMAGE),
+            reply_markup=build_info_chosen_model_type_keyboard(
+                user_language_code, ModelType.IMAGE
+            ),
         )
 
 
-@info_router.callback_query(lambda c: c.data.startswith('info_image_model:'))
+@info_router.callback_query(lambda c: c.data.startswith("info_image_model:"))
 async def info_image_model_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
@@ -206,10 +218,10 @@ async def info_image_model_selection(callback_query: CallbackQuery, state: FSMCo
         model,
         model_version,
     ) = (
-        cast(Model, callback_query.data.split(':')[1]),
-        callback_query.data.split(':')[2],
+        cast(Model, callback_query.data.split(":")[1]),
+        callback_query.data.split(":")[2],
     )
-    if model_version == 'back':
+    if model_version == "back":
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).INFO_IMAGE_MODELS,
             reply_markup=build_info_image_models_keyboard(user_language_code),
@@ -221,23 +233,27 @@ async def info_image_model_selection(callback_query: CallbackQuery, state: FSMCo
                 model_version,
                 user_language_code,
             ),
-            reply_markup=build_info_chosen_model_type_keyboard(user_language_code, model),
+            reply_markup=build_info_chosen_model_type_keyboard(
+                user_language_code, model
+            ),
         )
 
 
-@info_router.callback_query(lambda c: c.data.startswith('info_music_models:'))
+@info_router.callback_query(lambda c: c.data.startswith("info_music_models:"))
 async def info_music_models_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    model = cast(Model, callback_query.data.split(':')[1])
+    model = cast(Model, callback_query.data.split(":")[1])
     info_text = get_info_by_model(model, None, user_language_code)
     if info_text:
         await callback_query.message.edit_text(
             text=info_text,
-            reply_markup=build_info_chosen_model_type_keyboard(user_language_code, ModelType.MUSIC),
+            reply_markup=build_info_chosen_model_type_keyboard(
+                user_language_code, ModelType.MUSIC
+            ),
         )
     else:
         await callback_query.message.edit_text(
@@ -246,19 +262,21 @@ async def info_music_models_selection(callback_query: CallbackQuery, state: FSMC
         )
 
 
-@info_router.callback_query(lambda c: c.data.startswith('info_video_models:'))
+@info_router.callback_query(lambda c: c.data.startswith("info_video_models:"))
 async def info_video_models_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    model = cast(Model, callback_query.data.split(':')[1])
+    model = cast(Model, callback_query.data.split(":")[1])
     info_text = get_info_by_model(model, None, user_language_code)
     if info_text:
         await callback_query.message.edit_text(
             text=info_text,
-            reply_markup=build_info_chosen_model_type_keyboard(user_language_code, ModelType.VIDEO),
+            reply_markup=build_info_chosen_model_type_keyboard(
+                user_language_code, ModelType.VIDEO
+            ),
         )
     else:
         await callback_query.message.edit_text(
@@ -267,14 +285,14 @@ async def info_video_models_selection(callback_query: CallbackQuery, state: FSMC
         )
 
 
-@info_router.callback_query(lambda c: c.data.startswith('info_chosen_model_type:'))
+@info_router.callback_query(lambda c: c.data.startswith("info_chosen_model_type:"))
 async def info_model_type_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    action, model_type = callback_query.data.split(':')[1], callback_query.data.split(':')[2]
+    model_type = callback_query.data.split(":")[2]
     if model_type == ModelType.TEXT or model_type in [Model.GROK, Model.PERPLEXITY]:
         text = get_localization(user_language_code).INFO_TEXT_MODELS
         reply_markup = build_info_text_models_keyboard(user_language_code)
@@ -290,17 +308,14 @@ async def info_model_type_selection(callback_query: CallbackQuery, state: FSMCon
     elif model_type == Model.DEEP_SEEK:
         text = get_localization(user_language_code).INFO_DEEP_SEEK
         reply_markup = build_info_deep_seek_models_keyboard(user_language_code)
-    elif (
-        model_type == ModelType.IMAGE or
-        model_type in [
-            Model.DALL_E,
-            Model.MIDJOURNEY,
-            Model.LUMA_PHOTON,
-            Model.RECRAFT,
-            Model.FACE_SWAP,
-            Model.PHOTOSHOP_AI,
-        ]
-    ):
+    elif model_type == ModelType.IMAGE or model_type in [
+        Model.DALL_E,
+        Model.MIDJOURNEY,
+        Model.LUMA_PHOTON,
+        Model.RECRAFT,
+        Model.FACE_SWAP,
+        Model.PHOTOSHOP_AI,
+    ]:
         text = get_localization(user_language_code).INFO_IMAGE_MODELS
         reply_markup = build_info_image_models_keyboard(user_language_code)
     elif model_type == Model.STABLE_DIFFUSION:
@@ -312,7 +327,12 @@ async def info_model_type_selection(callback_query: CallbackQuery, state: FSMCon
     elif model_type == ModelType.MUSIC or model_type in [Model.MUSIC_GEN, Model.SUNO]:
         text = get_localization(user_language_code).INFO_MUSIC_MODELS
         reply_markup = build_info_music_models_keyboard(user_language_code)
-    elif model_type == ModelType.VIDEO or model_type in [Model.KLING, Model.RUNWAY, Model.LUMA_RAY, Model.PIKA]:
+    elif model_type == ModelType.VIDEO or model_type in [
+        Model.KLING,
+        Model.RUNWAY,
+        Model.LUMA_RAY,
+        Model.PIKA,
+    ]:
         text = get_localization(user_language_code).INFO_VIDEO_MODELS
         reply_markup = build_info_video_models_keyboard(user_language_code)
     else:

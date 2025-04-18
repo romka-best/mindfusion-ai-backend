@@ -3,7 +3,7 @@ import aiohttp
 from bot.config import config
 from bot.database.models.common import PikaVersion
 
-PIKA_API_URL = 'https://api.acedata.cloud/pika/videos'
+PIKA_API_URL = "https://api.acedata.cloud/pika/videos"
 PIKA_API_KEY = config.PIKA_API_KEY.get_secret_value()
 WEBHOOK_PIKA_URL = config.WEBHOOK_URL + config.WEBHOOK_PIKA_PATH
 
@@ -11,9 +11,9 @@ WEBHOOK_PIKA_URL = config.WEBHOOK_URL + config.WEBHOOK_PIKA_PATH
 class Pika:
     def __init__(self, session: aiohttp.ClientSession = None) -> None:
         self.headers = {
-            'accept': 'application/json',
-            'content-type': 'application/json',
-            'authorization': f'Bearer {PIKA_API_KEY}',
+            "accept": "application/json",
+            "content-type": "application/json",
+            "authorization": f"Bearer {PIKA_API_KEY}",
         }
         self.session = session
 
@@ -28,7 +28,9 @@ class Pika:
         await self.session.close()
 
     async def request(self, method: str, url: str, **kwargs):
-        async with self.session.request(method, url, headers=self.headers, **kwargs) as response:
+        async with self.session.request(
+            method, url, headers=self.headers, **kwargs
+        ) as response:
             response.raise_for_status()
             return await response.json()
 
@@ -47,27 +49,27 @@ class Videos(APIResource):
         prompt: str,
         version: PikaVersion,
         aspect_ratio: str,
-        image_url: str = '',
+        image_url: str = "",
     ) -> str:
-        aspect_ratio = aspect_ratio.split(':')
+        aspect_ratio = aspect_ratio.split(":")
         aspect_ratio = int(aspect_ratio[0]) / int(aspect_ratio[1])
         payload = {
-            'action': 'generate',
-            'prompt': prompt,
-            'model': version,
-            'aspect_ratio': aspect_ratio if not image_url else None,
-            'image_url': [image_url] if image_url else [],
-            'callback_url': WEBHOOK_PIKA_URL,
+            "action": "generate",
+            "prompt": prompt,
+            "model": version,
+            "aspect_ratio": aspect_ratio if not image_url else None,
+            "image_url": [image_url] if image_url else [],
+            "callback_url": WEBHOOK_PIKA_URL,
         }
-        data = await self.request('POST', PIKA_API_URL, json=payload)
-        return data['task_id']
+        data = await self.request("POST", PIKA_API_URL, json=payload)
+        return data["task_id"]
 
 
 async def generate_video(
     prompt: str,
     version: PikaVersion,
     aspect_ratio: str,
-    image_url: str = '',
+    image_url: str = "",
 ) -> str:
     async with Pika() as client:
         task_id = await client.videos.generate(

@@ -8,10 +8,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram.utils.chat_action import ChatActionSender
 
-from bot.config import config, MessageEffect, MessageSticker
-from bot.database.models.common import Model, Quota, Currency
+from bot.config import MessageEffect, MessageSticker, config
+from bot.database.models.common import Currency, Model, Quota
 from bot.database.models.transaction import TransactionType
-from bot.database.models.user import UserSettings, User
+from bot.database.models.user import User, UserSettings
 from bot.database.operations.product.getters import get_product_by_quota
 from bot.database.operations.transaction.writers import write_transaction
 from bot.database.operations.user.getters import get_user
@@ -23,14 +23,17 @@ from bot.helpers.senders.send_ai_message import send_ai_message
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
 from bot.integrations.eightify import generate_summary
-from bot.keyboards.ai.model import build_switched_to_ai_keyboard, build_model_limit_exceeded_keyboard
+from bot.keyboards.ai.model import (
+    build_model_limit_exceeded_keyboard,
+    build_switched_to_ai_keyboard,
+)
 from bot.keyboards.common.common import build_error_keyboard
-from bot.locales.main import get_user_language, get_localization
+from bot.locales.main import get_localization, get_user_language
 
 eightify_router = Router()
 
 
-@eightify_router.message(Command('youtube_summary'))
+@eightify_router.message(Command("youtube_summary"))
 async def eightify(message: Message, state: FSMContext):
     await state.clear()
 
@@ -40,29 +43,43 @@ async def eightify(message: Message, state: FSMContext):
 
     if user.current_model == Model.EIGHTIFY:
         await message.answer(
-            text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
-            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.EIGHTIFY),
+            text=get_localization(
+                user_language_code
+            ).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
+            reply_markup=build_switched_to_ai_keyboard(
+                user_language_code, Model.EIGHTIFY
+            ),
         )
     else:
         user.current_model = Model.EIGHTIFY
-        await update_user(user_id, {
-            'current_model': user.current_model,
-        })
+        await update_user(
+            user_id,
+            {
+                "current_model": user.current_model,
+            },
+        )
 
         text = await get_switched_to_ai_model(
             user,
-            get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
+            get_quota_by_model(
+                user.current_model,
+                user.settings[user.current_model][UserSettings.VERSION],
+            ),
             user_language_code,
         )
         answered_message = await message.answer(
             text=text,
-            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.EIGHTIFY),
+            reply_markup=build_switched_to_ai_keyboard(
+                user_language_code, Model.EIGHTIFY
+            ),
             message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
         )
 
         try:
             await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
-            await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+            await message.bot.pin_chat_message(
+                user.telegram_chat_id, answered_message.message_id
+            )
         except (TelegramBadRequest, TelegramRetryAfter):
             pass
 
@@ -85,7 +102,7 @@ async def handle_eightify(message: Message, state: FSMContext, user: User):
         return
 
     youtube_regex = (
-        r'(?:https?://)?(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([\w-]{11})'
+        r"(?:https?://)?(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([\w-]{11})"
     )
     match = re.search(youtube_regex, link)
     if match:
@@ -112,15 +129,22 @@ async def handle_eightify(message: Message, state: FSMContext, user: User):
 
     async with chat_action_sender(bot=message.bot, chat_id=message.chat.id):
         try:
-            quota = user.daily_limits[Quota.EIGHTIFY] + user.additional_usage_quota[Quota.EIGHTIFY]
+            quota = (
+                user.daily_limits[Quota.EIGHTIFY]
+                + user.additional_usage_quota[Quota.EIGHTIFY]
+            )
             if quota < 1:
                 await message.answer_sticker(
                     sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
                 )
 
                 await message.answer(
-                    text=get_localization(user_language_code).model_reached_usage_limit(),
-                    reply_markup=build_model_limit_exceeded_keyboard(user_language_code, user.had_subscription),
+                    text=get_localization(
+                        user_language_code
+                    ).model_reached_usage_limit(),
+                    reply_markup=build_model_limit_exceeded_keyboard(
+                        user_language_code, user.had_subscription
+                    ),
                 )
 
                 await processing_sticker.delete()
@@ -145,13 +169,15 @@ async def handle_eightify(message: Message, state: FSMContext, user: User):
                     currency=Currency.USD,
                     quantity=1,
                     details={
-                        'request': link,
-                        'answer': response_summary,
-                        'has_error': False,
+                        "request": link,
+                        "answer": response_summary,
+                        "has_error": False,
                     },
                 )
 
-                if user.settings[user.current_model][UserSettings.TURN_ON_VOICE_MESSAGES]:
+                if user.settings[user.current_model][
+                    UserSettings.TURN_ON_VOICE_MESSAGES
+                ]:
                     await reply_with_voice(
                         message=message,
                         text=response_summary,
@@ -160,9 +186,14 @@ async def handle_eightify(message: Message, state: FSMContext, user: User):
                         voice=user.settings[user.current_model][UserSettings.VOICE],
                     )
                 else:
-                    footer_text = f'\n\n✉️ {user.daily_limits[Quota.EIGHTIFY] + user.additional_usage_quota[Quota.EIGHTIFY]}' \
-                        if user.settings[user.current_model][UserSettings.SHOW_USAGE_QUOTA] and \
-                           user.daily_limits[Quota.EIGHTIFY] != float('inf') else ''
+                    footer_text = (
+                        f"\n\n✉️ {user.daily_limits[Quota.EIGHTIFY] + user.additional_usage_quota[Quota.EIGHTIFY]}"
+                        if user.settings[user.current_model][
+                            UserSettings.SHOW_USAGE_QUOTA
+                        ]
+                        and user.daily_limits[Quota.EIGHTIFY] != float("inf")
+                        else ""
+                    )
                     full_text = f"{response_summary}{footer_text}"
                     await send_ai_message(
                         message=message,
@@ -192,7 +223,7 @@ async def handle_eightify(message: Message, state: FSMContext, user: User):
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
-                hashtags=['eightify'],
+                hashtags=["eightify"],
             )
         finally:
             await processing_sticker.delete()

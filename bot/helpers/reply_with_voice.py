@@ -1,7 +1,7 @@
 import asyncio
-from typing import Optional, Literal
+from typing import Literal, Optional
 
-from aiogram.types import Message, InlineKeyboardMarkup, BufferedInputFile
+from aiogram.types import BufferedInputFile, InlineKeyboardMarkup, Message
 
 from bot.database.models.common import Currency, Quota
 from bot.database.models.transaction import TransactionType
@@ -31,15 +31,15 @@ async def reply_with_voice(
         currency=Currency.USD,
         quantity=1,
         details={
-            'subtype': 'TTS',
-            'text': text,
-            'has_error': False,
+            "subtype": "TTS",
+            "text": text,
+            "has_error": False,
         },
     )
 
     file = await asyncio.to_thread(audio_content.read)
     await message.reply_voice(
-        voice=BufferedInputFile(file, filename='answer.ogg'),
+        voice=BufferedInputFile(file, filename="answer.ogg"),
         reply_markup=reply_markup,
         allow_sending_without_reply=True,
     )

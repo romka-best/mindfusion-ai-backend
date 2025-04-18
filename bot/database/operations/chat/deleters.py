@@ -19,8 +19,8 @@ async def reset_chat(chat_id: str) -> None:
             update_message(
                 chat_message_ref.id,
                 {
-                    'is_in_context': False,
-                }
+                    "is_in_context": False,
+                },
             )
         )
     await asyncio.gather(*tasks)

@@ -1,5 +1,5 @@
 from bot.database.main import firebase
-from bot.database.models.product import Product, ProductType, ProductCategory
+from bot.database.models.product import Product, ProductCategory, ProductType
 from bot.locales.types import LanguageCode
 
 

@@ -1,11 +1,11 @@
-from aiogram import Router, Bot, F
+from aiogram import Bot, F, Router
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from aiogram.utils.chat_action import ChatActionSender
 
-from bot.config import config, MessageEffect, MessageSticker
+from bot.config import MessageEffect, MessageSticker, config
 from bot.database.models.common import Model, Quota
 from bot.database.models.generation import GenerationStatus
 from bot.database.models.request import RequestStatus
@@ -14,7 +14,9 @@ from bot.database.operations.generation.getters import get_generations_by_reques
 from bot.database.operations.generation.updaters import update_generation
 from bot.database.operations.generation.writers import write_generation
 from bot.database.operations.product.getters import get_product_by_quota
-from bot.database.operations.request.getters import get_started_requests_by_user_id_and_product_id
+from bot.database.operations.request.getters import (
+    get_started_requests_by_user_id_and_product_id,
+)
 from bot.database.operations.request.updaters import update_request
 from bot.database.operations.request.writers import write_request
 from bot.database.operations.user.getters import get_user
@@ -22,12 +24,12 @@ from bot.database.operations.user.updaters import update_user
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.senders.send_error_info import send_error_info
-from bot.keyboards.ai.model import build_switched_to_ai_keyboard
-from bot.locales.translate_text import translate_text
 from bot.integrations.replicate_ai import create_music_gen_melody
-from bot.keyboards.common.common import build_cancel_keyboard, build_error_keyboard
+from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.ai.music_gen import build_music_gen_keyboard
+from bot.keyboards.common.common import build_cancel_keyboard, build_error_keyboard
 from bot.locales.main import get_localization, get_user_language
+from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
 from bot.states.ai.music_gen import MusicGen
 
@@ -36,7 +38,7 @@ music_gen_router = Router()
 PRICE_MUSIC_GEN = 0.0014
 
 
-@music_gen_router.message(Command('music_gen'))
+@music_gen_router.message(Command("music_gen"))
 async def music_gen(message: Message, state: FSMContext):
     await state.clear()
 
@@ -46,36 +48,52 @@ async def music_gen(message: Message, state: FSMContext):
 
     if user.current_model == Model.MUSIC_GEN:
         await message.answer(
-            text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
-            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.MUSIC_GEN),
+            text=get_localization(
+                user_language_code
+            ).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
+            reply_markup=build_switched_to_ai_keyboard(
+                user_language_code, Model.MUSIC_GEN
+            ),
         )
     else:
         user.current_model = Model.MUSIC_GEN
-        await update_user(user_id, {
-            'current_model': user.current_model,
-        })
+        await update_user(
+            user_id,
+            {
+                "current_model": user.current_model,
+            },
+        )
 
         text = await get_switched_to_ai_model(
             user,
-            get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
+            get_quota_by_model(
+                user.current_model,
+                user.settings[user.current_model][UserSettings.VERSION],
+            ),
             user_language_code,
         )
         answered_message = await message.answer(
             text=text,
-            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.MUSIC_GEN),
+            reply_markup=build_switched_to_ai_keyboard(
+                user_language_code, Model.MUSIC_GEN
+            ),
             message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
         )
 
         try:
             await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
-            await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+            await message.bot.pin_chat_message(
+                user.telegram_chat_id, answered_message.message_id
+            )
         except (TelegramBadRequest, TelegramRetryAfter):
             pass
 
     await handle_music_gen(message.bot, str(message.chat.id), state, user_id)
 
 
-async def handle_music_gen(bot: Bot, chat_id: str, state: FSMContext, user_id: str, text=None):
+async def handle_music_gen(
+    bot: Bot, chat_id: str, state: FSMContext, user_id: str, text=None
+):
     user_language_code = await get_user_language(str(user_id), state.storage)
 
     if text is None:
@@ -94,11 +112,11 @@ async def handle_music_gen(bot: Bot, chat_id: str, state: FSMContext, user_id: s
         await state.update_data(music_gen_prompt=text)
 
 
-@music_gen_router.callback_query(lambda c: c.data.startswith('music_gen:'))
+@music_gen_router.callback_query(lambda c: c.data.startswith("music_gen:"))
 async def music_gen_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
-    duration = callback_query.data.split(':')[1]
+    duration = callback_query.data.split(":")[1]
     await handle_music_gen_selection(
         callback_query.message,
         str(callback_query.from_user.id),
@@ -137,8 +155,11 @@ async def handle_music_gen_selection(
     )
 
     async with ChatActionSender.record_voice(bot=message.bot, chat_id=message.chat.id):
-        quota = user.daily_limits[Quota.MUSIC_GEN] + user.additional_usage_quota[Quota.MUSIC_GEN]
-        prompt = user_data.get('music_gen_prompt')
+        quota = (
+            user.daily_limits[Quota.MUSIC_GEN]
+            + user.additional_usage_quota[Quota.MUSIC_GEN]
+        )
+        prompt = user_data.get("music_gen_prompt")
 
         if not prompt:
             await handle_music_gen(message.bot, user.telegram_chat_id, state, user_id)
@@ -150,7 +171,9 @@ async def handle_music_gen_selection(
 
         if quota * 10 < duration:
             await message.reply(
-                text=get_localization(user_language_code).music_gen_forbidden_error(quota * 10),
+                text=get_localization(user_language_code).music_gen_forbidden_error(
+                    quota * 10
+                ),
                 reply_markup=build_cancel_keyboard(user_language_code),
                 allow_sending_without_reply=True,
             )
@@ -178,11 +201,17 @@ async def handle_music_gen_selection(
         else:
             product = await get_product_by_quota(Quota.MUSIC_GEN)
 
-            user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
+            user_not_finished_requests = (
+                await get_started_requests_by_user_id_and_product_id(
+                    user.id, product.id
+                )
+            )
 
             if len(user_not_finished_requests):
                 await message.reply(
-                    text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
+                    text=get_localization(
+                        user_language_code
+                    ).MODEL_ALREADY_MAKE_REQUEST,
                     allow_sending_without_reply=True,
                 )
 
@@ -192,14 +221,19 @@ async def handle_music_gen_selection(
 
             request = await write_request(
                 user_id=user.id,
-                processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
+                processing_message_ids=[
+                    processing_sticker.message_id,
+                    processing_message.message_id,
+                ],
                 product_id=product.id,
                 requested=1,
             )
 
             try:
                 if user_language_code != LanguageCode.EN:
-                    prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
+                    prompt = await translate_text(
+                        prompt, user_language_code, LanguageCode.EN
+                    )
                 result_id = await create_music_gen_melody(prompt, duration)
                 await write_generation(
                     id=result_id,
@@ -207,9 +241,9 @@ async def handle_music_gen_selection(
                     product_id=product.id,
                     has_error=result_id is None,
                     details={
-                        'prompt': prompt,
-                        'duration': duration,
-                    }
+                        "prompt": prompt,
+                        "duration": duration,
+                    },
                 )
             except Exception as e:
                 await message.answer_sticker(
@@ -225,13 +259,11 @@ async def handle_music_gen_selection(
                     bot=message.bot,
                     user_id=user.id,
                     info=str(e),
-                    hashtags=['music_gen'],
+                    hashtags=["music_gen"],
                 )
 
                 request.status = RequestStatus.FINISHED
-                await update_request(request.id, {
-                    'status': request.status
-                })
+                await update_request(request.id, {"status": request.status})
 
                 generations = await get_generations_by_request_id(request.id)
                 for generation in generations:
@@ -240,8 +272,8 @@ async def handle_music_gen_selection(
                     await update_generation(
                         generation.id,
                         {
-                            'status': generation.status,
-                            'has_error': generation.has_error,
+                            "status": generation.status,
+                            "has_error": generation.has_error,
                         },
                     )
 
@@ -249,6 +281,10 @@ async def handle_music_gen_selection(
                 await processing_message.delete()
 
 
-@music_gen_router.message(MusicGen.waiting_for_music_gen_duration, ~F.text.startswith('/'))
+@music_gen_router.message(
+    MusicGen.waiting_for_music_gen_duration, ~F.text.startswith("/")
+)
 async def music_gen_duration_sent(message: Message, state: FSMContext):
-    await handle_music_gen_selection(message, str(message.from_user.id), message.text, state)
+    await handle_music_gen_selection(
+        message, str(message.from_user.id), message.text, state
+    )

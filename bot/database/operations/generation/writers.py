@@ -1,7 +1,11 @@
 from typing import Optional
 
 from bot.database.main import firebase
-from bot.database.models.generation import Generation, GenerationStatus, GenerationReaction
+from bot.database.models.generation import (
+    Generation,
+    GenerationReaction,
+    GenerationStatus,
+)
 from bot.database.operations.generation.helpers import create_generation_object
 
 
@@ -9,7 +13,7 @@ async def write_generation(
     id: Optional[str],
     request_id: str,
     product_id: str,
-    result='',
+    result="",
     has_error=False,
     status=GenerationStatus.STARTED,
     reaction=GenerationReaction.NONE,
@@ -30,8 +34,10 @@ async def write_generation(
         seconds,
         details,
     )
-    await firebase.db.collection(Generation.COLLECTION_NAME).document(id).set(
-        generation.to_dict()
+    await (
+        firebase.db.collection(Generation.COLLECTION_NAME)
+        .document(id)
+        .set(generation.to_dict())
     )
 
     return generation

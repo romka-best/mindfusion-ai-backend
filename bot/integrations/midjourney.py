@@ -1,9 +1,9 @@
 from aiogram.client.session import aiohttp
 
 from bot.config import config
-from bot.database.models.common import MidjourneyVersion, MidjourneyAction, AspectRatio
+from bot.database.models.common import AspectRatio, MidjourneyAction, MidjourneyVersion
 
-MIDJOURNEY_API_URL = 'https://api.piapi.ai'
+MIDJOURNEY_API_URL = "https://api.piapi.ai"
 MIDJOURNEY_API_KEY = config.MIDJOURNEY_API_KEY.get_secret_value()
 WEBHOOK_MIDJOURNEY_URL = config.WEBHOOK_URL + config.WEBHOOK_MIDJOURNEY_PATH
 
@@ -11,8 +11,8 @@ WEBHOOK_MIDJOURNEY_URL = config.WEBHOOK_URL + config.WEBHOOK_MIDJOURNEY_PATH
 class Midjourney:
     def __init__(self, session: aiohttp.ClientSession = None) -> None:
         self.headers = {
-            'Content-Type': 'application/json',
-            'x-api-key': MIDJOURNEY_API_KEY,
+            "Content-Type": "application/json",
+            "x-api-key": MIDJOURNEY_API_KEY,
         }
         self.session = session
 
@@ -27,7 +27,9 @@ class Midjourney:
         await self.session.close()
 
     async def request(self, method: str, url: str, **kwargs):
-        async with self.session.request(method, url, headers=self.headers, **kwargs) as response:
+        async with self.session.request(
+            method, url, headers=self.headers, **kwargs
+        ) as response:
             response.raise_for_status()
             return await response.json()
 
@@ -74,92 +76,89 @@ class APIResource:
 
 class Images(APIResource):
     async def imagine(
-        self,
-        prompt: str,
-        aspect_ratio: AspectRatio,
-        process_mode: str
+        self, prompt: str, aspect_ratio: AspectRatio, process_mode: str
     ) -> str:
-        url = f'{MIDJOURNEY_API_URL}/api/v1/task'
+        url = f"{MIDJOURNEY_API_URL}/api/v1/task"
         payload = {
-            'model': 'midjourney',
-            'task_type': 'imagine',
-            'input': {
-                'prompt': prompt,
-                'aspect_ratio': aspect_ratio,
-                'process_mode': process_mode,
+            "model": "midjourney",
+            "task_type": "imagine",
+            "input": {
+                "prompt": prompt,
+                "aspect_ratio": aspect_ratio,
+                "process_mode": process_mode,
             },
-            'config': {
-                'webhook_config': {
-                    'endpoint': WEBHOOK_MIDJOURNEY_URL,
+            "config": {
+                "webhook_config": {
+                    "endpoint": WEBHOOK_MIDJOURNEY_URL,
                 }
             },
         }
-        data = await self.request('POST', url, json=payload)
-        return data['data']['task_id']
+        data = await self.request("POST", url, json=payload)
+        return data["data"]["task_id"]
 
     async def upscale(
         self,
         task_id: str,
         choice: int,
     ) -> str:
-        url = f'{MIDJOURNEY_API_URL}/api/v1/task'
+        url = f"{MIDJOURNEY_API_URL}/api/v1/task"
         payload = {
-            'model': 'midjourney',
-            'task_type': 'upscale',
-            'input': {
-                'origin_task_id': task_id,
-                'index': str(choice),
+            "model": "midjourney",
+            "task_type": "upscale",
+            "input": {
+                "origin_task_id": task_id,
+                "index": str(choice),
             },
-            'config': {
-                'webhook_config': {
-                    'endpoint': WEBHOOK_MIDJOURNEY_URL,
+            "config": {
+                "webhook_config": {
+                    "endpoint": WEBHOOK_MIDJOURNEY_URL,
                 }
             },
         }
-        data = await self.request('POST', url, json=payload)
-        return data['data']['task_id']
+        data = await self.request("POST", url, json=payload)
+        return data["data"]["task_id"]
 
     async def reroll(
         self,
         task_id: str,
     ) -> str:
-        url = f'{MIDJOURNEY_API_URL}/api/v1/task'
+        url = f"{MIDJOURNEY_API_URL}/api/v1/task"
         payload = {
-            'model': 'midjourney',
-            'task_type': 'reroll',
-            'input': {
-                'origin_task_id': task_id,
+            "model": "midjourney",
+            "task_type": "reroll",
+            "input": {
+                "origin_task_id": task_id,
             },
-            'config': {
-                'webhook_config': {
-                    'endpoint': WEBHOOK_MIDJOURNEY_URL,
+            "config": {
+                "webhook_config": {
+                    "endpoint": WEBHOOK_MIDJOURNEY_URL,
                 }
             },
         }
-        data = await self.request('POST', url, json=payload)
-        return data['data']['task_id']
+        data = await self.request("POST", url, json=payload)
+        return data["data"]["task_id"]
 
     async def variation(
         self,
         task_id: str,
         choice: int,
     ) -> str:
-        url = f'{MIDJOURNEY_API_URL}/api/v1/task'
+        url = f"{MIDJOURNEY_API_URL}/api/v1/task"
         payload = {
-            'model': 'midjourney',
-            'task_type': 'variation',
-            'input': {
-                'origin_task_id': task_id,
-                'index': str(choice),
+            "model": "midjourney",
+            "task_type": "variation",
+            "input": {
+                "origin_task_id": task_id,
+                "index": str(choice),
             },
-            'config': {
-                'webhook_config': {
-                    'endpoint': WEBHOOK_MIDJOURNEY_URL,
+            "config": {
+                "webhook_config": {
+                    "endpoint": WEBHOOK_MIDJOURNEY_URL,
                 }
             },
         }
-        data = await self.request('POST', url, json=payload)
-        return data['data']['task_id']
+        data = await self.request("POST", url, json=payload)
+        return data["data"]["task_id"]
 
 
 async def create_midjourney_images(

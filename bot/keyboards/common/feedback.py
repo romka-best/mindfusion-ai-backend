@@ -1,4 +1,4 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.locales.main import get_localization
 from bot.locales.types import LanguageCode
@@ -9,7 +9,7 @@ def build_feedback_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_CANCEL,
-                callback_data='feedback:cancel'
+                callback_data="feedback:cancel",
             )
         ]
     ]

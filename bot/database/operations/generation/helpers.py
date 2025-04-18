@@ -1,11 +1,15 @@
-from bot.database.models.generation import Generation, GenerationStatus, GenerationReaction
+from bot.database.models.generation import (
+    Generation,
+    GenerationReaction,
+    GenerationStatus,
+)
 
 
 async def create_generation_object(
     id: str,
     request_id: str,
     product_id: str,
-    result='',
+    result="",
     has_error=False,
     status=GenerationStatus.STARTED,
     reaction=GenerationReaction.NONE,

@@ -1,12 +1,12 @@
 import time
 
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from bot.database.models.common import (
-    Model,
     MidjourneyAction,
+    Model,
 )
 from bot.database.models.user import UserSettings
 from bot.database.operations.user.getters import get_user
@@ -40,22 +40,24 @@ from bot.utils.is_time_limit_exceeded import is_time_limit_exceeded
 text_router = Router()
 
 
-@text_router.message(F.text, ~F.text.startswith('/'))
+@text_router.message(F.text, ~F.text.startswith("/"))
 async def handle_text(message: Message, state: FSMContext):
     user = await get_user(str(message.from_user.id))
 
     current_time = time.time()
 
-    user_quota = get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION])
+    user_quota = get_quota_by_model(
+        user.current_model, user.settings[user.current_model][UserSettings.VERSION]
+    )
     if not user_quota:
         raise NotImplementedError(
-            f'User Model Is Not Found: {user.current_model}, {user.settings[user.current_model][UserSettings.VERSION]}'
+            f"User Model Is Not Found: {user.current_model}, {user.settings[user.current_model][UserSettings.VERSION]}"
         )
 
     need_exit = (
-        await is_already_processing(message, state, current_time) or
-        await is_messages_limit_exceeded(message, state, user, user_quota) or
-        await is_time_limit_exceeded(message, state, user, current_time)
+        await is_already_processing(message, state, current_time)
+        or await is_messages_limit_exceeded(message, state, user, user_quota)
+        or await is_time_limit_exceeded(message, state, user, current_time)
     )
     if need_exit:
         return
@@ -80,7 +82,9 @@ async def handle_text(message: Message, state: FSMContext):
     elif user.current_model == Model.DALL_E:
         await handle_dall_e(message, state, user)
     elif user.current_model == Model.MIDJOURNEY:
-        await handle_midjourney(message, state, user, message.text, MidjourneyAction.IMAGINE)
+        await handle_midjourney(
+            message, state, user, message.text, MidjourneyAction.IMAGINE
+        )
     elif user.current_model == Model.STABLE_DIFFUSION:
         await handle_stable_diffusion(message, state, user, user_quota)
     elif user.current_model == Model.FLUX:
@@ -94,7 +98,9 @@ async def handle_text(message: Message, state: FSMContext):
     elif user.current_model == Model.PHOTOSHOP_AI:
         await handle_photoshop_ai(message.bot, str(message.chat.id), state, user.id)
     elif user.current_model == Model.MUSIC_GEN:
-        await handle_music_gen(message.bot, str(message.chat.id), state, user.id, message.text)
+        await handle_music_gen(
+            message.bot, str(message.chat.id), state, user.id, message.text
+        )
     elif user.current_model == Model.SUNO:
         await handle_suno(message.bot, str(message.chat.id), state, user.id)
     elif user.current_model == Model.KLING:
@@ -106,11 +112,9 @@ async def handle_text(message: Message, state: FSMContext):
     elif user.current_model == Model.PIKA:
         await handle_pika(message, state, user)
     else:
-        raise NotImplementedError(
-            f'User model is not found: {user.current_model}'
-        )
+        raise NotImplementedError(f"User model is not found: {user.current_model}")
 
 
-@text_router.message(F.text, F.text.startswith('/'))
+@text_router.message(F.text, F.text.startswith("/"))
 async def handle_unrecognized_command(message: Message, state: FSMContext):
     await handle_help(message, state)

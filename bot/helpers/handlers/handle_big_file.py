@@ -1,7 +1,7 @@
 from aiogram import Bot
 from aiogram.types import Update
 
-from bot.config import config, MessageSticker
+from bot.config import MessageSticker, config
 from bot.database.operations.user.getters import get_user
 from bot.locales.main import get_localization
 

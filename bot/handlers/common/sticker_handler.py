@@ -1,8 +1,8 @@
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from bot.locales.main import get_user_language, get_localization
+from bot.locales.main import get_localization, get_user_language
 
 sticker_router = Router()
 

@@ -17,7 +17,7 @@ async def create_promo_code_object(
         name=name,
         type=type,
         details=details,
-        until=until
+        until=until,
     )
 
 
@@ -25,10 +25,10 @@ async def create_used_promo_code_object(
     user_id: str,
     promo_code_id: str,
 ) -> UsedPromoCode:
-    used_promo_code_ref = firebase.db.collection(UsedPromoCode.COLLECTION_NAME).document()
+    used_promo_code_ref = firebase.db.collection(
+        UsedPromoCode.COLLECTION_NAME
+    ).document()
 
     return UsedPromoCode(
-        id=used_promo_code_ref.id,
-        user_id=user_id,
-        promo_code_id=promo_code_id
+        id=used_promo_code_ref.id, user_id=user_id, promo_code_id=promo_code_id
     )

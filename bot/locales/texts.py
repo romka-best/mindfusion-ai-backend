@@ -1,13 +1,13 @@
 from typing import Protocol, Union
 
 from bot.database.models.common import (
+    Currency,
     Model,
     ModelType,
-    Currency,
     PaymentMethod,
+    VideoSummaryAmount,
     VideoSummaryFocus,
     VideoSummaryFormat,
-    VideoSummaryAmount,
 )
 from bot.database.models.package import Package, PackageStatus
 from bot.database.models.product import Product, ProductCategory
@@ -37,7 +37,9 @@ class Texts(Protocol):
         raise NotImplementedError
 
     @staticmethod
-    def bonus_info_earn(user_id: str, referred_count: int, feedback_count: int, play_count: int):
+    def bonus_info_earn(
+        user_id: str, referred_count: int, feedback_count: int, play_count: int
+    ):
         raise NotImplementedError
 
     @staticmethod
@@ -54,8 +56,8 @@ class Texts(Protocol):
     @staticmethod
     def bonus_referral_link(user_id: str, is_share: bool) -> str:
         if is_share:
-            return f'https://t.me/share/url?url=https://t.me/GPTsTurboBot?start=r-{user_id}'
-        return f'https://t.me/GPTsTurboBot?start=r-{user_id}'
+            return f"https://t.me/share/url?url=https://t.me/GPTsTurboBot?start=r-{user_id}"
+        return f"https://t.me/GPTsTurboBot?start=r-{user_id}"
 
     BONUS_LEAVE_FEEDBACK: str
     BONUS_CASH_OUT: str
@@ -72,12 +74,12 @@ class Texts(Protocol):
     BONUS_PLAY_DARTS_GAME_INFO: str
     BONUS_PLAY_DICE_GAME: str
     BONUS_PLAY_DICE_GAME_INFO: str
-    BONUS_PLAY_DICE_GAME_CHOOSE_1 = '🎲 1️⃣'
-    BONUS_PLAY_DICE_GAME_CHOOSE_2 = '🎲 2️⃣'
-    BONUS_PLAY_DICE_GAME_CHOOSE_3 = '🎲 3️⃣'
-    BONUS_PLAY_DICE_GAME_CHOOSE_4 = '🎲 4️⃣'
-    BONUS_PLAY_DICE_GAME_CHOOSE_5 = '🎲 5️⃣'
-    BONUS_PLAY_DICE_GAME_CHOOSE_6 = '🎲 6️⃣'
+    BONUS_PLAY_DICE_GAME_CHOOSE_1 = "🎲 1️⃣"
+    BONUS_PLAY_DICE_GAME_CHOOSE_2 = "🎲 2️⃣"
+    BONUS_PLAY_DICE_GAME_CHOOSE_3 = "🎲 3️⃣"
+    BONUS_PLAY_DICE_GAME_CHOOSE_4 = "🎲 4️⃣"
+    BONUS_PLAY_DICE_GAME_CHOOSE_5 = "🎲 5️⃣"
+    BONUS_PLAY_DICE_GAME_CHOOSE_6 = "🎲 6️⃣"
     BONUS_PLAY_CASINO_GAME: str
     BONUS_PLAY_CASINO_GAME_INFO: str
     BONUS_PLAY_GAME_WON: str
@@ -136,32 +138,32 @@ class Texts(Protocol):
     CHAT_DELETE_SUCCESS: str
 
     # ChatGPT
-    CHAT_GPT = '💭 ChatGPT'
-    CHAT_GPT_3_TURBO = '✉️ ChatGPT 3.5 Turbo'
-    CHAT_GPT_4_OMNI_MINI = '✉️ ChatGPT 4.0 Omni Mini'
-    CHAT_GPT_4_TURBO = '🧠 ChatGPT 4.0 Turbo'
-    CHAT_GPT_4_OMNI = '💥 ChatGPT 4.0 Omni'
-    CHAT_GPT_O_4_MINI = '🧩 ChatGPT o4-mini'
-    CHAT_GPT_O_3 = '🧪 ChatGPT o3'
-    CHAT_GPT_4_1_MINI = '👽 ChatGPT 4.1 Mini'
-    CHAT_GPT_4_1 = '🛸 ChatGPT 4.1'
+    CHAT_GPT = "💭 ChatGPT"
+    CHAT_GPT_3_TURBO = "✉️ ChatGPT 3.5 Turbo"
+    CHAT_GPT_4_OMNI_MINI = "✉️ ChatGPT 4.0 Omni Mini"
+    CHAT_GPT_4_TURBO = "🧠 ChatGPT 4.0 Turbo"
+    CHAT_GPT_4_OMNI = "💥 ChatGPT 4.0 Omni"
+    CHAT_GPT_O_4_MINI = "🧩 ChatGPT o4-mini"
+    CHAT_GPT_O_3 = "🧪 ChatGPT o3"
+    CHAT_GPT_4_1_MINI = "👽 ChatGPT 4.1 Mini"
+    CHAT_GPT_4_1 = "🛸 ChatGPT 4.1"
 
     # Claude
-    CLAUDE = '📄 Claude'
-    CLAUDE_3_HAIKU = '📜 Claude 3.5 Haiku'
-    CLAUDE_3_SONNET = '💫 Claude 3.7 Sonnet'
-    CLAUDE_3_OPUS = '🚀 Claude 3.0 Opus'
+    CLAUDE = "📄 Claude"
+    CLAUDE_3_HAIKU = "📜 Claude 3.5 Haiku"
+    CLAUDE_3_SONNET = "💫 Claude 3.7 Sonnet"
+    CLAUDE_3_OPUS = "🚀 Claude 3.0 Opus"
 
     # DALL-E
-    DALL_E = '👨‍🎨 DALL-E'
+    DALL_E = "👨‍🎨 DALL-E"
 
     # DeepSeek
-    DEEP_SEEK = '🐳 DeepSeek'
-    DEEP_SEEK_V3 = '🐬 DeepSeek V3'
-    DEEP_SEEK_R1 = '🐋 DeepSeek R1'
+    DEEP_SEEK = "🐳 DeepSeek"
+    DEEP_SEEK_V3 = "🐬 DeepSeek V3"
+    DEEP_SEEK_R1 = "🐋 DeepSeek R1"
 
     # Eightify
-    EIGHTIFY = '👀 YouTube Summary'
+    EIGHTIFY = "👀 YouTube Summary"
     EIGHTIFY_INFO: str
     EIGHTIFY_VALUE_ERROR: str
     EIGHTIFY_VIDEO_ERROR: str
@@ -202,7 +204,7 @@ class Texts(Protocol):
         raise NotImplementedError
 
     # FaceSwap
-    FACE_SWAP = '📷️ FaceSwap'
+    FACE_SWAP = "📷️ FaceSwap"
     FACE_SWAP_INFO: str
     FACE_SWAP_CHOOSE_PHOTO: str
     FACE_SWAP_CHOOSE_PHOTO_INFO: str
@@ -216,7 +218,9 @@ class Texts(Protocol):
     FACE_SWAP_NO_FACE_FOUND_ERROR: str
 
     @staticmethod
-    def face_swap_choose_package(name: str, available_images: int, total_images: int, used_images: int) -> str:
+    def face_swap_choose_package(
+        name: str, available_images: int, total_images: int, used_images: int
+    ) -> str:
         raise NotImplementedError
 
     @staticmethod
@@ -231,21 +235,21 @@ class Texts(Protocol):
     FEEDBACK_DENIED: str
 
     # Flux
-    FLUX = '🫐 Flux'
-    FLUX_1_DEV = '🌲 Flux 1.0 Dev'
-    FLUX_1_PRO = '🏔 Flux 1.1 Pro'
+    FLUX = "🫐 Flux"
+    FLUX_1_DEV = "🌲 Flux 1.0 Dev"
+    FLUX_1_PRO = "🏔 Flux 1.1 Pro"
     FLUX_STRICT_SAFETY_TOLERANCE: str
     FLUX_MIDDLE_SAFETY_TOLERANCE: str
     FLUX_PERMISSIVE_SAFETY_TOLERANCE: str
 
     # Gemini
-    GEMINI = '✨ Gemini'
-    GEMINI_2_FLASH = '🏎 Gemini 2.0 Flash'
-    GEMINI_2_PRO = '💼 Gemini 2.5 Pro'
-    GEMINI_1_ULTRA = '🛡️ Gemini 1.0 Ultra'
+    GEMINI = "✨ Gemini"
+    GEMINI_2_FLASH = "🏎 Gemini 2.0 Flash"
+    GEMINI_2_PRO = "💼 Gemini 2.5 Pro"
+    GEMINI_1_ULTRA = "🛡️ Gemini 1.0 Ultra"
 
     # Gemini Video
-    GEMINI_VIDEO = '📼 Video Summary'
+    GEMINI_VIDEO = "📼 Video Summary"
     GEMINI_VIDEO_INFO: str
     GEMINI_VIDEO_TOO_LONG_ERROR: str
     GEMINI_VIDEO_VALUE_ERROR: str
@@ -270,7 +274,7 @@ class Texts(Protocol):
     GENERATION_VIDEO_SUCCESS: str
 
     # Grok
-    GROK = '🐦 Grok 2.0'
+    GROK = "🐦 Grok 2.0"
 
     # Help
     HELP_INFO: str
@@ -321,7 +325,7 @@ class Texts(Protocol):
     INFO_PIKA: str
 
     # Kling
-    KLING = '🎬 Kling'
+    KLING = "🎬 Kling"
     KLING_MODE_STANDARD: str
     KLING_MODE_PRO: str
 
@@ -330,16 +334,16 @@ class Texts(Protocol):
     LANGUAGE_CHOSEN: str
 
     # Luma Photon
-    LUMA_PHOTON = '🌌 Luma Photon'
+    LUMA_PHOTON = "🌌 Luma Photon"
 
     # Luma Ray
-    LUMA_RAY = '🔆 Luma Ray'
+    LUMA_RAY = "🔆 Luma Ray"
 
     # Maintenance Mode
     MAINTENANCE_MODE: str
 
     # Midjourney
-    MIDJOURNEY = '🎨 Midjourney'
+    MIDJOURNEY = "🎨 Midjourney"
     MIDJOURNEY_INFO: str
     MIDJOURNEY_ALREADY_CHOSE_UPSCALE: str
 
@@ -422,7 +426,7 @@ class Texts(Protocol):
     MODELS_VIDEO: str
 
     # MusicGen
-    MUSIC_GEN = '🎺 MusicGen'
+    MUSIC_GEN = "🎺 MusicGen"
     MUSIC_GEN_INFO: str
     MUSIC_GEN_TYPE_SECONDS: str
     MUSIC_GEN_MIN_ERROR: str
@@ -463,7 +467,9 @@ class Texts(Protocol):
     PACKAGE_QUANTITY_MAX_ERROR: str
 
     @staticmethod
-    def package_info(currency: Currency, cost: str, gift_products: list[Product]) -> str:
+    def package_info(
+        currency: Currency, cost: str, gift_products: list[Product]
+    ) -> str:
         raise NotImplementedError
 
     @staticmethod
@@ -471,11 +477,15 @@ class Texts(Protocol):
         raise NotImplementedError
 
     @staticmethod
-    def package_confirmation(package_name: str, package_quantity: int, currency: Currency, price: str) -> str:
+    def package_confirmation(
+        package_name: str, package_quantity: int, currency: Currency, price: str
+    ) -> str:
         raise NotImplementedError
 
     @staticmethod
-    def payment_package_description(user_id: str, package_name: str, package_quantity: int):
+    def payment_package_description(
+        user_id: str, package_name: str, package_quantity: int
+    ):
         raise NotImplementedError
 
     PACKAGES: str
@@ -503,11 +513,11 @@ class Texts(Protocol):
         raise NotImplementedError
 
     # Perplexity
-    PERPLEXITY = '🌐 Perplexity'
+    PERPLEXITY = "🌐 Perplexity"
     PERPLEXITY_INFO: str
 
     # Photoshop AI
-    PHOTOSHOP_AI = '🪄 Photoshop AI'
+    PHOTOSHOP_AI = "🪄 Photoshop AI"
     PHOTOSHOP_AI_INFO: str
     PHOTOSHOP_AI_UPSCALE: str
     PHOTOSHOP_AI_UPSCALE_INFO: str
@@ -519,7 +529,7 @@ class Texts(Protocol):
     PHOTOSHOP_AI_REMOVE_BACKGROUND_INFO: str
 
     # Pika
-    PIKA = '🐇 Pika'
+    PIKA = "🐇 Pika"
 
     # Profile
     @staticmethod
@@ -564,10 +574,10 @@ class Texts(Protocol):
     PROMO_CODE_ALREADY_USED_ERROR: str
 
     # Runway
-    RUNWAY = '🎥 Runway'
+    RUNWAY = "🎥 Runway"
 
     # Recraft
-    RECRAFT = '🐼 Recraft'
+    RECRAFT = "🐼 Recraft"
 
     # Remove Restriction
     REMOVE_RESTRICTION: str
@@ -623,17 +633,21 @@ class Texts(Protocol):
     SHOPPING_CART_CLEAR: str
 
     @staticmethod
-    async def shopping_cart_info(currency: Currency, cart_items: list[dict], discount: int):
+    async def shopping_cart_info(
+        currency: Currency, cart_items: list[dict], discount: int
+    ):
         raise NotImplementedError
 
     @staticmethod
-    async def shopping_cart_confirmation(cart_items: list[dict], currency: Currency, price: float) -> str:
+    async def shopping_cart_confirmation(
+        cart_items: list[dict], currency: Currency, price: float
+    ) -> str:
         raise NotImplementedError
 
     # Stable Diffusion
-    STABLE_DIFFUSION = '🎆 Stable Diffusion'
-    STABLE_DIFFUSION_XL = '🦄 Stable Diffusion XL'
-    STABLE_DIFFUSION_3 = '🧑‍🚀 Stable Diffusion 3.5'
+    STABLE_DIFFUSION = "🎆 Stable Diffusion"
+    STABLE_DIFFUSION_XL = "🦄 Stable Diffusion XL"
+    STABLE_DIFFUSION_3 = "🧑‍🚀 Stable Diffusion 3.5"
 
     # Start
     START_INFO: str
@@ -682,7 +696,7 @@ class Texts(Protocol):
         raise NotImplementedError
 
     # Suno
-    SUNO = '🎸 Suno'
+    SUNO = "🎸 Suno"
     SUNO_INFO: str
     SUNO_SIMPLE_MODE: str
     SUNO_CUSTOM_MODE: str

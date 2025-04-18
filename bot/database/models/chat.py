@@ -4,7 +4,7 @@ from bot.config import config
 
 
 class Chat:
-    COLLECTION_NAME = 'chats'
+    COLLECTION_NAME = "chats"
 
     id: str
     user_id: str

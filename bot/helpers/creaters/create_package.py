@@ -24,17 +24,17 @@ async def create_package(
         transaction,
         package_id,
         {
-            'status': PackageStatus.SUCCESS,
-            'income_amount': income_amount,
-            'provider_payment_charge_id': provider_payment_charge_id,
+            "status": PackageStatus.SUCCESS,
+            "income_amount": income_amount,
+            "provider_payment_charge_id": provider_payment_charge_id,
         },
     )
 
-    product_quota = product.details.get('quota')
-    if product.details.get('is_recurring', False):
+    product_quota = product.details.get("quota")
+    if product.details.get("is_recurring", False):
         user.additional_usage_quota[product_quota] = True
     else:
         user.additional_usage_quota[product_quota] += package.quantity
-    await update_user_in_transaction(transaction, user_id, {
-        'additional_usage_quota': user.additional_usage_quota
-    })
+    await update_user_in_transaction(
+        transaction, user_id, {"additional_usage_quota": user.additional_usage_quota}
+    )

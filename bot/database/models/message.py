@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 
 class Message:
-    COLLECTION_NAME = 'messages'
+    COLLECTION_NAME = "messages"
 
     id: str
     chat_id: str

@@ -6,26 +6,26 @@ from bot.database.models.common import Currency, PaymentMethod, Quota
 
 
 class SubscriptionType(StrEnum):
-    MONTHLY = 'MONTHLY'
-    YEARLY = 'YEARLY'
+    MONTHLY = "MONTHLY"
+    YEARLY = "YEARLY"
 
 
 class SubscriptionPeriod:
-    MONTH1 = 'MONTH_1'
-    MONTHS3 = 'MONTHS_3'
-    MONTHS6 = 'MONTHS_6'
-    MONTHS12 = 'MONTHS_12'
+    MONTH1 = "MONTH_1"
+    MONTHS3 = "MONTHS_3"
+    MONTHS6 = "MONTHS_6"
+    MONTHS12 = "MONTHS_12"
 
 
 class SubscriptionStatus(StrEnum):
-    ACTIVE = 'ACTIVE'
-    TRIAL = 'TRIAL'
-    WAITING = 'WAITING'
-    FINISHED = 'FINISHED'
-    DECLINED = 'DECLINED'
-    CANCELED = 'CANCELED'
-    RESUBSCRIBED = 'RESUBSCRIBED'
-    ERROR = 'ERROR'
+    ACTIVE = "ACTIVE"
+    TRIAL = "TRIAL"
+    WAITING = "WAITING"
+    FINISHED = "FINISHED"
+    DECLINED = "DECLINED"
+    CANCELED = "CANCELED"
+    RESUBSCRIBED = "RESUBSCRIBED"
+    ERROR = "ERROR"
 
 
 SUBSCRIPTION_FREE_LIMITS = {
@@ -71,7 +71,7 @@ SUBSCRIPTION_FREE_LIMITS = {
 
 
 class Subscription:
-    COLLECTION_NAME = 'subscriptions'
+    COLLECTION_NAME = "subscriptions"
 
     id: str
     user_id: str
@@ -101,8 +101,8 @@ class Subscription:
         amount: float,
         income_amount=0.00,
         payment_method=PaymentMethod.YOOKASSA,
-        provider_payment_charge_id='',
-        provider_auto_payment_charge_id='',
+        provider_payment_charge_id="",
+        provider_auto_payment_charge_id="",
         stripe_id=None,
         start_date=None,
         end_date=None,
@@ -123,7 +123,9 @@ class Subscription:
         self.provider_auto_payment_charge_id = provider_auto_payment_charge_id
         self.stripe_id = stripe_id
 
-        self.start_date = start_date if start_date is not None else datetime.now(timezone.utc)
+        self.start_date = (
+            start_date if start_date is not None else datetime.now(timezone.utc)
+        )
         if not end_date and period == SubscriptionPeriod.MONTH1:
             self.end_date = self.start_date + timedelta(days=30)
         elif not end_date and period == SubscriptionPeriod.MONTHS3:

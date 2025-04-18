@@ -1,7 +1,7 @@
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from bot.config import config, MessageSticker
+from bot.config import MessageSticker, config
 from bot.database.models.common import Model, Quota
 from bot.database.models.subscription import SUBSCRIPTION_FREE_LIMITS
 from bot.database.models.user import User, UserSettings
@@ -12,12 +12,17 @@ from bot.integrations.luma import get_cost_for_video as get_cost_for_luma_ray_vi
 from bot.integrations.midjourney import Midjourney
 from bot.integrations.open_ai import get_cost_for_image
 from bot.integrations.runway import get_cost_for_video as get_cost_for_runway_video
-from bot.keyboards.ai.model import build_model_limit_exceeded_keyboard, build_model_restricted_keyboard
+from bot.keyboards.ai.model import (
+    build_model_limit_exceeded_keyboard,
+    build_model_restricted_keyboard,
+)
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
 
 
-async def is_messages_limit_exceeded(message: Message, state: FSMContext, user: User, user_quota: Quota):
+async def is_messages_limit_exceeded(
+    message: Message, state: FSMContext, user: User, user_quota: Quota
+):
     generation_cost = 1
     if user.current_model == Model.DALL_E:
         generation_cost = get_cost_for_image(
@@ -43,7 +48,9 @@ async def is_messages_limit_exceeded(message: Message, state: FSMContext, user: 
             user.settings[Model.LUMA_RAY][UserSettings.DURATION],
         )
 
-    max_generations = user.daily_limits[user_quota] + user.additional_usage_quota[user_quota]
+    max_generations = (
+        user.daily_limits[user_quota] + user.additional_usage_quota[user_quota]
+    )
 
     if max_generations < generation_cost:
         user_language_code = await get_user_language(user.id, state.storage)
@@ -55,22 +62,32 @@ async def is_messages_limit_exceeded(message: Message, state: FSMContext, user: 
         if user.subscription_id:
             user_subscription = await get_subscription(user.subscription_id)
             product_subscription = await get_product(user_subscription.product_id)
-            subscription_limits = product_subscription.details.get('limits', SUBSCRIPTION_FREE_LIMITS)
+            subscription_limits = product_subscription.details.get(
+                "limits", SUBSCRIPTION_FREE_LIMITS
+            )
         else:
             subscription_limits = SUBSCRIPTION_FREE_LIMITS
 
         if subscription_limits.get(user_quota) == 0:
             product = await get_product_by_quota(user_quota)
-            product_name = product.names.get(user_language_code) or product.names.get(LanguageCode.EN)
+            product_name = product.names.get(user_language_code) or product.names.get(
+                LanguageCode.EN
+            )
             await message.reply(
-                text=get_localization(user_language_code).model_restricted(product_name),
-                reply_markup=build_model_restricted_keyboard(user_language_code, user.had_subscription),
+                text=get_localization(user_language_code).model_restricted(
+                    product_name
+                ),
+                reply_markup=build_model_restricted_keyboard(
+                    user_language_code, user.had_subscription
+                ),
                 allow_sending_without_reply=True,
             )
         else:
             await message.reply(
                 text=get_localization(user_language_code).model_reached_usage_limit(),
-                reply_markup=build_model_limit_exceeded_keyboard(user_language_code, user.had_subscription),
+                reply_markup=build_model_limit_exceeded_keyboard(
+                    user_language_code, user.had_subscription
+                ),
                 allow_sending_without_reply=True,
             )
 

@@ -22,11 +22,13 @@ async def get_roles(
     roles_query = firebase.db.collection(Role.COLLECTION_NAME)
 
     if start_date:
-        roles_query = roles_query.where(filter=FieldFilter('created_at', '>=', start_date))
+        roles_query = roles_query.where(
+            filter=FieldFilter("created_at", ">=", start_date)
+        )
     if end_date:
-        roles_query = roles_query.where(filter=FieldFilter('created_at', '<=', end_date))
+        roles_query = roles_query.where(
+            filter=FieldFilter("created_at", "<=", end_date)
+        )
 
-    roles = roles_query.order_by('created_at', direction=Query.ASCENDING).stream()
-    return [
-        Role(**role.to_dict()) async for role in roles
-    ]
+    roles = roles_query.order_by("created_at", direction=Query.ASCENDING).stream()
+    return [Role(**role.to_dict()) async for role in roles]

@@ -5,7 +5,7 @@ from httpx import Request, Response
 from runwayml import AsyncRunwayML
 
 from bot.config import config
-from bot.database.models.common import RunwayVersion, RunwayResolution, RunwayDuration
+from bot.database.models.common import RunwayDuration, RunwayResolution, RunwayVersion
 
 client = AsyncRunwayML(
     api_key=config.RUNWAYML_API_KEY.get_secret_value(),
@@ -43,22 +43,22 @@ async def get_response_video(
     for _ in range(60):
         await asyncio.sleep(10)
         task = await client.tasks.retrieve(task_id)
-        if task.status in ['SUCCEEDED', 'FAILED', 'CANCELLED']:
+        if task.status in ["SUCCEEDED", "FAILED", "CANCELLED"]:
             break
 
-    if task.status == 'FAILED':
+    if task.status == "FAILED":
         raise runwayml.BadRequestError(
             message=task.failure_code,
-            body={'error': task.failure_code},
+            body={"error": task.failure_code},
             response=Response(
                 status_code=400,
-                request=Request('POST', 'https://api.runwayml.com'),
+                request=Request("POST", "https://api.runwayml.com"),
             ),
         )
 
     return {
-        'status': task.status,
-        'result': task.output,
-        'failure': task.failure,
-        'failure_code': task.failure_code,
+        "status": task.status,
+        "result": task.output,
+        "failure": task.failure,
+        "failure_code": task.failure_code,
     }

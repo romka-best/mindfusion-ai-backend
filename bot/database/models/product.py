@@ -1,18 +1,18 @@
 from dataclasses import field
 from datetime import datetime, timezone
 from enum import StrEnum
-from typing import Optional, ClassVar, Union
+from typing import ClassVar, Optional, Union
 
 from pydantic import BaseModel, Field
 
 from bot.database.models.common import Currency, ModelType
-from bot.database.models.subscription import SubscriptionType, SubscriptionPeriod
+from bot.database.models.subscription import SubscriptionType
 from bot.locales.types import LanguageCode
 
 
 class ProductType(StrEnum):
-    SUBSCRIPTION = 'SUBSCRIPTION'
-    PACKAGE = 'PACKAGE'
+    SUBSCRIPTION = "SUBSCRIPTION"
+    PACKAGE = "PACKAGE"
 
 
 class ProductCategory(StrEnum):
@@ -23,20 +23,20 @@ class ProductCategory(StrEnum):
     IMAGE = ModelType.IMAGE
     MUSIC = ModelType.MUSIC
     VIDEO = ModelType.VIDEO
-    OTHER = 'OTHER'
+    OTHER = "OTHER"
 
 
 class ProductCategorySymbols(StrEnum):
-    TEXT = '✉️'
-    SUMMARY = '📝'
-    IMAGE = '🖼'
-    MUSIC = '🎵'
-    VIDEO = '📹'
-    OTHER = '🗓'
+    TEXT = "✉️"
+    SUMMARY = "📝"
+    IMAGE = "🖼"
+    MUSIC = "🎵"
+    VIDEO = "📹"
+    OTHER = "🗓"
 
 
 class Product(BaseModel):
-    COLLECTION_NAME: ClassVar[str] = 'products'
+    COLLECTION_NAME: ClassVar[str] = "products"
 
     id: str
     stripe_id: str
@@ -50,8 +50,12 @@ class Product(BaseModel):
     order: int = -1
     discount: int = 0
     details: Optional[dict] = field(default_factory=lambda: {})
-    created_at: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
-    edited_at: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: Optional[datetime] = Field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+    edited_at: Optional[datetime] = Field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
 
     def to_dict(self):
         return vars(self)
@@ -77,4 +81,4 @@ class Product(BaseModel):
                 2,
             )
 
-        return ('%f' % price_with_discount).rstrip('0').rstrip('.')
+        return ("%f" % price_with_discount).rstrip("0").rstrip(".")

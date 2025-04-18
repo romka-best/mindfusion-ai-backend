@@ -1,20 +1,23 @@
-from aiogram.client.session import aiohttp
 from typing_extensions import Optional
 
-from bot.config import config
-from bot.database.models.common import KlingVersion, KlingMode, KlingDuration, AspectRatio
+from aiogram.client.session import aiohttp
 
-KLING_API_URL = 'https://api.piapi.ai'
+from bot.config import config
+from bot.database.models.common import (
+    AspectRatio,
+    KlingDuration,
+    KlingMode,
+    KlingVersion,
+)
+
+KLING_API_URL = "https://api.piapi.ai"
 KLING_API_KEY = config.KLING_API_KEY.get_secret_value()
 WEBHOOK_KLING_URL = config.WEBHOOK_URL + config.WEBHOOK_KLING_PATH
 
 
 class Kling:
     def __init__(self, session: aiohttp.ClientSession = None) -> None:
-        self.headers = {
-            'Content-Type': 'application/json',
-            'x-api-key': KLING_API_KEY
-        }
+        self.headers = {"Content-Type": "application/json", "x-api-key": KLING_API_KEY}
         self.session = session
 
     async def __aenter__(self):
@@ -28,7 +31,9 @@ class Kling:
         await self.session.close()
 
     async def request(self, method: str, url: str, **kwargs):
-        async with self.session.request(method, url, headers=self.headers, **kwargs) as response:
+        async with self.session.request(
+            method, url, headers=self.headers, **kwargs
+        ) as response:
             response.raise_for_status()
             return await response.json()
 
@@ -73,27 +78,27 @@ class Videos(APIResource):
         aspect_ratio: AspectRatio,
         image_url: Optional[str] = None,
     ) -> str:
-        url = f'{KLING_API_URL}/api/v1/task'
+        url = f"{KLING_API_URL}/api/v1/task"
         payload = {
-            'model': 'kling',
-            'task_type': 'video_generation',
-            'input': {
-                'prompt': prompt,
-                'version': version,
-                'mode': mode,
-                'duration': duration,
-                'aspect_ratio': aspect_ratio,
-                'image_url': image_url,
-                'cfg_scale': 0.5,
+            "model": "kling",
+            "task_type": "video_generation",
+            "input": {
+                "prompt": prompt,
+                "version": version,
+                "mode": mode,
+                "duration": duration,
+                "aspect_ratio": aspect_ratio,
+                "image_url": image_url,
+                "cfg_scale": 0.5,
             },
-            'config': {
-                'webhook_config': {
-                    'endpoint': WEBHOOK_KLING_URL,
+            "config": {
+                "webhook_config": {
+                    "endpoint": WEBHOOK_KLING_URL,
                 }
             },
         }
-        data = await self.request('POST', url, json=payload)
-        return data['data']['task_id']
+        data = await self.request("POST", url, json=payload)
+        return data["data"]["task_id"]
 
 
 async def generate_video(

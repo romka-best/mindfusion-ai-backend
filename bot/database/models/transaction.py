@@ -5,19 +5,19 @@ from bot.database.models.common import Currency
 
 
 class TransactionType(StrEnum):
-    INCOME = 'INCOME'
-    EXPENSE = 'EXPENSE'
+    INCOME = "INCOME"
+    EXPENSE = "EXPENSE"
 
 
 class ServiceType(StrEnum):
-    FREE = 'FREE'
-    SERVER = 'SERVER'
-    DATABASE = 'DATABASE'
-    OTHER = 'OTHER'
+    FREE = "FREE"
+    SERVER = "SERVER"
+    DATABASE = "DATABASE"
+    OTHER = "OTHER"
 
 
 class Transaction:
-    COLLECTION_NAME = 'transactions'
+    COLLECTION_NAME = "transactions"
 
     id: str
     user_id: str

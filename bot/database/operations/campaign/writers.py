@@ -11,8 +11,10 @@ async def write_campaign(
         utm,
         discount,
     )
-    await firebase.db.collection(Campaign.COLLECTION_NAME) \
-        .document(campaign.id) \
+    await (
+        firebase.db.collection(Campaign.COLLECTION_NAME)
+        .document(campaign.id)
         .set(campaign.to_dict())
+    )
 
     return campaign

@@ -25,8 +25,7 @@ async def handle_model_info(
         Model.GROK,
     ]:
         await bot.send_message(
-            chat_id=chat_id,
-            text=get_localization(language_code).model_text_info()
+            chat_id=chat_id, text=get_localization(language_code).model_text_info()
         )
     elif model == Model.PERPLEXITY:
         await bot.send_message(
@@ -42,8 +41,7 @@ async def handle_model_info(
         Model.RECRAFT,
     ]:
         await bot.send_message(
-            chat_id=chat_id,
-            text=get_localization(language_code).model_image_info()
+            chat_id=chat_id, text=get_localization(language_code).model_image_info()
         )
     elif model == Model.EIGHTIFY:
         await bot.send_message(
@@ -90,6 +88,5 @@ async def handle_model_info(
         Model.PIKA,
     ]:
         await bot.send_message(
-            chat_id=chat_id,
-            text=get_localization(language_code).model_video_info()
+            chat_id=chat_id, text=get_localization(language_code).model_video_info()
         )

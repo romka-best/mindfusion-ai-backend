@@ -5,14 +5,14 @@ from bot.database.models.common import Currency, PaymentMethod
 
 
 class PackageStatus(StrEnum):
-    SUCCESS = 'SUCCESS'
-    WAITING = 'WAITING'
-    DECLINED = 'DECLINED'
-    ERROR = 'ERROR'
+    SUCCESS = "SUCCESS"
+    WAITING = "WAITING"
+    DECLINED = "DECLINED"
+    ERROR = "ERROR"
 
 
 class Package:
-    COLLECTION_NAME = 'packages'
+    COLLECTION_NAME = "packages"
 
     id: str
     user_id: str
@@ -39,7 +39,7 @@ class Package:
         income_amount=0.00,
         quantity=1,
         payment_method=PaymentMethod.YOOKASSA,
-        provider_payment_charge_id='',
+        provider_payment_charge_id="",
         until_at=None,
         created_at=None,
         edited_at=None,

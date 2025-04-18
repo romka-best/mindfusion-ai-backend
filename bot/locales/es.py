@@ -1,27 +1,27 @@
 import random
 from typing import Union
 
-from bot.database.models.product import Product, ProductType, ProductCategory
+from bot.database.models.common import (
+    AspectRatio,
+    Currency,
+    Model,
+    ModelType,
+    Quota,
+    SendType,
+    VideoSummaryAmount,
+    VideoSummaryFocus,
+    VideoSummaryFormat,
+)
+from bot.database.models.product import Product, ProductCategory, ProductType
 from bot.database.models.prompt import Prompt
+from bot.database.models.subscription import SubscriptionStatus
+from bot.database.models.user import UserSettings
 from bot.database.operations.product.getters import get_product
 from bot.helpers.formatters.format_number import format_number
 from bot.helpers.getters.get_model_version import get_model_version
 from bot.helpers.getters.get_time_until_limit_update import get_time_until_limit_update
 from bot.helpers.getters.get_user_discount import get_user_discount
 from bot.locales.texts import Texts
-from bot.database.models.common import (
-    Currency,
-    Quota,
-    Model,
-    ModelType,
-    VideoSummaryFocus,
-    VideoSummaryFormat,
-    VideoSummaryAmount,
-    AspectRatio,
-    SendType,
-)
-from bot.database.models.subscription import SubscriptionStatus
-from bot.database.models.user import UserSettings
 from bot.locales.types import LanguageCode
 
 
@@ -69,7 +69,9 @@ Elige una acción 👇
     BONUS_SPEND = "➖ Gastar"
 
     @staticmethod
-    def bonus_info_earn(user_id: str, referred_count: int, feedback_count: int, play_count: int):
+    def bonus_info_earn(
+        user_id: str, referred_count: int, feedback_count: int, play_count: int
+    ):
         return f"""
 ➕ <b>Cómo ganar créditos</b>
 
@@ -231,12 +233,14 @@ Selecciona la <b>subcategoría</b> que necesitas presionando el botón abajo �
 
     @staticmethod
     def catalog_prompts_choose_prompt(prompts: list[Prompt]):
-        prompt_info = ''
+        prompt_info = ""
         for index, prompt in enumerate(prompts):
             is_last = index == len(prompts) - 1
-            right_part = '\n' if not is_last else ''
-            prompt_name = prompt.names.get(LanguageCode.ES) or prompt.names.get(LanguageCode.EN)
-            prompt_info += f'<b>{index + 1}</b>: {prompt_name}{right_part}'
+            right_part = "\n" if not is_last else ""
+            prompt_name = prompt.names.get(LanguageCode.ES) or prompt.names.get(
+                LanguageCode.EN
+            )
+            prompt_info += f"<b>{index + 1}</b>: {prompt_name}{right_part}"
 
         return f"""
 📚 <b>Catálogo de Prompts</b>
@@ -248,13 +252,15 @@ Para obtener el prompt completo, selecciona el <b>número del prompt</b> presion
 
     @staticmethod
     def catalog_prompts_info_prompt(prompt: Prompt, products: list[Product]):
-        model_info = ''
+        model_info = ""
         for index, product in enumerate(products):
             is_last = index == len(products) - 1
-            left_part = '┣' if not is_last else '┗'
-            right_part = '\n' if not is_last else ''
-            product_name = product.names.get(LanguageCode.ES) or product.names.get(LanguageCode.EN)
-            model_info += f'    {left_part} <b>{product_name}</b>{right_part}'
+            left_part = "┣" if not is_last else "┗"
+            right_part = "\n" if not is_last else ""
+            product_name = product.names.get(LanguageCode.ES) or product.names.get(
+                LanguageCode.EN
+            )
+            model_info += f"    {left_part} <b>{product_name}</b>{right_part}"
 
         return f"""
 📚 <b>Catálogo de Prompts</b>
@@ -269,14 +275,16 @@ Selecciona una acción abajo 👇
 
     @staticmethod
     def catalog_prompts_examples(products: list[Product]):
-        prompt_examples_info = ''
+        prompt_examples_info = ""
         for index, product in enumerate(products):
             is_last = index == len(products) - 1
             is_first = index == 0
-            left_part = '┣' if not is_last else '┗'
-            right_part = '\n' if not is_last else ''
-            product_name = product.names.get(LanguageCode.ES) or product.names.get(LanguageCode.EN)
-            prompt_examples_info += f'{left_part if not is_first else "┏"} <b>{index + 1}</b>: {product_name}{right_part}'
+            left_part = "┣" if not is_last else "┗"
+            right_part = "\n" if not is_last else ""
+            product_name = product.names.get(LanguageCode.ES) or product.names.get(
+                LanguageCode.EN
+            )
+            prompt_examples_info += f"{left_part if not is_first else '┏'} <b>{index + 1}</b>: {product_name}{right_part}"
 
         return prompt_examples_info
 
@@ -336,7 +344,7 @@ Este es tu único chat; no se puede eliminar.
     CHAT_DELETE_SUCCESS = "Chat eliminado con éxito 🎉"
 
     # Eightify
-    EIGHTIFY = '👀 Resumen de YouTube'
+    EIGHTIFY = "👀 Resumen de YouTube"
     EIGHTIFY_INFO = """
 👀 Con <b>Resumen de YouTube</b>, puedes obtener un resumen breve y claro de cualquier video de YouTube.
 
@@ -548,9 +556,15 @@ Después de cargar una nueva foto, inténtalo de nuevo 🔄
 """
 
     @staticmethod
-    def face_swap_choose_package(name: str, available_images: int, total_images: int, used_images: int) -> str:
+    def face_swap_choose_package(
+        name: str, available_images: int, total_images: int, used_images: int
+    ) -> str:
         remain_images = total_images - used_images
-        footer_text = f'<b>Escribe</b> cuántos cambios de rostro quieres realizar, o <b>elige</b> abajo 👇' if remain_images > 0 else ''
+        footer_text = (
+            "<b>Escribe</b> cuántos cambios de rostro quieres realizar, o <b>elige</b> abajo 👇"
+            if remain_images > 0
+            else ""
+        )
 
         return f"""
 <b>{name}</b>
@@ -773,11 +787,21 @@ Para cualquier consulta también puedes contactar al soporte técnico:
 """
 
     # Info
-    INFO = "🤖 <b>Elige el tipo de modelos sobre los que deseas obtener información:</b>"
-    INFO_TEXT_MODELS = "🤖 <b>Elige el modelo de texto sobre el que deseas obtener información:</b>"
-    INFO_IMAGE_MODELS = "🤖 <b>Elige el modelo gráfico sobre el que deseas obtener información:</b>"
-    INFO_MUSIC_MODELS = "🤖 <b>Elige el modelo musical sobre el que deseas obtener información:</b>"
-    INFO_VIDEO_MODELS = "🤖 <b>Elige el modelo de video sobre el que deseas obtener información:</b>"
+    INFO = (
+        "🤖 <b>Elige el tipo de modelos sobre los que deseas obtener información:</b>"
+    )
+    INFO_TEXT_MODELS = (
+        "🤖 <b>Elige el modelo de texto sobre el que deseas obtener información:</b>"
+    )
+    INFO_IMAGE_MODELS = (
+        "🤖 <b>Elige el modelo gráfico sobre el que deseas obtener información:</b>"
+    )
+    INFO_MUSIC_MODELS = (
+        "🤖 <b>Elige el modelo musical sobre el que deseas obtener información:</b>"
+    )
+    INFO_VIDEO_MODELS = (
+        "🤖 <b>Elige el modelo de video sobre el que deseas obtener información:</b>"
+    )
     INFO_CHAT_GPT = "🤖 <b>Selecciona el modelo ChatGPT</b> sobre el cual deseas obtener información:"
     INFO_CHAT_GPT_4_OMNI_MINI = f"""
 <b>{Texts.CHAT_GPT_4_OMNI_MINI}</b>
@@ -1374,17 +1398,29 @@ Para cualquier consulta también puedes contactar al soporte técnico:
 <b>U</b> — Ampliar la imagen
 <b>V</b> — Variantes de la imagen
 """
-    MIDJOURNEY_ALREADY_CHOSE_UPSCALE = "Ya has elegido esta imagen, intenta con una nueva 🙂"
+    MIDJOURNEY_ALREADY_CHOSE_UPSCALE = (
+        "Ya has elegido esta imagen, intenta con una nueva 🙂"
+    )
 
     # Model
     MODEL = "Para <b>cambiar el modelo</b>, presiona el botón de abajo 👇"
     MODEL_CHANGE_AI = "🤖 Cambiar modelo de AI"
-    MODEL_CHOOSE_CHAT_GPT = "Para seleccionar el modelo <b>ChatGPT 💭</b>, presiona el botón de abajo 👇"
-    MODEL_CHOOSE_CLAUDE = "Para seleccionar el modelo <b>Claude 📄</b>, presiona el botón de abajo 👇"
-    MODEL_CHOOSE_GEMINI = "Para seleccionar el modelo <b>Gemini ✨</b>, presiona el botón de abajo 👇"
-    MODEL_CHOOSE_DEEP_SEEK = "Para seleccionar el modelo <b>DeepSeek 🐳</b>, presiona el botón de abajo 👇"
+    MODEL_CHOOSE_CHAT_GPT = (
+        "Para seleccionar el modelo <b>ChatGPT 💭</b>, presiona el botón de abajo 👇"
+    )
+    MODEL_CHOOSE_CLAUDE = (
+        "Para seleccionar el modelo <b>Claude 📄</b>, presiona el botón de abajo 👇"
+    )
+    MODEL_CHOOSE_GEMINI = (
+        "Para seleccionar el modelo <b>Gemini ✨</b>, presiona el botón de abajo 👇"
+    )
+    MODEL_CHOOSE_DEEP_SEEK = (
+        "Para seleccionar el modelo <b>DeepSeek 🐳</b>, presiona el botón de abajo 👇"
+    )
     MODEL_CHOOSE_STABLE_DIFFUSION = "Para seleccionar el modelo <b>Stable Diffusion 🎆</b>, presiona el botón de abajo 👇"
-    MODEL_CHOOSE_FLUX = "Para seleccionar el modelo <b>Flux 🫐</b>, presiona el botón de abajo 👇"
+    MODEL_CHOOSE_FLUX = (
+        "Para seleccionar el modelo <b>Flux 🫐</b>, presiona el botón de abajo 👇"
+    )
     MODEL_CONTINUE_GENERATING = "Continuar generando"
     MODEL_ALREADY_MAKE_REQUEST = "⚠️ Ya has hecho una solicitud. Por favor, espera."
     MODEL_READY_FOR_NEW_REQUEST = "😌 Puedes hacer la siguiente solicitud."
@@ -1403,65 +1439,97 @@ Has seleccionado el mismo modelo que ya estás usando.
     @staticmethod
     def model_switched(model_name: str, model_type: ModelType, model_info: dict):
         if model_type == ModelType.TEXT:
-            model_role = model_info.get('role').split(' ')
-            model_role = ' '.join(model_role[1:] + [model_role[0]])
+            model_role = model_info.get("role").split(" ")
+            model_role = " ".join(model_role[1:] + [model_role[0]])
             facts = f"""<b>Hechos y configuraciones:</b>
-📅 Conocimientos hasta: {model_info.get('training_data')}
-📷 Compatibilidad con fotos: {'Sí ✅' if model_info.get('support_photos', False) else 'No ❌'}
-{Spanish.VOICE_MESSAGES}: {'Activadas ✅' if model_info.get(UserSettings.TURN_ON_VOICE_MESSAGES, False) else 'Desactivadas ❌'}
+📅 Conocimientos hasta: {model_info.get("training_data")}
+📷 Compatibilidad con fotos: {"Sí ✅" if model_info.get("support_photos", False) else "No ❌"}
+{Spanish.VOICE_MESSAGES}: {"Activadas ✅" if model_info.get(UserSettings.TURN_ON_VOICE_MESSAGES, False) else "Desactivadas ❌"}
 🎭 Rol: {model_role}"""
         elif model_type == ModelType.SUMMARY:
-            model_focus = model_info.get(UserSettings.FOCUS, VideoSummaryFocus.INSIGHTFUL)
+            model_focus = model_info.get(
+                UserSettings.FOCUS, VideoSummaryFocus.INSIGHTFUL
+            )
             if model_focus == VideoSummaryFocus.INSIGHTFUL:
-                model_focus = ' '.join(reversed(Spanish.VIDEO_SUMMARY_FOCUS_INSIGHTFUL.split(' ', 1)))
+                model_focus = " ".join(
+                    reversed(Spanish.VIDEO_SUMMARY_FOCUS_INSIGHTFUL.split(" ", 1))
+                )
             elif model_focus == VideoSummaryFocus.FUNNY:
-                model_focus = ' '.join(reversed(Spanish.VIDEO_SUMMARY_FOCUS_FUNNY.split(' ', 1)))
+                model_focus = " ".join(
+                    reversed(Spanish.VIDEO_SUMMARY_FOCUS_FUNNY.split(" ", 1))
+                )
             elif model_focus == VideoSummaryFocus.ACTIONABLE:
-                model_focus = ' '.join(reversed(Spanish.VIDEO_SUMMARY_FOCUS_ACTIONABLE.split(' ', 1)))
+                model_focus = " ".join(
+                    reversed(Spanish.VIDEO_SUMMARY_FOCUS_ACTIONABLE.split(" ", 1))
+                )
             elif model_focus == VideoSummaryFocus.CONTROVERSIAL:
-                model_focus = ' '.join(reversed(Spanish.VIDEO_SUMMARY_FOCUS_CONTROVERSIAL.split(' ', 1)))
+                model_focus = " ".join(
+                    reversed(Spanish.VIDEO_SUMMARY_FOCUS_CONTROVERSIAL.split(" ", 1))
+                )
 
             model_format = model_info.get(UserSettings.FORMAT, VideoSummaryFormat.LIST)
             if model_format == VideoSummaryFormat.LIST:
-                model_format = ' '.join(reversed(Spanish.VIDEO_SUMMARY_FORMAT_LIST.split(' ', 1)))
+                model_format = " ".join(
+                    reversed(Spanish.VIDEO_SUMMARY_FORMAT_LIST.split(" ", 1))
+                )
             elif model_format == VideoSummaryFormat.FAQ:
-                model_format = ' '.join(reversed(Spanish.VIDEO_SUMMARY_FORMAT_FAQ.split(' ', 1)))
+                model_format = " ".join(
+                    reversed(Spanish.VIDEO_SUMMARY_FORMAT_FAQ.split(" ", 1))
+                )
 
             model_amount = model_info.get(UserSettings.AMOUNT, VideoSummaryAmount.AUTO)
             if model_amount == VideoSummaryAmount.AUTO:
-                model_amount = ' '.join(reversed(Spanish.VIDEO_SUMMARY_AMOUNT_AUTO.split(' ', 1)))
+                model_amount = " ".join(
+                    reversed(Spanish.VIDEO_SUMMARY_AMOUNT_AUTO.split(" ", 1))
+                )
             elif model_amount == VideoSummaryAmount.SHORT:
-                model_amount = ' '.join(reversed(Spanish.VIDEO_SUMMARY_AMOUNT_SHORT.split(' ', 1)))
+                model_amount = " ".join(
+                    reversed(Spanish.VIDEO_SUMMARY_AMOUNT_SHORT.split(" ", 1))
+                )
             elif model_amount == VideoSummaryAmount.DETAILED:
-                model_amount = ' '.join(reversed(Spanish.VIDEO_SUMMARY_AMOUNT_DETAILED.split(' ', 1)))
+                model_amount = " ".join(
+                    reversed(Spanish.VIDEO_SUMMARY_AMOUNT_DETAILED.split(" ", 1))
+                )
 
             facts = f"""<b>Hechos y configuraciones:</b>
 {Spanish.SETTINGS_FOCUS}: {model_focus}
 {Spanish.SETTINGS_FORMAT}: {model_format}
 {Spanish.SETTINGS_AMOUNT}: {model_amount}
-{Spanish.VOICE_MESSAGES}: {'Activadas ✅' if model_info.get(UserSettings.TURN_ON_VOICE_MESSAGES, False) else 'Desactivadas ❌'}"""
+{Spanish.VOICE_MESSAGES}: {"Activadas ✅" if model_info.get(UserSettings.TURN_ON_VOICE_MESSAGES, False) else "Desactivadas ❌"}"""
         elif model_type == ModelType.IMAGE:
             model_version = get_model_version(model_info)
-            model_version_info = f'\n{Spanish.SETTINGS_VERSION}: {model_version}' if model_version else ''
+            model_version_info = (
+                f"\n{Spanish.SETTINGS_VERSION}: {model_version}"
+                if model_version
+                else ""
+            )
             facts = f"""<b>Hechos y configuraciones:</b>{model_version_info}
-📷 Compatibilidad con fotos: {'Sí ✅' if model_info.get('support_photos', False) else 'No ❌'}
-{Spanish.SETTINGS_ASPECT_RATIO}: {'Personalizado' if model_info.get(UserSettings.ASPECT_RATIO, AspectRatio.CUSTOM) == AspectRatio.CUSTOM else model_info.get(UserSettings.ASPECT_RATIO)}
-{Spanish.SETTINGS_SEND_TYPE}: {'Documento 📄' if model_info.get(UserSettings.SEND_TYPE, SendType.IMAGE) == SendType.DOCUMENT else 'Imagen 🖼'}"""
+📷 Compatibilidad con fotos: {"Sí ✅" if model_info.get("support_photos", False) else "No ❌"}
+{Spanish.SETTINGS_ASPECT_RATIO}: {"Personalizado" if model_info.get(UserSettings.ASPECT_RATIO, AspectRatio.CUSTOM) == AspectRatio.CUSTOM else model_info.get(UserSettings.ASPECT_RATIO)}
+{Spanish.SETTINGS_SEND_TYPE}: {"Documento 📄" if model_info.get(UserSettings.SEND_TYPE, SendType.IMAGE) == SendType.DOCUMENT else "Imagen 🖼"}"""
         elif model_type == ModelType.MUSIC:
             model_version = get_model_version(model_info)
-            model_version_info = f'\n{Spanish.SETTINGS_VERSION}: {model_version}' if model_version else ''
+            model_version_info = (
+                f"\n{Spanish.SETTINGS_VERSION}: {model_version}"
+                if model_version
+                else ""
+            )
             facts = f"""<b>Hechos y configuraciones:</b>{model_version_info}
-{Spanish.SETTINGS_SEND_TYPE}: {'Video 📺' if model_info.get(UserSettings.SEND_TYPE, SendType.AUDIO) == SendType.VIDEO else 'Audio 🎤'}"""
+{Spanish.SETTINGS_SEND_TYPE}: {"Video 📺" if model_info.get(UserSettings.SEND_TYPE, SendType.AUDIO) == SendType.VIDEO else "Audio 🎤"}"""
         elif model_type == ModelType.VIDEO:
             model_version = get_model_version(model_info)
-            model_version_info = f'\n{Spanish.SETTINGS_VERSION}: {model_version}' if model_version else ''
+            model_version_info = (
+                f"\n{Spanish.SETTINGS_VERSION}: {model_version}"
+                if model_version
+                else ""
+            )
             facts = f"""<b>Hechos y configuraciones:</b>{model_version_info}
-📷 Compatibilidad con fotos: {'Sí ✅' if model_info.get('support_photos', False) else 'No ❌'}
-{Spanish.SETTINGS_ASPECT_RATIO}: {'Personalizado' if model_info.get(UserSettings.ASPECT_RATIO, AspectRatio.CUSTOM) == AspectRatio.CUSTOM else model_info.get(UserSettings.ASPECT_RATIO)}
+📷 Compatibilidad con fotos: {"Sí ✅" if model_info.get("support_photos", False) else "No ❌"}
+{Spanish.SETTINGS_ASPECT_RATIO}: {"Personalizado" if model_info.get(UserSettings.ASPECT_RATIO, AspectRatio.CUSTOM) == AspectRatio.CUSTOM else model_info.get(UserSettings.ASPECT_RATIO)}
 {Spanish.SETTINGS_DURATION}: {model_info.get(UserSettings.DURATION, 5)} segundos
-{Spanish.SETTINGS_SEND_TYPE}: {'Documento 📄' if model_info.get(UserSettings.SEND_TYPE, SendType.VIDEO) == SendType.DOCUMENT else 'Video 📺'}"""
+{Spanish.SETTINGS_SEND_TYPE}: {"Documento 📄" if model_info.get(UserSettings.SEND_TYPE, SendType.VIDEO) == SendType.DOCUMENT else "Video 📺"}"""
         else:
-            facts = f"ℹ️ Hechos y configuraciones: Próximamente 🔜"
+            facts = "ℹ️ Hechos y configuraciones: Próximamente 🔜"
 
         return f"""
 <b>{model_name}</b>
@@ -1650,7 +1718,7 @@ Puedes intentarlo de nuevo o elegir una acción:
 
     @staticmethod
     def model_text_info():
-        return f"""
+        return """
 📕 <b>Instrucción</b>
 
 <b>Mis capacidades:</b>
@@ -1671,7 +1739,7 @@ Puedes intentarlo de nuevo o elegir una acción:
 
     @staticmethod
     def model_image_info():
-        return f"""
+        return """
 📕 <b>Instrucción</b>
 
 <b>Mis capacidades:</b>
@@ -1692,7 +1760,7 @@ Puedes intentarlo de nuevo o elegir una acción:
 
     @staticmethod
     def model_video_info():
-        return f"""
+        return """
 📕 <b>Instrucción</b>
 
 <b>Mis capacidades:</b>
@@ -1855,7 +1923,9 @@ El número ingresado supera lo que puedes adquirir.
 """
 
     @staticmethod
-    def package_info(currency: Currency, cost: str, gift_packages: list[Product]) -> str:
+    def package_info(
+        currency: Currency, cost: str, gift_packages: list[Product]
+    ) -> str:
         if currency == Currency.USD:
             cost = f"{Currency.SYMBOLS[currency]}{cost}"
             gift_packages_sum = f"{Currency.SYMBOLS[currency]}4"
@@ -1870,7 +1940,7 @@ El número ingresado supera lo que puedes adquirir.
         return f"""
 🛍 <b>Paquetes</b>
 
-<b>1 moneda 🪙 = {cost}</b>{gift_packages_info if len(gift_packages) > 0 else ''}
+<b>1 moneda 🪙 = {cost}</b>{gift_packages_info if len(gift_packages) > 0 else ""}
 
 Para seleccionar un paquete, presiona el botón:
 """
@@ -1884,13 +1954,19 @@ Has seleccionado el paquete <b>{name}</b>
 """
 
     @staticmethod
-    def package_confirmation(package_name: str, package_quantity: int, currency: Currency, price: str) -> str:
-        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
-        right_price_part = '' if currency == Currency.USD else Currency.SYMBOLS[currency]
+    def package_confirmation(
+        package_name: str, package_quantity: int, currency: Currency, price: str
+    ) -> str:
+        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ""
+        right_price_part = (
+            "" if currency == Currency.USD else Currency.SYMBOLS[currency]
+        )
         return f"Estás a punto de comprar {package_quantity} paquete(s) de <b>{package_name}</b> por {left_price_part}{price}{right_price_part}"
 
     @staticmethod
-    def payment_package_description(user_id: str, package_name: str, package_quantity: int):
+    def payment_package_description(
+        user_id: str, package_name: str, package_quantity: int
+    ):
         return f"Pago de {package_quantity} paquete(s) de {package_name} para el usuario: {user_id}"
 
     PACKAGES = "🛍 Paquetes"
@@ -1947,8 +2023,10 @@ Selecciona presionando el botón de abajo 👇
 
     @staticmethod
     def payment_purchase_minimal_price(currency: Currency, current_price: str):
-        left_part_price = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
-        right_part_price = '' if currency == Currency.USD else Currency.SYMBOLS[currency]
+        left_part_price = Currency.SYMBOLS[currency] if currency == Currency.USD else ""
+        right_part_price = (
+            "" if currency == Currency.USD else Currency.SYMBOLS[currency]
+        )
         return f"""
 <b>😕 Oh-oh...</b>
 
@@ -2019,7 +2097,9 @@ Para eliminar el fondo, envíame tu imagen
         if subscription_status == SubscriptionStatus.CANCELED:
             subscription_info = f"📫 <b>Estado de suscripción:</b> Cancelada. Válida hasta {renewal_date}"
         elif subscription_status == SubscriptionStatus.TRIAL:
-            subscription_info = f"📫 <b>Estado de suscripción:</b> Período de prueba gratuito"
+            subscription_info = (
+                "📫 <b>Estado de suscripción:</b> Período de prueba gratuito"
+            )
         else:
             subscription_info = "📫 <b>Estado de suscripción:</b> Activa"
 
@@ -2031,7 +2111,7 @@ Para eliminar el fondo, envíame tu imagen
 🤖 <b>Modelo actual: {current_model}</b>
 
 💳 <b>Tipo de suscripción:</b> {subscription_name}
-🗓 <b>Fecha de renovación de suscripción:</b> {f'{renewal_date}' if subscription_name != '🆓' else 'N/A'}
+🗓 <b>Fecha de renovación de suscripción:</b> {f"{renewal_date}" if subscription_name != "🆓" else "N/A"}
 {subscription_info}
 
 ---------------------------
@@ -2054,76 +2134,76 @@ Seleccione una acción 👇
 
 🔤 <b>Modelos de Texto</b>:
 <b>Básicos</b>:
-    ┣ ✉️ ChatGPT 4.0 Omni Mini{f': adicional {additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI] > 0 else ''}
-    ┣ 👽 ChatGPT 4.1 Mini{f': adicional {additional_usage_quota[Quota.CHAT_GPT_4_1_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_4_1_MINI] > 0 else ''}
-    ┣ 📜 Claude 3.5 Haiku{f': adicional {additional_usage_quota[Quota.CLAUDE_3_HAIKU]}' if additional_usage_quota[Quota.CLAUDE_3_HAIKU] > 0 else ''}
-    ┣ 🏎 Gemini 2.0 Flash{f': adicional {additional_usage_quota[Quota.GEMINI_2_FLASH]}' if additional_usage_quota[Quota.GEMINI_2_FLASH] > 0 else ''}
+    ┣ ✉️ ChatGPT 4.0 Omni Mini{f": adicional {additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI]}" if additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI] > 0 else ""}
+    ┣ 👽 ChatGPT 4.1 Mini{f": adicional {additional_usage_quota[Quota.CHAT_GPT_4_1_MINI]}" if additional_usage_quota[Quota.CHAT_GPT_4_1_MINI] > 0 else ""}
+    ┣ 📜 Claude 3.5 Haiku{f": adicional {additional_usage_quota[Quota.CLAUDE_3_HAIKU]}" if additional_usage_quota[Quota.CLAUDE_3_HAIKU] > 0 else ""}
+    ┣ 🏎 Gemini 2.0 Flash{f": adicional {additional_usage_quota[Quota.GEMINI_2_FLASH]}" if additional_usage_quota[Quota.GEMINI_2_FLASH] > 0 else ""}
     ┗ Límite diario: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI_MINI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI_MINI])}
 
 <b>Avanzados</b>:
-    ┣ 💥 ChatGPT 4.0 Omni{f': adicional {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
-    ┣ 🛸 ChatGPT 4.1{f': adicional {additional_usage_quota[Quota.CHAT_GPT_4_1]}' if additional_usage_quota[Quota.CHAT_GPT_4_1] > 0 else ''}
-    ┣ 🧩 ChatGPT o4-mini{f': adicional {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ''}
-    ┣ 💫 Claude 3.7 Sonnet{f': adicional {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
-    ┣ 💼 Gemini 2.5 Pro{f': adicional {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
-    ┣ 🐦 Grok 2.0{f': adicional {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
-    ┣ 🌐 Perplexity{f': adicional {additional_usage_quota[Quota.PERPLEXITY]}' if additional_usage_quota[Quota.PERPLEXITY] > 0 else ''}
+    ┣ 💥 ChatGPT 4.0 Omni{f": adicional {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}" if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ""}
+    ┣ 🛸 ChatGPT 4.1{f": adicional {additional_usage_quota[Quota.CHAT_GPT_4_1]}" if additional_usage_quota[Quota.CHAT_GPT_4_1] > 0 else ""}
+    ┣ 🧩 ChatGPT o4-mini{f": adicional {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}" if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ""}
+    ┣ 💫 Claude 3.7 Sonnet{f": adicional {additional_usage_quota[Quota.CLAUDE_3_SONNET]}" if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ""}
+    ┣ 💼 Gemini 2.5 Pro{f": adicional {additional_usage_quota[Quota.GEMINI_2_PRO]}" if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ""}
+    ┣ 🐦 Grok 2.0{f": adicional {additional_usage_quota[Quota.GROK_2]}" if additional_usage_quota[Quota.GROK_2] > 0 else ""}
+    ┣ 🌐 Perplexity{f": adicional {additional_usage_quota[Quota.PERPLEXITY]}" if additional_usage_quota[Quota.PERPLEXITY] > 0 else ""}
     ┗ Límite diario: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}
 
 <b>Premium</b>:
-    ┣ 🧪 ChatGPT o3{f': adicional {additional_usage_quota[Quota.CHAT_GPT_O_3]}' if additional_usage_quota[Quota.CHAT_GPT_O_3] > 0 else ''}
-    ┣ 🚀 Claude 3.0 Opus{f': adicional {additional_usage_quota[Quota.CLAUDE_3_OPUS]}' if additional_usage_quota[Quota.CLAUDE_3_OPUS] > 0 else ''}
-    ┣ 🛡️ Gemini 1.0 Ultra{f': adicional {additional_usage_quota[Quota.GEMINI_1_ULTRA]}' if additional_usage_quota[Quota.GEMINI_1_ULTRA] > 0 else ''}
+    ┣ 🧪 ChatGPT o3{f": adicional {additional_usage_quota[Quota.CHAT_GPT_O_3]}" if additional_usage_quota[Quota.CHAT_GPT_O_3] > 0 else ""}
+    ┣ 🚀 Claude 3.0 Opus{f": adicional {additional_usage_quota[Quota.CLAUDE_3_OPUS]}" if additional_usage_quota[Quota.CLAUDE_3_OPUS] > 0 else ""}
+    ┣ 🛡️ Gemini 1.0 Ultra{f": adicional {additional_usage_quota[Quota.GEMINI_1_ULTRA]}" if additional_usage_quota[Quota.GEMINI_1_ULTRA] > 0 else ""}
     ┗ Límite diario: {format_number(daily_limits[Quota.CHAT_GPT_O_3])}/{format_number(subscription_limits[Quota.CHAT_GPT_O_3])}
 
 ─────────────
 
 📝 <b>Modelos de Resumen</b>:
-    ┣ 👀 YouTube{f': adicional {additional_usage_quota[Quota.EIGHTIFY]}' if additional_usage_quota[Quota.EIGHTIFY] > 0 else ''}
-    ┣ 📼 Vídeo{f': adicional {additional_usage_quota[Quota.GEMINI_VIDEO]}' if additional_usage_quota[Quota.GEMINI_VIDEO] > 0 else ''}
+    ┣ 👀 YouTube{f": adicional {additional_usage_quota[Quota.EIGHTIFY]}" if additional_usage_quota[Quota.EIGHTIFY] > 0 else ""}
+    ┣ 📼 Vídeo{f": adicional {additional_usage_quota[Quota.GEMINI_VIDEO]}" if additional_usage_quota[Quota.GEMINI_VIDEO] > 0 else ""}
     ┗ Límite diario: {format_number(daily_limits[Quota.EIGHTIFY])}/{format_number(subscription_limits[Quota.EIGHTIFY])}
 
 ─────────────
 
 🖼 <b>Modelos Gráficos</b>:
 <b>Básicos</b>:
-    ┣ 🦄 Stable Diffusion XL{f': adicional {additional_usage_quota[Quota.STABLE_DIFFUSION_XL]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_XL] > 0 else ''}
-    ┣ 🌲 Flux 1.0 Dev{f': adicional {additional_usage_quota[Quota.FLUX_1_DEV]}' if additional_usage_quota[Quota.FLUX_1_DEV] > 0 else ''}
-    ┣ 🌌 Luma Photon{f': adicional {additional_usage_quota[Quota.LUMA_PHOTON]}' if additional_usage_quota[Quota.LUMA_PHOTON] > 0 else ''}
+    ┣ 🦄 Stable Diffusion XL{f": adicional {additional_usage_quota[Quota.STABLE_DIFFUSION_XL]}" if additional_usage_quota[Quota.STABLE_DIFFUSION_XL] > 0 else ""}
+    ┣ 🌲 Flux 1.0 Dev{f": adicional {additional_usage_quota[Quota.FLUX_1_DEV]}" if additional_usage_quota[Quota.FLUX_1_DEV] > 0 else ""}
+    ┣ 🌌 Luma Photon{f": adicional {additional_usage_quota[Quota.LUMA_PHOTON]}" if additional_usage_quota[Quota.LUMA_PHOTON] > 0 else ""}
     ┗ Límite diario: {format_number(daily_limits[Quota.STABLE_DIFFUSION_XL])}/{format_number(subscription_limits[Quota.STABLE_DIFFUSION_XL])}
 
 <b>Avanzados</b>:
-    ┣ 👨‍🎨 DALL-E 3{f': adicional {additional_usage_quota[Quota.DALL_E]}' if additional_usage_quota[Quota.DALL_E] > 0 else ''}
-    ┣ 🎨 Midjourney 7{f': adicional {additional_usage_quota[Quota.MIDJOURNEY]}' if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ''}
-    ┣ 🧑‍🚀 Stable Diffusion 3.5{f': adicional {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ''}
-    ┣ 🏔 Flux 1.1 Pro{f': adicional {additional_usage_quota[Quota.FLUX_1_PRO]}' if additional_usage_quota[Quota.FLUX_1_PRO] > 0 else ''}
-    ┣ 🐼 Recraft 3{f': adicional {additional_usage_quota[Quota.RECRAFT]}' if additional_usage_quota[Quota.RECRAFT] > 0 else ''}
-    ┣ 📷 FaceSwap{f': adicional {additional_usage_quota[Quota.FACE_SWAP]}' if additional_usage_quota[Quota.FACE_SWAP] > 0 else ''}
-    ┣ 🪄 Photoshop AI{f': adicional {additional_usage_quota[Quota.PHOTOSHOP_AI]}' if additional_usage_quota[Quota.PHOTOSHOP_AI] > 0 else ''}
+    ┣ 👨‍🎨 DALL-E 3{f": adicional {additional_usage_quota[Quota.DALL_E]}" if additional_usage_quota[Quota.DALL_E] > 0 else ""}
+    ┣ 🎨 Midjourney 7{f": adicional {additional_usage_quota[Quota.MIDJOURNEY]}" if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ""}
+    ┣ 🧑‍🚀 Stable Diffusion 3.5{f": adicional {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}" if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ""}
+    ┣ 🏔 Flux 1.1 Pro{f": adicional {additional_usage_quota[Quota.FLUX_1_PRO]}" if additional_usage_quota[Quota.FLUX_1_PRO] > 0 else ""}
+    ┣ 🐼 Recraft 3{f": adicional {additional_usage_quota[Quota.RECRAFT]}" if additional_usage_quota[Quota.RECRAFT] > 0 else ""}
+    ┣ 📷 FaceSwap{f": adicional {additional_usage_quota[Quota.FACE_SWAP]}" if additional_usage_quota[Quota.FACE_SWAP] > 0 else ""}
+    ┣ 🪄 Photoshop AI{f": adicional {additional_usage_quota[Quota.PHOTOSHOP_AI]}" if additional_usage_quota[Quota.PHOTOSHOP_AI] > 0 else ""}
     ┗ Límite diario: {format_number(daily_limits[Quota.DALL_E])}/{format_number(subscription_limits[Quota.DALL_E])}
 
 ─────────────
 
 🎵 <b>Modelos de Música</b>:
-    ┣ 🎺 MusicGen{f': adicional {additional_usage_quota[Quota.MUSIC_GEN]}' if additional_usage_quota[Quota.MUSIC_GEN] > 0 else ''}
-    ┣ 🎸 Suno{f': adicional {additional_usage_quota[Quota.SUNO]}' if additional_usage_quota[Quota.SUNO] > 0 else ''}
+    ┣ 🎺 MusicGen{f": adicional {additional_usage_quota[Quota.MUSIC_GEN]}" if additional_usage_quota[Quota.MUSIC_GEN] > 0 else ""}
+    ┣ 🎸 Suno{f": adicional {additional_usage_quota[Quota.SUNO]}" if additional_usage_quota[Quota.SUNO] > 0 else ""}
     ┗ Límite diario: {format_number(daily_limits[Quota.SUNO])}/{format_number(subscription_limits[Quota.SUNO])}
 
 ─────────────
 
 📹 <b>Modelos de Vídeo</b>:
-    ┣ 🎬 Kling{f': adicional {additional_usage_quota[Quota.KLING]}' if additional_usage_quota[Quota.KLING] > 0 else ''}
-    ┣ 🎥 Runway{f': adicional {additional_usage_quota[Quota.RUNWAY]}' if additional_usage_quota[Quota.RUNWAY] > 0 else ''}
-    ┣ 🔆 Luma Ray{f': adicional {additional_usage_quota[Quota.LUMA_RAY]}' if additional_usage_quota[Quota.LUMA_RAY] > 0 else ''}
-    ┣ 🐇 Pika{f': adicional {additional_usage_quota[Quota.PIKA]}' if additional_usage_quota[Quota.PIKA] > 0 else ''}
+    ┣ 🎬 Kling{f": adicional {additional_usage_quota[Quota.KLING]}" if additional_usage_quota[Quota.KLING] > 0 else ""}
+    ┣ 🎥 Runway{f": adicional {additional_usage_quota[Quota.RUNWAY]}" if additional_usage_quota[Quota.RUNWAY] > 0 else ""}
+    ┣ 🔆 Luma Ray{f": adicional {additional_usage_quota[Quota.LUMA_RAY]}" if additional_usage_quota[Quota.LUMA_RAY] > 0 else ""}
+    ┣ 🐇 Pika{f": adicional {additional_usage_quota[Quota.PIKA]}" if additional_usage_quota[Quota.PIKA] > 0 else ""}
     ┗ Límite diario: {format_number(daily_limits[Quota.KLING])}/{format_number(subscription_limits[Quota.KLING])}
 
 ─────────────
 
-📷 <b>Trabajo con fotos/documentos</b>: {'✅' if daily_limits[Quota.WORK_WITH_FILES] or additional_usage_quota[Quota.WORK_WITH_FILES] else '❌'}
-🎭 <b>Acceso al catálogo de empleados digitales</b>: {'✅' if daily_limits[Quota.ACCESS_TO_CATALOG] or additional_usage_quota[Quota.ACCESS_TO_CATALOG] else '❌'}
-🎙 <b>Mensajes de voz</b>: {'✅' if daily_limits[Quota.VOICE_MESSAGES] or additional_usage_quota[Quota.VOICE_MESSAGES] else '❌'}
-⚡ <b>Respuestas rápidas</b>: {'✅' if daily_limits[Quota.FAST_MESSAGES] or additional_usage_quota[Quota.FAST_MESSAGES] else '❌'}
+📷 <b>Trabajo con fotos/documentos</b>: {"✅" if daily_limits[Quota.WORK_WITH_FILES] or additional_usage_quota[Quota.WORK_WITH_FILES] else "❌"}
+🎭 <b>Acceso al catálogo de empleados digitales</b>: {"✅" if daily_limits[Quota.ACCESS_TO_CATALOG] or additional_usage_quota[Quota.ACCESS_TO_CATALOG] else "❌"}
+🎙 <b>Mensajes de voz</b>: {"✅" if daily_limits[Quota.VOICE_MESSAGES] or additional_usage_quota[Quota.VOICE_MESSAGES] else "❌"}
+⚡ <b>Respuestas rápidas</b>: {"✅" if daily_limits[Quota.FAST_MESSAGES] or additional_usage_quota[Quota.FAST_MESSAGES] else "❌"}
 
 ─────────────
 
@@ -2160,7 +2240,9 @@ Una vez que tengas la foto ideal, <b>súbela</b> y deja que la magia comience �
     PROFILE_RENEW_SUBSCRIPTION = "♻️ Renovar suscripción"
     PROFILE_RENEW_SUBSCRIPTION_SUCCESS = "✅ La suscripción se ha renovado con éxito"
     PROFILE_CANCEL_SUBSCRIPTION = "❌ Cancelar suscripción"
-    PROFILE_CANCEL_SUBSCRIPTION_CONFIRMATION = "❗¿Está seguro de que desea cancelar su suscripción?"
+    PROFILE_CANCEL_SUBSCRIPTION_CONFIRMATION = (
+        "❗¿Está seguro de que desea cancelar su suscripción?"
+    )
     PROFILE_CANCEL_SUBSCRIPTION_SUCCESS = "💸 La suscripción se ha cancelado con éxito"
     PROFILE_NO_ACTIVE_SUBSCRIPTION = "💸 No tienes una suscripción activa"
 
@@ -2203,14 +2285,20 @@ Ya has usado este código promocional. Es magia de un solo uso, y ya la utilizas
 
     # Remove Restriction
     REMOVE_RESTRICTION = "⛔️ Eliminar restricción"
-    REMOVE_RESTRICTION_INFO = "Para eliminar la restricción, selecciona una de las acciones de abajo 👇"
+    REMOVE_RESTRICTION_INFO = (
+        "Para eliminar la restricción, selecciona una de las acciones de abajo 👇"
+    )
 
     # Settings
     @staticmethod
     def settings_info(human_model: str, current_model: Model, generation_cost=1) -> str:
         if current_model == Model.DALL_E or current_model == Model.MIDJOURNEY:
             additional_text = f"\nCon la configuración actual, 1 solicitud cuesta: {generation_cost} 🖼"
-        elif current_model == Model.KLING or current_model == Model.RUNWAY or current_model == Model.LUMA_RAY:
+        elif (
+            current_model == Model.KLING
+            or current_model == Model.RUNWAY
+            or current_model == Model.LUMA_RAY
+        ):
             additional_text = f"\nCon la configuración actual, 1 solicitud cuesta: {generation_cost} 📹"
         else:
             additional_text = ""
@@ -2284,19 +2372,26 @@ A continuación, encontrarás la configuración para respuestas de voz en todos 
     SHOPPING_CART_CLEAR = "🗑 Vaciar carrito"
 
     @staticmethod
-    async def shopping_cart_info(currency: Currency, cart_items: list[dict], discount: int):
+    async def shopping_cart_info(
+        currency: Currency, cart_items: list[dict], discount: int
+    ):
         text = ""
         total_sum = 0
-        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
-        right_price_part = '' if currency == Currency.USD else Currency.SYMBOLS[currency]
+        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ""
+        right_price_part = (
+            "" if currency == Currency.USD else Currency.SYMBOLS[currency]
+        )
 
         for index, cart_item in enumerate(cart_items):
-            product_id, product_quantity = cart_item.get("product_id", ''), cart_item.get("quantity", 0)
+            product_id, product_quantity = (
+                cart_item.get("product_id", ""),
+                cart_item.get("quantity", 0),
+            )
 
             product = await get_product(product_id)
 
             is_last = index == len(cart_items) - 1
-            right_part = '\n' if not is_last else ''
+            right_part = "\n" if not is_last else ""
             price = Product.get_discount_price(
                 ProductType.PACKAGE,
                 product_quantity,
@@ -2319,10 +2414,15 @@ A continuación, encontrarás la configuración para respuestas de voz en todos 
 """
 
     @staticmethod
-    async def shopping_cart_confirmation(cart_items: list[dict], currency: Currency, price: float) -> str:
+    async def shopping_cart_confirmation(
+        cart_items: list[dict], currency: Currency, price: float
+    ) -> str:
         text = ""
         for index, cart_item in enumerate(cart_items):
-            product_id, product_quantity = cart_item.get("product_id", ''), cart_item.get("quantity", 0)
+            product_id, product_quantity = (
+                cart_item.get("product_id", ""),
+                cart_item.get("quantity", 0),
+            )
 
             product = await get_product(product_id)
 
@@ -2484,24 +2584,34 @@ Puedes continuar explorando el universo de las redes neuronales y reactivar tu a
         user_discount: int,
         is_trial=False,
     ) -> str:
-        text_subscriptions = ''
+        text_subscriptions = ""
         for subscription in subscriptions:
             subscription_name = subscription.names.get(LanguageCode.ES)
             subscription_price = subscription.prices.get(currency)
-            subscription_has_trial = is_trial and subscription.details.get('has_trial', False)
+            subscription_has_trial = is_trial and subscription.details.get(
+                "has_trial", False
+            )
 
-            left_part_price = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
-            right_part_price = Currency.SYMBOLS[currency] if currency != Currency.USD else ''
+            left_part_price = (
+                Currency.SYMBOLS[currency] if currency == Currency.USD else ""
+            )
+            right_part_price = (
+                Currency.SYMBOLS[currency] if currency != Currency.USD else ""
+            )
             if subscription_name and subscription_price:
-                is_trial_info = ''
+                is_trial_info = ""
 
                 if subscription_has_trial and currency == Currency.RUB:
-                    is_trial_info = '1₽ los primeros 3 días, luego '
+                    is_trial_info = "1₽ los primeros 3 días, luego "
                 elif subscription_has_trial and currency == Currency.USD:
-                    is_trial_info = 'Gratis los primeros 3 días, luego '
+                    is_trial_info = "Gratis los primeros 3 días, luego "
 
-                text_subscriptions += f'<b>{subscription_name}</b>: '
-                per_period = 'por mes' if subscription.category == ProductCategory.MONTHLY else 'por año'
+                text_subscriptions += f"<b>{subscription_name}</b>: "
+                per_period = (
+                    "por mes"
+                    if subscription.category == ProductCategory.MONTHLY
+                    else "por año"
+                )
 
                 discount = get_user_discount(user_discount, 0, subscription.discount)
                 if discount:
@@ -2512,9 +2622,9 @@ Puedes continuar explorando el universo de las redes neuronales y reactivar tu a
                         currency,
                         discount,
                     )
-                    text_subscriptions += f'{is_trial_info}<s>{left_part_price}{subscription_price}{right_part_price}</s> {left_part_price}{discount_price}{right_part_price} {per_period}\n'
+                    text_subscriptions += f"{is_trial_info}<s>{left_part_price}{subscription_price}{right_part_price}</s> {left_part_price}{discount_price}{right_part_price} {per_period}\n"
                 else:
-                    text_subscriptions += f'{is_trial_info}{left_part_price}{subscription_price}{right_part_price} {per_period}\n'
+                    text_subscriptions += f"{is_trial_info}{left_part_price}{subscription_price}{right_part_price} {per_period}\n"
 
         return f"""
 💳 <b>Suscripciones</b>
@@ -2531,13 +2641,15 @@ Selecciona tu opción y presiona el botón de abajo para suscribirte:
         price: Union[str, int, float],
         is_trial: bool,
     ) -> str:
-        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
-        right_price_part = '' if currency == Currency.USD else Currency.SYMBOLS[currency]
-        period = 'mes' if category == ProductCategory.MONTHLY else 'año'
+        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ""
+        right_price_part = (
+            "" if currency == Currency.USD else Currency.SYMBOLS[currency]
+        )
+        period = "mes" if category == ProductCategory.MONTHLY else "año"
 
-        trial_info = ''
+        trial_info = ""
         if is_trial:
-            trial_info = ' con un periodo de prueba de los primeros 3 días'
+            trial_info = " con un periodo de prueba de los primeros 3 días"
 
         return f"""
 Estás a punto de activar la suscripción {name} por {left_price_part}{price}{right_price_part}/{period}{trial_info}

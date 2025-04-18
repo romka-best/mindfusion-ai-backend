@@ -26,7 +26,11 @@ async def write_transaction(
         details,
         created_at,
     )
-    await firebase.db.collection(Transaction.COLLECTION_NAME).document(transaction.id).set(transaction.to_dict())
+    await (
+        firebase.db.collection(Transaction.COLLECTION_NAME)
+        .document(transaction.id)
+        .set(transaction.to_dict())
+    )
 
     return transaction
 
@@ -55,7 +59,9 @@ async def write_transaction_in_transaction(
         created_at,
     )
     transaction.set(
-        firebase.db.collection(Transaction.COLLECTION_NAME).document(transaction_object.id),
+        firebase.db.collection(Transaction.COLLECTION_NAME).document(
+            transaction_object.id
+        ),
         transaction_object.to_dict(),
     )
 

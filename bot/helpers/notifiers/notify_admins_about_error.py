@@ -6,10 +6,12 @@ from aiogram import Bot, Dispatcher
 from aiogram.exceptions import TelegramRetryAfter
 from aiogram.types import Update
 
-from bot.config import config, MessageSticker
+from bot.config import MessageSticker, config
 from bot.database.main import firebase
 from bot.database.operations.user.getters import get_user
-from bot.database.operations.user.initialize_user_for_the_first_time import initialize_user_for_the_first_time
+from bot.database.operations.user.initialize_user_for_the_first_time import (
+    initialize_user_for_the_first_time,
+)
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.keyboards.common.common import build_error_keyboard, build_start_keyboard
 from bot.locales.main import get_localization, get_user_language, set_user_language
@@ -27,10 +29,15 @@ async def delayed_notify_admins_about_error(
     await notify_admins_about_error(bot, telegram_update, dp, error_info)
 
 
-async def notify_admins_about_error(bot: Bot, telegram_update: Update, dp: Dispatcher, error_info):
+async def notify_admins_about_error(
+    bot: Bot, telegram_update: Update, dp: Dispatcher, error_info
+):
     try:
         user_id = None
-        if telegram_update.callback_query and telegram_update.callback_query.from_user.id:
+        if (
+            telegram_update.callback_query
+            and telegram_update.callback_query.from_user.id
+        ):
             user_id = str(telegram_update.callback_query.from_user.id)
         elif telegram_update.message and telegram_update.message.from_user.id:
             user_id = str(telegram_update.message.from_user.id)
@@ -39,7 +46,9 @@ async def notify_admins_about_error(bot: Bot, telegram_update: Update, dp: Dispa
             user = await get_user(user_id)
             if not user:
                 if telegram_update.callback_query:
-                    language_code = telegram_update.callback_query.from_user.language_code
+                    language_code = (
+                        telegram_update.callback_query.from_user.language_code
+                    )
                     telegram_user = telegram_update.callback_query.from_user
                     chat_id = str(telegram_update.callback_query.message.chat.id)
                 elif telegram_update.message:
@@ -49,7 +58,9 @@ async def notify_admins_about_error(bot: Bot, telegram_update: Update, dp: Dispa
                 else:
                     raise
 
-                language_code = await set_user_language(user_id, language_code, dp.storage)
+                language_code = await set_user_language(
+                    user_id, language_code, dp.storage
+                )
 
                 chat_title = get_localization(language_code).CHAT_DEFAULT_TITLE
                 transaction = firebase.db.transaction()
@@ -86,13 +97,17 @@ async def notify_admins_about_error(bot: Bot, telegram_update: Update, dp: Dispa
                     info=error_info,
                 )
     except TelegramRetryAfter as e:
-        asyncio.create_task(delayed_notify_admins_about_error(bot, telegram_update, dp, error_info, e.retry_after + 30))
+        asyncio.create_task(
+            delayed_notify_admins_about_error(
+                bot, telegram_update, dp, error_info, e.retry_after + 30
+            )
+        )
     except Exception as e:
         error_trace = traceback.format_exc()
-        logging.exception(f'Error in notify_admins_about_error: {error_trace}')
+        logging.exception(f"Error in notify_admins_about_error: {error_trace}")
 
         await send_error_info(
             bot=bot,
-            user_id='UNKNOWN',
-            info=f'Неизвестная ошибка: {e}',
+            user_id="UNKNOWN",
+            info=f"Неизвестная ошибка: {e}",
         )
