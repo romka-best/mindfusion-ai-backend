@@ -6,13 +6,16 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import StorageKey
 from aiogram.utils.markdown import hlink
 
-from bot.config import config, MessageSticker
-from bot.database.models.common import Quota, Currency, Model, SendType
+from bot.config import MessageSticker, config
+from bot.database.models.common import Currency, Model, Quota, SendType
 from bot.database.models.generation import GenerationStatus
 from bot.database.models.request import RequestStatus
 from bot.database.models.transaction import TransactionType
 from bot.database.models.user import UserSettings
-from bot.database.operations.generation.getters import get_generation, get_generations_by_request_id
+from bot.database.operations.generation.getters import (
+    get_generation,
+    get_generations_by_request_id,
+)
 from bot.database.operations.generation.updaters import update_generation
 from bot.database.operations.product.getters import get_product_by_quota
 from bot.database.operations.request.getters import get_request
@@ -26,40 +29,52 @@ from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.senders.send_video import send_video
 from bot.helpers.updaters.update_user_usage_quota import get_user_with_updated_quota
 from bot.keyboards.ai.suno import build_suno_keyboard
-from bot.keyboards.common.common import build_reaction_keyboard, build_error_keyboard
-from bot.locales.main import get_user_language, get_localization
+from bot.keyboards.common.common import build_error_keyboard, build_reaction_keyboard
+from bot.locales.main import get_localization, get_user_language
 
 
 async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
-    first_generation = await get_generation(f'{body.get("task_id")}-1')
-    second_generation = await get_generation(f'{body.get("task_id")}-2')
+    first_generation = await get_generation(f"{body.get('task_id')}-1")
+    second_generation = await get_generation(f"{body.get('task_id')}-2")
     if not first_generation and not second_generation:
         return False
-    elif first_generation.status == GenerationStatus.FINISHED and second_generation.status == GenerationStatus.FINISHED:
+    elif (
+        first_generation.status == GenerationStatus.FINISHED
+        and second_generation.status == GenerationStatus.FINISHED
+    ):
         return True
 
     request = await get_request(first_generation.request_id)
     user = await get_user(request.user_id)
     user_language_code = await get_user_language(user.id, dp.storage)
 
-    is_generations_success, generations_result = body.get('success', False), body.get('data', [])
+    is_generations_success, generations_result = (
+        body.get("success", False),
+        body.get("data", []),
+    )
 
     first_generation.status = GenerationStatus.FINISHED
     second_generation.status = GenerationStatus.FINISHED
     if not is_generations_success:
         first_generation.has_error = True
         second_generation.has_error = True
-        await update_generation(first_generation.id, {
-            'status': first_generation.status,
-            'has_error': first_generation.has_error,
-        })
-        await update_generation(second_generation.id, {
-            'status': second_generation.status,
-            'has_error': second_generation.has_error,
-        })
+        await update_generation(
+            first_generation.id,
+            {
+                "status": first_generation.status,
+                "has_error": first_generation.has_error,
+            },
+        )
+        await update_generation(
+            second_generation.id,
+            {
+                "status": second_generation.status,
+                "has_error": second_generation.has_error,
+            },
+        )
 
-        error_message = body.get('error', {}).get('message', '')
-        logging.exception(f'Error in suno_webhook', error_message)
+        error_message = body.get("error", {}).get("message", "")
+        logging.exception("Error in suno_webhook", error_message)
         await bot.send_sticker(
             chat_id=user.telegram_chat_id,
             sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
@@ -74,28 +89,34 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
             bot=bot,
             user_id=user.id,
             info=str(error_message),
-            hashtags=['suno', 'webhook'],
+            hashtags=["suno", "webhook"],
         )
     else:
         for i, current_generation in enumerate([first_generation, second_generation]):
             generation_result = generations_result[i]
-            current_generation.result = generation_result.get('audio_url', '')
+            current_generation.result = generation_result.get("audio_url", "")
             current_generation_new_details = {
-                'id': generation_result.get('id'),
-                'title': generation_result.get('title'),
-                'audio_url': generation_result.get('audio_url'),
-                'video_url': generation_result.get('video_url'),
-                'image_url': generation_result.get('image_url'),
-                'lyric': format_lyrics(generation_result.get('lyric')),
-                'style': generation_result.get('style'),
-                'duration': int(generation_result.get('duration')),
+                "id": generation_result.get("id"),
+                "title": generation_result.get("title"),
+                "audio_url": generation_result.get("audio_url"),
+                "video_url": generation_result.get("video_url"),
+                "image_url": generation_result.get("image_url"),
+                "lyric": format_lyrics(generation_result.get("lyric")),
+                "style": generation_result.get("style"),
+                "duration": int(generation_result.get("duration")),
             }
-            current_generation.details = {**current_generation.details, **current_generation_new_details}
-            await update_generation(current_generation.id, {
-                'status': current_generation.status,
-                'result': current_generation.result,
-                'details': current_generation.details,
-            })
+            current_generation.details = {
+                **current_generation.details,
+                **current_generation_new_details,
+            }
+            await update_generation(
+                current_generation.id,
+                {
+                    "status": current_generation.status,
+                    "result": current_generation.result,
+                    "details": current_generation.details,
+                },
+            )
 
     if len(generations_result) > 0:
         for i, current_generation in enumerate([first_generation, second_generation]):
@@ -107,30 +128,42 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
                 title,
                 lyric,
             ) = (
-                int(generation_result.get('duration', 0)),
-                generation_result.get('video_url'),
-                generation_result.get('audio_url'),
-                generation_result.get('title', '🎸'),
-                format_lyrics(generation_result.get('lyric', '')),
+                int(generation_result.get("duration", 0)),
+                generation_result.get("video_url"),
+                generation_result.get("audio_url"),
+                generation_result.get("title", "🎸"),
+                format_lyrics(generation_result.get("lyric", "")),
             )
 
             reply_markup = build_reaction_keyboard(current_generation.id)
-            if user.settings[Model.SUNO][UserSettings.SEND_TYPE] == SendType.VIDEO and video_url:
+            if (
+                user.settings[Model.SUNO][UserSettings.SEND_TYPE] == SendType.VIDEO
+                and video_url
+            ):
                 answered_message = await send_video(
                     bot=bot,
                     chat_id=user.telegram_chat_id,
                     result=video_url,
-                    caption=hlink(get_localization(user_language_code).SETTINGS_SEND_TYPE_AUDIO, audio_url),
+                    caption=hlink(
+                        get_localization(user_language_code).SETTINGS_SEND_TYPE_AUDIO,
+                        audio_url,
+                    ),
                     filename=title,
                     duration=duration,
                     reply_markup=reply_markup,
                 )
-            elif user.settings[Model.SUNO][UserSettings.SEND_TYPE] == SendType.AUDIO and video_url:
+            elif (
+                user.settings[Model.SUNO][UserSettings.SEND_TYPE] == SendType.AUDIO
+                and video_url
+            ):
                 answered_message = await send_audio(
                     bot=bot,
                     chat_id=user.telegram_chat_id,
                     result=audio_url,
-                    caption=hlink(get_localization(user_language_code).SETTINGS_SEND_TYPE_VIDEO, video_url),
+                    caption=hlink(
+                        get_localization(user_language_code).SETTINGS_SEND_TYPE_VIDEO,
+                        video_url,
+                    ),
                     filename=title,
                     duration=duration,
                     reply_markup=reply_markup,
@@ -140,7 +173,10 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
                     bot=bot,
                     chat_id=user.telegram_chat_id,
                     result=audio_url,
-                    caption=hlink(get_localization(user_language_code).SETTINGS_SEND_TYPE_AUDIO, audio_url),
+                    caption=hlink(
+                        get_localization(user_language_code).SETTINGS_SEND_TYPE_AUDIO,
+                        audio_url,
+                    ),
                     filename=title,
                     duration=duration,
                     reply_markup=reply_markup,
@@ -155,9 +191,7 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
 
     if request.status != RequestStatus.FINISHED:
         request.status = RequestStatus.FINISHED
-        await update_request(request.id, {
-            'status': request.status
-        })
+        await update_request(request.id, {"status": request.status})
 
         request_generations = await get_generations_by_request_id(request.id)
         success_generations = []
@@ -190,15 +224,19 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
                 currency=Currency.USD,
                 quantity=total_result,
                 details={
-                    'mode': request.details.get('mode'),
-                    'is_suggestion': request.details.get('is_suggestion', False),
-                    'has_error': first_generation.has_error or second_generation.has_error,
-                }
+                    "mode": request.details.get("mode"),
+                    "is_suggestion": request.details.get("is_suggestion", False),
+                    "has_error": first_generation.has_error
+                    or second_generation.has_error,
+                },
             ),
-            update_user(user.id, {
-                'daily_limits': user.daily_limits,
-                'additional_usage_quota': user.additional_usage_quota
-            }),
+            update_user(
+                user.id,
+                {
+                    "daily_limits": user.daily_limits,
+                    "additional_usage_quota": user.additional_usage_quota,
+                },
+            ),
         ]
 
         await asyncio.gather(*update_tasks)
@@ -209,7 +247,7 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
                 chat_id=int(user.telegram_chat_id),
                 user_id=int(user.id),
                 bot_id=bot.id,
-            )
+            ),
         )
         await state.clear()
         user_language_code = await get_user_language(str(user.id), state.storage)
@@ -232,11 +270,11 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
 def format_lyrics(lyric: str):
     formatted_lines = []
     for line in lyric.splitlines():
-        if line.startswith('[') and line.endswith(']'):
-            formatted_lines.append(f'\n<b>{line}</b>')
+        if line.startswith("[") and line.endswith("]"):
+            formatted_lines.append(f"\n<b>{line}</b>")
         elif line.strip():
             formatted_lines.append(line)
         else:
-            formatted_lines.append('')
+            formatted_lines.append("")
 
-    return '\n'.join(formatted_lines)
+    return "\n".join(formatted_lines)

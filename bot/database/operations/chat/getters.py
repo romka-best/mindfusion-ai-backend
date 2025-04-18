@@ -32,16 +32,22 @@ async def get_chats(
     chats_query = firebase.db.collection(Chat.COLLECTION_NAME)
 
     if start_date:
-        chats_query = chats_query.where(filter=FieldFilter('created_at', '>=', start_date))
+        chats_query = chats_query.where(
+            filter=FieldFilter("created_at", ">=", start_date)
+        )
     if end_date:
-        chats_query = chats_query.where(filter=FieldFilter('created_at', '<=', end_date))
+        chats_query = chats_query.where(
+            filter=FieldFilter("created_at", "<=", end_date)
+        )
 
     chats = chats_query.stream()
     return [Chat(**chat.to_dict()) async for chat in chats]
 
 
 async def get_chats_by_user_id(user_id: str) -> list[Chat]:
-    chats_query = firebase.db.collection(Chat.COLLECTION_NAME).where(filter=FieldFilter('user_id', '==', user_id))
+    chats_query = firebase.db.collection(Chat.COLLECTION_NAME).where(
+        filter=FieldFilter("user_id", "==", user_id)
+    )
     chats = [Chat(**chat.to_dict()) async for chat in chats_query.stream()]
 
     return chats

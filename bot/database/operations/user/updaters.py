@@ -9,11 +9,13 @@ async def update_user(user_id: str, data: dict):
     user_doc = await user_ref.get()
 
     if user_doc.exists:
-        data['edited_at'] = datetime.now(timezone.utc)
+        data["edited_at"] = datetime.now(timezone.utc)
         await user_ref.update(data)
 
 
 async def update_user_in_transaction(transaction, user_id: str, data: dict):
-    data['edited_at'] = datetime.now(timezone.utc)
+    data["edited_at"] = datetime.now(timezone.utc)
 
-    transaction.update(firebase.db.collection(User.COLLECTION_NAME).document(user_id), data)
+    transaction.update(
+        firebase.db.collection(User.COLLECTION_NAME).document(user_id), data
+    )

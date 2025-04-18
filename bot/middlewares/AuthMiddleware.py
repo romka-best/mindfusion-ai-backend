@@ -1,7 +1,7 @@
-from typing import Callable, Any, Awaitable
+from typing import Any, Awaitable, Callable
 
 from aiogram import BaseMiddleware
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 
 from bot.database.operations.user.getters import get_user
 
@@ -16,7 +16,7 @@ class AuthMessageMiddleware(BaseMiddleware):
         user = await get_user(str(message.from_user.id))
         if user and user.is_banned:
             await message.answer_sticker(
-                'CAACAgIAAxkBAAEMMIJmT_yFTm_LmNvCrZXeEK7t-fdSfAACSQIAAladvQoqlwydCFMhDjUE'
+                "CAACAgIAAxkBAAEMMIJmT_yFTm_LmNvCrZXeEK7t-fdSfAACSQIAAladvQoqlwydCFMhDjUE"
             )
             return
 
@@ -33,7 +33,7 @@ class AuthCallbackQueryMiddleware(BaseMiddleware):
         user = await get_user(str(callback_query.from_user.id))
         if user and user.is_banned:
             await callback_query.message.answer_sticker(
-                'CAACAgIAAxkBAAEMMIJmT_yFTm_LmNvCrZXeEK7t-fdSfAACSQIAAladvQoqlwydCFMhDjUE'
+                "CAACAgIAAxkBAAEMMIJmT_yFTm_LmNvCrZXeEK7t-fdSfAACSQIAAladvQoqlwydCFMhDjUE"
             )
             return
 

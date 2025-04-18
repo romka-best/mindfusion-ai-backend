@@ -1,5 +1,5 @@
-from typing import Optional
 import re
+from typing import Optional
 
 import runwayml
 from aiogram import Router
@@ -9,10 +9,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram.utils.chat_action import ChatActionSender
 
-from bot.config import config, MessageEffect, MessageSticker
-from bot.database.models.common import Model, Quota, Currency, SendType
+from bot.config import MessageEffect, MessageSticker, config
+from bot.database.models.common import Currency, Model, Quota, SendType
 from bot.database.models.transaction import TransactionType
-from bot.database.models.user import UserSettings, User
+from bot.database.models.user import User, UserSettings
 from bot.database.operations.product.getters import get_product_by_quota
 from bot.database.operations.transaction.writers import write_transaction
 from bot.database.operations.user.getters import get_user
@@ -21,10 +21,10 @@ from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
-from bot.integrations.runway import get_response_video, get_cost_for_video
+from bot.integrations.runway import get_cost_for_video, get_response_video
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_error_keyboard
-from bot.locales.main import get_user_language, get_localization
+from bot.locales.main import get_localization, get_user_language
 from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
 
@@ -33,7 +33,7 @@ runway_router = Router()
 PRICE_RUNWAY = 0.25
 
 
-@runway_router.message(Command('runway'))
+@runway_router.message(Command("runway"))
 async def runway(message: Message, state: FSMContext):
     await state.clear()
 
@@ -43,34 +43,53 @@ async def runway(message: Message, state: FSMContext):
 
     if user.current_model == Model.RUNWAY:
         await message.answer(
-            text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
-            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.RUNWAY),
+            text=get_localization(
+                user_language_code
+            ).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
+            reply_markup=build_switched_to_ai_keyboard(
+                user_language_code, Model.RUNWAY
+            ),
         )
     else:
         user.current_model = Model.RUNWAY
-        await update_user(user_id, {
-            'current_model': user.current_model,
-        })
+        await update_user(
+            user_id,
+            {
+                "current_model": user.current_model,
+            },
+        )
 
         text = await get_switched_to_ai_model(
             user,
-            get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
+            get_quota_by_model(
+                user.current_model,
+                user.settings[user.current_model][UserSettings.VERSION],
+            ),
             user_language_code,
         )
         answered_message = await message.answer(
             text=text,
-            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.RUNWAY),
+            reply_markup=build_switched_to_ai_keyboard(
+                user_language_code, Model.RUNWAY
+            ),
             message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
         )
 
         try:
             await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
-            await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+            await message.bot.pin_chat_message(
+                user.telegram_chat_id, answered_message.message_id
+            )
         except (TelegramBadRequest, TelegramRetryAfter):
             pass
 
 
-async def handle_runway(message: Message, state: FSMContext, user: User, video_frame_link: Optional[str] = None):
+async def handle_runway(
+    message: Message,
+    state: FSMContext,
+    user: User,
+    video_frame_link: Optional[str] = None,
+):
     await state.update_data(is_processing=True)
 
     user_language_code = await get_user_language(user.id, state.storage)
@@ -84,14 +103,14 @@ async def handle_runway(message: Message, state: FSMContext, user: User, video_f
         await state.update_data(is_processing=False)
         return
 
-    prompt = user_data.get('recognized_text', '')
+    prompt = user_data.get("recognized_text", "")
     if not prompt:
         if message.caption:
             prompt = message.caption
         elif message.text:
             prompt = message.text
         else:
-            prompt = ''
+            prompt = ""
 
     processing_sticker = await message.answer_sticker(
         sticker=config.MESSAGE_STICKERS.get(MessageSticker.VIDEO_GENERATION),
@@ -110,7 +129,9 @@ async def handle_runway(message: Message, state: FSMContext, user: User, video_f
             cost = get_cost_for_video(duration)
 
             if prompt and user_language_code != LanguageCode.EN:
-                prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
+                prompt = await translate_text(
+                    prompt, user_language_code, LanguageCode.EN
+                )
 
             if len(prompt) > 512:
                 await message.reply(
@@ -139,28 +160,31 @@ async def handle_runway(message: Message, state: FSMContext, user: User, video_f
                 currency=Currency.USD,
                 quantity=1,
                 details={
-                    'prompt_text': prompt,
-                    'prompt_image': video_frame_link,
-                    'resolution': resolution,
-                    'duration': duration,
-                    'has_error': False,
+                    "prompt_text": prompt,
+                    "prompt_image": video_frame_link,
+                    "resolution": resolution,
+                    "duration": duration,
+                    "has_error": False,
                 },
             )
 
-            footer_text = f'\n\n📹 {user.daily_limits[Quota.RUNWAY] + user.additional_usage_quota[Quota.RUNWAY]}' \
-                if user.settings[Model.RUNWAY][UserSettings.SHOW_USAGE_QUOTA] and \
-                   user.daily_limits[Quota.RUNWAY] != float('inf') else ''
+            footer_text = (
+                f"\n\n📹 {user.daily_limits[Quota.RUNWAY] + user.additional_usage_quota[Quota.RUNWAY]}"
+                if user.settings[Model.RUNWAY][UserSettings.SHOW_USAGE_QUOTA]
+                and user.daily_limits[Quota.RUNWAY] != float("inf")
+                else ""
+            )
 
             if user.settings[Model.RUNWAY][UserSettings.SEND_TYPE] == SendType.DOCUMENT:
                 await message.reply_document(
-                    caption=f'{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}',
-                    document=response.get('result', [])[0],
+                    caption=f"{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}",
+                    document=response.get("result", [])[0],
                     allow_sending_without_reply=True,
                 )
             else:
                 await message.reply_video(
-                    caption=f'{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}',
-                    video=response.get('result', [])[0],
+                    caption=f"{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}",
+                    video=response.get("result", [])[0],
                     allow_sending_without_reply=True,
                 )
 
@@ -171,13 +195,13 @@ async def handle_runway(message: Message, state: FSMContext, user: User, video_f
                 allow_sending_without_reply=True,
             )
         except runwayml.BadRequestError as e:
-            error_message = e.body.get('error', '')
+            error_message = e.body.get("error", "")
 
-            if 'invalid asset aspect ratio' in error_message.lower():
+            if "invalid asset aspect ratio" in error_message.lower():
                 matches = re.search(
-                    r'between (?P<min_ratio>\d+(\.\d+)?) '
-                    r'and (?P<max_ratio>\d+(\.\d+)?)\. '
-                    r'Got (?P<actual_ratio>\d+(\.\d+)?)',
+                    r"between (?P<min_ratio>\d+(\.\d+)?) "
+                    r"and (?P<max_ratio>\d+(\.\d+)?)\. "
+                    r"Got (?P<actual_ratio>\d+(\.\d+)?)",
                     error_message,
                 )
 
@@ -187,13 +211,15 @@ async def handle_runway(message: Message, state: FSMContext, user: User, video_f
                     sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
                 )
                 await message.answer(
-                    text=get_localization(user_language_code).error_aspect_ratio_invalid(
+                    text=get_localization(
+                        user_language_code
+                    ).error_aspect_ratio_invalid(
                         min_ratio,
                         max_ratio,
                         actual_ratio,
                     ),
                 )
-            elif 'safety' in error_message.lower():
+            elif "safety" in error_message.lower():
                 await message.answer_sticker(
                     sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
                 )
@@ -215,7 +241,7 @@ async def handle_runway(message: Message, state: FSMContext, user: User, video_f
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
-                hashtags=['runway'],
+                hashtags=["runway"],
             )
         finally:
             await processing_sticker.delete()

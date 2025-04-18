@@ -1,4 +1,4 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.database.models.face_swap_package import FaceSwapPackage, FaceSwapPackageStatus
 from bot.database.models.user import UserGender
@@ -6,24 +6,26 @@ from bot.locales.main import get_localization
 from bot.locales.types import LanguageCode
 
 
-def build_manage_face_swap_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+def build_manage_face_swap_keyboard(
+    language_code: LanguageCode,
+) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ADMIN_FACE_SWAP_CREATE_PACKAGE,
-                callback_data='fsm:create'
+                callback_data="fsm:create",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ADMIN_FACE_SWAP_EDIT_PACKAGE,
-                callback_data='fsm:edit'
+                callback_data="fsm:edit",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_BACK,
-                callback_data='fsm:back'
+                callback_data="fsm:back",
             )
         ],
     ]
@@ -31,37 +33,41 @@ def build_manage_face_swap_keyboard(language_code: LanguageCode) -> InlineKeyboa
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def build_manage_face_swap_create_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+def build_manage_face_swap_create_keyboard(
+    language_code: LanguageCode,
+) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_BACK,
-                callback_data='fsm_create:back'
+                callback_data="fsm_create:back",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_CANCEL,
-                callback_data='fsm_create:cancel'
+                callback_data="fsm_create:cancel",
             )
-        ]
+        ],
     ]
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def build_manage_face_swap_create_confirmation_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+def build_manage_face_swap_create_confirmation_keyboard(
+    language_code: LanguageCode,
+) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_APPROVE,
-                callback_data='fsm_create_confirmation:approve'
+                callback_data="fsm_create_confirmation:approve",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_CANCEL,
-                callback_data='fsm_create_confirmation:cancel'
+                callback_data="fsm_create_confirmation:cancel",
             )
         ],
     ]
@@ -69,18 +75,20 @@ def build_manage_face_swap_create_confirmation_keyboard(language_code: LanguageC
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def build_manage_face_swap_edit_choose_gender_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+def build_manage_face_swap_edit_choose_gender_keyboard(
+    language_code: LanguageCode,
+) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).GENDER_MALE,
-                callback_data=f'fsm_edit_choose_gender:{UserGender.MALE}'
+                callback_data=f"fsm_edit_choose_gender:{UserGender.MALE}",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).GENDER_FEMALE,
-                callback_data=f'fsm_edit_choose_gender:{UserGender.FEMALE}'
+                callback_data=f"fsm_edit_choose_gender:{UserGender.FEMALE}",
             )
         ],
     ]
@@ -94,46 +102,50 @@ def build_manage_face_swap_edit_choose_package_keyboard(
 ) -> InlineKeyboardMarkup:
     buttons = []
     for package in packages:
-        buttons.append([
-            InlineKeyboardButton(
-                text=f'{package.name} ({package.translated_names.get(language_code, package.name)})',
-                callback_data=f'fsm_edit_choose_package:{package.name}'
-            )
-        ])
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text=f"{package.name} ({package.translated_names.get(language_code, package.name)})",
+                    callback_data=f"fsm_edit_choose_package:{package.name}",
+                )
+            ]
+        )
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def build_manage_face_swap_edit_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+def build_manage_face_swap_edit_keyboard(
+    language_code: LanguageCode,
+) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ADMIN_FACE_SWAP_CHANGE_STATUS,
-                callback_data=f'fsm_edit:change_status'
+                callback_data="fsm_edit:change_status",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ADMIN_FACE_SWAP_SHOW_PICTURES,
-                callback_data=f'fsm_edit:show_pictures'
+                callback_data="fsm_edit:show_pictures",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ADMIN_FACE_SWAP_ADD_NEW_PICTURE,
-                callback_data=f'fsm_edit:add_new_picture'
+                callback_data="fsm_edit:add_new_picture",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_BACK,
-                callback_data='fsm_edit:back'
+                callback_data="fsm_edit:back",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_CANCEL,
-                callback_data='fsm_edit:cancel'
+                callback_data="fsm_edit:cancel",
             )
         ],
     ]
@@ -148,24 +160,22 @@ def build_manage_face_swap_edit_package_change_status_keyboard(
     buttons = [
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).ADMIN_FACE_SWAP_PUBLIC + (
-                    ' ✅' if current_status == FaceSwapPackageStatus.PUBLIC else ''
-                ),
-                callback_data=f'fsm_edit_package_change_status:{FaceSwapPackageStatus.PUBLIC}'
+                text=get_localization(language_code).ADMIN_FACE_SWAP_PUBLIC
+                + (" ✅" if current_status == FaceSwapPackageStatus.PUBLIC else ""),
+                callback_data=f"fsm_edit_package_change_status:{FaceSwapPackageStatus.PUBLIC}",
             )
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).ADMIN_FACE_SWAP_PRIVATE + (
-                    ' ✅' if current_status == FaceSwapPackageStatus.PRIVATE else ''
-                ),
-                callback_data=f'fsm_edit_package_change_status:{FaceSwapPackageStatus.PRIVATE}'
+                text=get_localization(language_code).ADMIN_FACE_SWAP_PRIVATE
+                + (" ✅" if current_status == FaceSwapPackageStatus.PRIVATE else ""),
+                callback_data=f"fsm_edit_package_change_status:{FaceSwapPackageStatus.PRIVATE}",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_BACK,
-                callback_data='fsm_edit_package_change_status:back'
+                callback_data="fsm_edit_package_change_status:back",
             )
         ],
     ]
@@ -173,18 +183,20 @@ def build_manage_face_swap_edit_package_change_status_keyboard(
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def build_manage_face_swap_edit_picture_keyboard(language_code: LanguageCode, file_name: str) -> InlineKeyboardMarkup:
+def build_manage_face_swap_edit_picture_keyboard(
+    language_code: LanguageCode, file_name: str
+) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ADMIN_FACE_SWAP_CHANGE_STATUS,
-                callback_data=f'fsm_edit_picture:change_status:{file_name}'
+                callback_data=f"fsm_edit_picture:change_status:{file_name}",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ADMIN_FACE_SWAP_EXAMPLE_PICTURE,
-                callback_data=f'fsm_edit_picture:example_picture:{file_name}'
+                callback_data=f"fsm_edit_picture:example_picture:{file_name}",
             )
         ],
     ]
@@ -199,24 +211,22 @@ def build_manage_face_swap_edit_picture_change_status_keyboard(
     buttons = [
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).ADMIN_FACE_SWAP_PUBLIC + (
-                    ' ✅' if current_status == FaceSwapPackageStatus.PUBLIC else ''
-                ),
-                callback_data=f'fsm_edit_picture_change_status:{FaceSwapPackageStatus.PUBLIC}'
+                text=get_localization(language_code).ADMIN_FACE_SWAP_PUBLIC
+                + (" ✅" if current_status == FaceSwapPackageStatus.PUBLIC else ""),
+                callback_data=f"fsm_edit_picture_change_status:{FaceSwapPackageStatus.PUBLIC}",
             )
         ],
         [
             InlineKeyboardButton(
-                text=get_localization(language_code).ADMIN_FACE_SWAP_PRIVATE + (
-                    ' ✅' if current_status == FaceSwapPackageStatus.PRIVATE else ''
-                ),
-                callback_data=f'fsm_edit_picture_change_status:{FaceSwapPackageStatus.PRIVATE}'
+                text=get_localization(language_code).ADMIN_FACE_SWAP_PRIVATE
+                + (" ✅" if current_status == FaceSwapPackageStatus.PRIVATE else ""),
+                callback_data=f"fsm_edit_picture_change_status:{FaceSwapPackageStatus.PRIVATE}",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_BACK,
-                callback_data='fsm_edit_picture_change_status:back'
+                callback_data="fsm_edit_picture_change_status:back",
             )
         ],
     ]

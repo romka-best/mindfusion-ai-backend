@@ -1,12 +1,12 @@
 from bot.database.models.common import (
-    Model,
-    Quota,
     ChatGPTVersion,
     ClaudeGPTVersion,
-    GeminiGPTVersion,
     DeepSeekVersion,
-    StableDiffusionVersion,
     FluxVersion,
+    GeminiGPTVersion,
+    Model,
+    Quota,
+    StableDiffusionVersion,
 )
 
 
@@ -86,4 +86,4 @@ def get_quota_by_model(model: Model, version: str):
     elif model == Model.PIKA:
         return Quota.PIKA
     else:
-        raise NotImplementedError(f'User Model is not Implemented: {model}')
+        raise NotImplementedError(f"User Model is not Implemented: {model}")

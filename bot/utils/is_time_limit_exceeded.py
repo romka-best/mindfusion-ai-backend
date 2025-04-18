@@ -5,14 +5,20 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from bot.config import config
-from bot.database.models.common import Quota, Model
+from bot.database.models.common import Model, Quota
 from bot.database.models.user import User
 from bot.keyboards.common.common import build_time_limit_exceeded_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
 
 
-async def notify_user_after_timeout(bot: Bot, chat_id: int, delay: int, language_code: LanguageCode, reply_to_message_id: int):
+async def notify_user_after_timeout(
+    bot: Bot,
+    chat_id: int,
+    delay: int,
+    language_code: LanguageCode,
+    reply_to_message_id: int,
+):
     await asyncio.sleep(delay)
 
     await bot.send_message(
@@ -23,20 +29,22 @@ async def notify_user_after_timeout(bot: Bot, chat_id: int, delay: int, language
     )
 
 
-async def is_time_limit_exceeded(message: Message, state: FSMContext, user: User, current_time: float) -> bool:
+async def is_time_limit_exceeded(
+    message: Message, state: FSMContext, user: User, current_time: float
+) -> bool:
     if (
-        user.daily_limits[Quota.FAST_MESSAGES] or
-        user.additional_usage_quota[Quota.FAST_MESSAGES] or
-        user.current_model == Model.FACE_SWAP or
-        user.current_model == Model.PHOTOSHOP_AI or
-        user.current_model == Model.MUSIC_GEN or
-        user.current_model == Model.SUNO
+        user.daily_limits[Quota.FAST_MESSAGES]
+        or user.additional_usage_quota[Quota.FAST_MESSAGES]
+        or user.current_model == Model.FACE_SWAP
+        or user.current_model == Model.PHOTOSHOP_AI
+        or user.current_model == Model.MUSIC_GEN
+        or user.current_model == Model.SUNO
     ):
         return False
 
     user_data = await state.get_data()
     user_language_code = await get_user_language(str(message.chat.id), state.storage)
-    last_request_time = user_data.get('last_request_time', 0.0)
+    last_request_time = user_data.get("last_request_time", 0.0)
 
     if not last_request_time:
         return False
@@ -47,7 +55,7 @@ async def is_time_limit_exceeded(message: Message, state: FSMContext, user: User
         return False
 
     remaining_time = int(config.LIMIT_BETWEEN_REQUESTS_SECONDS - time_elapsed)
-    if user_data.get('additional_request_made'):
+    if user_data.get("additional_request_made"):
         text = get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST
         await message.reply(
             text=text,
@@ -57,7 +65,9 @@ async def is_time_limit_exceeded(message: Message, state: FSMContext, user: User
         await state.update_data(additional_request_made=True)
 
         await message.reply(
-            text=get_localization(user_language_code).model_wait_for_another_request(remaining_time),
+            text=get_localization(user_language_code).model_wait_for_another_request(
+                remaining_time
+            ),
             reply_markup=build_time_limit_exceeded_keyboard(user_language_code),
             allow_sending_without_reply=True,
         )

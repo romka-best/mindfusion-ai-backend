@@ -2,7 +2,11 @@ from typing import Optional
 
 from bot.database.main import firebase
 from bot.database.models.common import Currency, PaymentMethod
-from bot.database.models.subscription import Subscription, SubscriptionPeriod, SubscriptionStatus
+from bot.database.models.subscription import (
+    Subscription,
+    SubscriptionPeriod,
+    SubscriptionStatus,
+)
 
 
 async def create_subscription_object(
@@ -17,7 +21,9 @@ async def create_subscription_object(
     payment_method: PaymentMethod,
     provider_payment_charge_id: Optional[str] = None,
 ) -> Subscription:
-    subscription_ref = firebase.db.collection(Subscription.COLLECTION_NAME).document(subscription_id)
+    subscription_ref = firebase.db.collection(Subscription.COLLECTION_NAME).document(
+        subscription_id
+    )
     return Subscription(
         id=subscription_ref.id,
         user_id=user_id,

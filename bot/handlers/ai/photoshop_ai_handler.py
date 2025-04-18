@@ -1,10 +1,10 @@
-from aiogram import Router, Bot
+from aiogram import Bot, Router
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery, URLInputFile, InputMediaPhoto
+from aiogram.types import CallbackQuery, InputMediaPhoto, Message, URLInputFile
 
-from bot.config import config, MessageEffect
+from bot.config import MessageEffect, config
 from bot.database.main import firebase
 from bot.database.models.common import Model, PhotoshopAIAction
 from bot.database.models.user import UserSettings
@@ -13,8 +13,11 @@ from bot.database.operations.user.updaters import update_user
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
-from bot.keyboards.ai.photoshop_ai import build_photoshop_ai_keyboard, build_photoshop_ai_chosen_keyboard
-from bot.locales.main import get_user_language, get_localization
+from bot.keyboards.ai.photoshop_ai import (
+    build_photoshop_ai_chosen_keyboard,
+    build_photoshop_ai_keyboard,
+)
+from bot.locales.main import get_localization, get_user_language
 from bot.states.ai.photoshop_ai import PhotoshopAI
 
 photoshop_ai_router = Router()
@@ -25,7 +28,7 @@ PRICE_PHOTOSHOP_AI_COLORIZATION = 0.000225
 PRICE_PHOTOSHOP_AI_REMOVAL_BACKGROUND = 0.000575
 
 
-@photoshop_ai_router.message(Command('photoshop'))
+@photoshop_ai_router.message(Command("photoshop"))
 async def photoshop_ai(message: Message, state: FSMContext):
     await state.clear()
 
@@ -35,29 +38,43 @@ async def photoshop_ai(message: Message, state: FSMContext):
 
     if user.current_model == Model.PHOTOSHOP_AI:
         await message.answer(
-            text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
-            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.PHOTOSHOP_AI),
+            text=get_localization(
+                user_language_code
+            ).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
+            reply_markup=build_switched_to_ai_keyboard(
+                user_language_code, Model.PHOTOSHOP_AI
+            ),
         )
     else:
         user.current_model = Model.PHOTOSHOP_AI
-        await update_user(user_id, {
-            'current_model': user.current_model,
-        })
+        await update_user(
+            user_id,
+            {
+                "current_model": user.current_model,
+            },
+        )
 
         text = await get_switched_to_ai_model(
             user,
-            get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
+            get_quota_by_model(
+                user.current_model,
+                user.settings[user.current_model][UserSettings.VERSION],
+            ),
             user_language_code,
         )
         answered_message = await message.answer(
             text=text,
-            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.PHOTOSHOP_AI),
+            reply_markup=build_switched_to_ai_keyboard(
+                user_language_code, Model.PHOTOSHOP_AI
+            ),
             message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
         )
 
         try:
             await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
-            await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+            await message.bot.pin_chat_message(
+                user.telegram_chat_id, answered_message.message_id
+            )
         except (TelegramBadRequest, TelegramRetryAfter):
             pass
 
@@ -67,7 +84,7 @@ async def photoshop_ai(message: Message, state: FSMContext):
 async def handle_photoshop_ai(bot: Bot, chat_id: str, state: FSMContext, user_id: str):
     user_language_code = await get_user_language(str(user_id), state.storage)
 
-    photo_path = f'photoshop/main.png'
+    photo_path = "photoshop/main.png"
     photo = await firebase.bucket.get_blob(photo_path)
     photo_link = firebase.get_public_url(photo.name)
 
@@ -79,13 +96,17 @@ async def handle_photoshop_ai(bot: Bot, chat_id: str, state: FSMContext, user_id
     )
 
 
-@photoshop_ai_router.callback_query(lambda c: c.data.startswith('photoshop_ai:'))
-async def photoshop_ai_choose_selection(callback_query: CallbackQuery, state: FSMContext):
+@photoshop_ai_router.callback_query(lambda c: c.data.startswith("photoshop_ai:"))
+async def photoshop_ai_choose_selection(
+    callback_query: CallbackQuery, state: FSMContext
+):
     await callback_query.answer()
 
-    user_language_code = await get_user_language(str(callback_query.from_user.id), state.storage)
+    user_language_code = await get_user_language(
+        str(callback_query.from_user.id), state.storage
+    )
 
-    action_name = callback_query.data.split(':')[1]
+    action_name = callback_query.data.split(":")[1]
     if action_name == PhotoshopAIAction.UPSCALE:
         text = get_localization(user_language_code).PHOTOSHOP_AI_UPSCALE_INFO
     elif action_name == PhotoshopAIAction.RESTORATION:
@@ -97,7 +118,7 @@ async def photoshop_ai_choose_selection(callback_query: CallbackQuery, state: FS
     else:
         return
 
-    photo_path = f'photoshop/{action_name}.png'
+    photo_path = f"photoshop/{action_name}.png"
     photo = await firebase.bucket.get_blob(photo_path)
     photo_link = firebase.get_public_url(photo.name)
 
@@ -113,13 +134,17 @@ async def photoshop_ai_choose_selection(callback_query: CallbackQuery, state: FS
     await state.set_state(PhotoshopAI.waiting_for_photo)
 
 
-@photoshop_ai_router.callback_query(lambda c: c.data.startswith('photoshop_ai_chosen:'))
-async def handle_photoshop_ai_action_selection(callback_query: CallbackQuery, state: FSMContext):
+@photoshop_ai_router.callback_query(lambda c: c.data.startswith("photoshop_ai_chosen:"))
+async def handle_photoshop_ai_action_selection(
+    callback_query: CallbackQuery, state: FSMContext
+):
     await callback_query.answer()
 
-    user_language_code = await get_user_language(str(callback_query.from_user.id), state.storage)
+    user_language_code = await get_user_language(
+        str(callback_query.from_user.id), state.storage
+    )
 
-    photo_path = f'photoshop/main.png'
+    photo_path = "photoshop/main.png"
     photo = await firebase.bucket.get_blob(photo_path)
     photo_link = firebase.get_public_url(photo.name)
 

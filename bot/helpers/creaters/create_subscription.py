@@ -6,8 +6,13 @@ from google.cloud import firestore
 
 from bot.database.models.subscription import SubscriptionStatus
 from bot.database.operations.product.getters import get_product
-from bot.database.operations.subscription.getters import get_subscription, get_subscriptions_by_user_id
-from bot.database.operations.subscription.updaters import update_subscription_in_transaction
+from bot.database.operations.subscription.getters import (
+    get_subscription,
+    get_subscriptions_by_user_id,
+)
+from bot.database.operations.subscription.updaters import (
+    update_subscription_in_transaction,
+)
 from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user_in_transaction
 from bot.helpers.billing.unsubscribe import unsubscribe
@@ -32,25 +37,36 @@ async def create_subscription(
 
     for old_subscription in all_subscriptions:
         if old_subscription.id != subscription.id and (
-            old_subscription.status == SubscriptionStatus.ACTIVE or old_subscription.status == SubscriptionStatus.TRIAL
+            old_subscription.status == SubscriptionStatus.ACTIVE
+            or old_subscription.status == SubscriptionStatus.TRIAL
         ):
             await unsubscribe(transaction, old_subscription, bot)
 
-    await update_subscription_in_transaction(transaction, subscription_id, {
-        'status': SubscriptionStatus.TRIAL if is_trial else SubscriptionStatus.ACTIVE,
-        'provider_payment_charge_id': provider_payment_charge_id,
-        'provider_auto_payment_charge_id': provider_auto_payment_charge_id,
-        'income_amount': income_amount,
-        **({'stripe_id': stripe_id} if stripe_id else {}),
-    })
+    await update_subscription_in_transaction(
+        transaction,
+        subscription_id,
+        {
+            "status": SubscriptionStatus.TRIAL
+            if is_trial
+            else SubscriptionStatus.ACTIVE,
+            "provider_payment_charge_id": provider_payment_charge_id,
+            "provider_auto_payment_charge_id": provider_auto_payment_charge_id,
+            "income_amount": income_amount,
+            **({"stripe_id": stripe_id} if stripe_id else {}),
+        },
+    )
 
     user.had_subscription = True
-    user.balance += product.details.get('bonus_credits', 0)
-    user.daily_limits.update(product.details.get('limits'))
-    await update_user_in_transaction(transaction, user_id, {
-        'subscription_id': subscription.id,
-        'additional_usage_quota': user.additional_usage_quota,
-        'daily_limits': user.daily_limits,
-        'had_subscription': user.had_subscription,
-        'last_subscription_limit_update': datetime.now(timezone.utc),
-    })
+    user.balance += product.details.get("bonus_credits", 0)
+    user.daily_limits.update(product.details.get("limits"))
+    await update_user_in_transaction(
+        transaction,
+        user_id,
+        {
+            "subscription_id": subscription.id,
+            "additional_usage_quota": user.additional_usage_quota,
+            "daily_limits": user.daily_limits,
+            "had_subscription": user.had_subscription,
+            "last_subscription_limit_update": datetime.now(timezone.utc),
+        },
+    )

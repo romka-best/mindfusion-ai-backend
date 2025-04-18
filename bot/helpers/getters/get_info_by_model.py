@@ -1,13 +1,13 @@
 from typing import Optional
 
 from bot.database.models.common import (
-    Model,
     ChatGPTVersion,
     ClaudeGPTVersion,
-    GeminiGPTVersion,
     DeepSeekVersion,
-    StableDiffusionVersion,
     FluxVersion,
+    GeminiGPTVersion,
+    Model,
+    StableDiffusionVersion,
 )
 from bot.locales.main import get_localization
 from bot.locales.types import LanguageCode
@@ -16,7 +16,12 @@ from bot.locales.types import LanguageCode
 def get_info_by_model(
     model: Model,
     model_version: Optional[
-        ChatGPTVersion | ClaudeGPTVersion | GeminiGPTVersion | DeepSeekVersion | StableDiffusionVersion | FluxVersion
+        ChatGPTVersion
+        | ClaudeGPTVersion
+        | GeminiGPTVersion
+        | DeepSeekVersion
+        | StableDiffusionVersion
+        | FluxVersion
     ],
     language_code: LanguageCode,
 ):

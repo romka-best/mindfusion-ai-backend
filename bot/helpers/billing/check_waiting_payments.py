@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 from bot.database.models.subscription import SubscriptionStatus
 from bot.database.operations.subscription.getters import get_subscriptions_by_status
@@ -23,8 +23,8 @@ async def check_waiting_payments():
             update_subscription(
                 not_finished_subscription.id,
                 {
-                    'status': not_finished_subscription.status,
-                }
+                    "status": not_finished_subscription.status,
+                },
             )
         )
 

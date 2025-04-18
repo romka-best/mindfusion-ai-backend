@@ -4,12 +4,29 @@ from typing import Union
 
 import pymorphy3
 
+from bot.database.models.common import (
+    AspectRatio,
+    Currency,
+    Model,
+    ModelType,
+    PaymentMethod,
+    Quota,
+    SendType,
+    VideoSummaryAmount,
+    VideoSummaryFocus,
+    VideoSummaryFormat,
+)
 from bot.database.models.feedback import FeedbackStatus
 from bot.database.models.game import GameType
 from bot.database.models.generation import GenerationReaction
 from bot.database.models.package import Package, PackageStatus
-from bot.database.models.product import Product, ProductType, ProductCategory
+from bot.database.models.product import Product, ProductCategory, ProductType
 from bot.database.models.prompt import Prompt
+from bot.database.models.subscription import (
+    Subscription,
+    SubscriptionStatus,
+)
+from bot.database.models.user import UserSettings
 from bot.database.operations.product.getters import get_product
 from bot.helpers.calculate_percentage_difference import calculate_percentage_difference
 from bot.helpers.formatters.format_number import format_number
@@ -17,23 +34,6 @@ from bot.helpers.getters.get_model_version import get_model_version
 from bot.helpers.getters.get_time_until_limit_update import get_time_until_limit_update
 from bot.helpers.getters.get_user_discount import get_user_discount
 from bot.locales.texts import Texts
-from bot.database.models.common import (
-    Model,
-    ModelType,
-    Quota,
-    Currency,
-    PaymentMethod,
-    VideoSummaryFocus,
-    VideoSummaryFormat,
-    VideoSummaryAmount,
-    AspectRatio,
-    SendType,
-)
-from bot.database.models.subscription import (
-    Subscription,
-    SubscriptionStatus,
-)
-from bot.database.models.user import UserSettings
 from bot.locales.types import LanguageCode
 
 
@@ -65,8 +65,10 @@ class Russian(Texts):
     # Bonus
     @staticmethod
     def bonus_info(balance: int) -> str:
-        word = Russian.morph.parse('кредит')[0]
-        current_balance_info = f'{int(balance)} {word.make_agree_with_number(balance).word} 🪙'
+        word = Russian.morph.parse("кредит")[0]
+        current_balance_info = (
+            f"{int(balance)} {word.make_agree_with_number(balance).word} 🪙"
+        )
 
         return f"""
 🎁 <b>Бонусный баланс</b>
@@ -86,7 +88,9 @@ class Russian(Texts):
     BONUS_SPEND = "➖ Потратить"
 
     @staticmethod
-    def bonus_info_earn(user_id: str, referred_count: int, feedback_count: int, play_count: int):
+    def bonus_info_earn(
+        user_id: str, referred_count: int, feedback_count: int, play_count: int
+    ):
         return f"""
 ➕ <b>Как заработать кредиты</b>
 
@@ -109,8 +113,10 @@ class Russian(Texts):
 
     @staticmethod
     def bonus_info_spend(balance: int):
-        word = Russian.morph.parse('кредит')[0]
-        current_balance_info = f'{int(balance)} {word.make_agree_with_number(balance).word} 🪙'
+        word = Russian.morph.parse("кредит")[0]
+        current_balance_info = (
+            f"{int(balance)} {word.make_agree_with_number(balance).word} 🪙"
+        )
 
         return f"""
 💰 На счету: <b>{current_balance_info}</b>
@@ -205,8 +211,8 @@ class Russian(Texts):
 
     @staticmethod
     def bonus_play_game_reached_limit():
-        hours_word = Russian.morph.parse('час')[0]
-        minutes_word = Russian.morph.parse('минута')[0]
+        hours_word = Russian.morph.parse("час")[0]
+        minutes_word = Russian.morph.parse("минута")[0]
         hours, minutes = get_time_until_limit_update(hours=0)
 
         return f"""
@@ -254,12 +260,14 @@ class Russian(Texts):
 
     @staticmethod
     def catalog_prompts_choose_prompt(prompts: list[Prompt]):
-        prompt_info = ''
+        prompt_info = ""
         for index, prompt in enumerate(prompts):
             is_last = index == len(prompts) - 1
-            right_part = '\n' if not is_last else ''
-            prompt_name = prompt.names.get(LanguageCode.RU) or prompt.names.get(LanguageCode.EN)
-            prompt_info += f'<b>{index + 1}</b>: {prompt_name}{right_part}'
+            right_part = "\n" if not is_last else ""
+            prompt_name = prompt.names.get(LanguageCode.RU) or prompt.names.get(
+                LanguageCode.EN
+            )
+            prompt_info += f"<b>{index + 1}</b>: {prompt_name}{right_part}"
 
         return f"""
 📚 <b>Каталог промптов</b>
@@ -271,13 +279,15 @@ class Russian(Texts):
 
     @staticmethod
     def catalog_prompts_info_prompt(prompt: Prompt, products: list[Product]):
-        model_info = ''
+        model_info = ""
         for index, product in enumerate(products):
             is_last = index == len(products) - 1
-            left_part = '┣' if not is_last else '┗'
-            right_part = '\n' if not is_last else ''
-            product_name = product.names.get(LanguageCode.RU) or product.names.get(LanguageCode.EN)
-            model_info += f'    {left_part} <b>{product_name}</b>{right_part}'
+            left_part = "┣" if not is_last else "┗"
+            right_part = "\n" if not is_last else ""
+            product_name = product.names.get(LanguageCode.RU) or product.names.get(
+                LanguageCode.EN
+            )
+            model_info += f"    {left_part} <b>{product_name}</b>{right_part}"
 
         return f"""
 📚 <b>Каталог промптов</b>
@@ -292,14 +302,16 @@ class Russian(Texts):
 
     @staticmethod
     def catalog_prompts_examples(products: list[Product]):
-        prompt_examples_info = ''
+        prompt_examples_info = ""
         for index, product in enumerate(products):
             is_last = index == len(products) - 1
             is_first = index == 0
-            left_part = '┣' if not is_last else '┗'
-            right_part = '\n' if not is_last else ''
-            product_name = product.names.get(LanguageCode.RU) or product.names.get(LanguageCode.EN)
-            prompt_examples_info += f'{left_part if not is_first else "┏"} <b>{index + 1}</b>: {product_name}{right_part}'
+            left_part = "┣" if not is_last else "┗"
+            right_part = "\n" if not is_last else ""
+            product_name = product.names.get(LanguageCode.RU) or product.names.get(
+                LanguageCode.EN
+            )
+            prompt_examples_info += f"{left_part if not is_first else '┏'} <b>{index + 1}</b>: {product_name}{right_part}"
 
         return prompt_examples_info
 
@@ -571,12 +583,18 @@ class Russian(Texts):
 """
 
     @staticmethod
-    def face_swap_choose_package(name: str, available_images: int, total_images: int, used_images: int) -> str:
+    def face_swap_choose_package(
+        name: str, available_images: int, total_images: int, used_images: int
+    ) -> str:
         remain_images = total_images - used_images
 
-        word = Russian.morph.parse('изображение')[0]
+        word = Russian.morph.parse("изображение")[0]
 
-        footer_text = f'<b>Напишите</b>, сколько смен лиц вы хотите сделать, или <b>выберите</b> ниже 👇' if remain_images > 0 else ''
+        footer_text = (
+            "<b>Напишите</b>, сколько смен лиц вы хотите сделать, или <b>выберите</b> ниже 👇"
+            if remain_images > 0
+            else ""
+        )
 
         return f"""
 <b>{name}</b>
@@ -594,7 +612,7 @@ class Russian(Texts):
 
     @staticmethod
     def face_swap_package_forbidden_error(available_images: int) -> str:
-        word = Russian.morph.parse('генерация')[0]
+        word = Russian.morph.parse("генерация")[0]
 
         return f"""
 🚧 <b>Недостаточно генераций!</b>
@@ -806,8 +824,12 @@ class Russian(Texts):
     INFO_TEXT_MODELS = "🤖 <b>Выберите текстовую модель</b>, про которую вы хотите получить информацию:"
     INFO_IMAGE_MODELS = "🤖 <b>Выберите графическую модель</b>, про которую вы хотите получить информацию:"
     INFO_MUSIC_MODELS = "🤖 <b>Выберите музыкальную модель</b>, про которую вы хотите получить информацию:"
-    INFO_VIDEO_MODELS = "🤖 <b>Выберите видео модель</b>, про которую вы хотите получить информацию:"
-    INFO_CHAT_GPT = "🤖 <b>Выберите ChatGPT модель</b>, про которую вы хотите получить информацию:"
+    INFO_VIDEO_MODELS = (
+        "🤖 <b>Выберите видео модель</b>, про которую вы хотите получить информацию:"
+    )
+    INFO_CHAT_GPT = (
+        "🤖 <b>Выберите ChatGPT модель</b>, про которую вы хотите получить информацию:"
+    )
     INFO_CHAT_GPT_4_OMNI_MINI = f"""
 <b>{Texts.CHAT_GPT_4_OMNI_MINI}</b>
 
@@ -926,7 +948,9 @@ class Russian(Texts):
 
 <b>Создатель:</b> OpenAI
 """
-    INFO_CLAUDE = "🤖 <b>Выберите Claude модель</b>, про которую вы хотите получить информацию:"
+    INFO_CLAUDE = (
+        "🤖 <b>Выберите Claude модель</b>, про которую вы хотите получить информацию:"
+    )
     INFO_CLAUDE_3_HAIKU = f"""
 <b>{Texts.CLAUDE_3_HAIKU}</b>
 
@@ -1027,7 +1051,9 @@ class Russian(Texts):
 • MMMU: 59.4%
 • MathVista: 50.5%
 """
-    INFO_GEMINI = "🤖 <b>Выберите Gemini модель</b>, про которую вы хотите получить информацию:"
+    INFO_GEMINI = (
+        "🤖 <b>Выберите Gemini модель</b>, про которую вы хотите получить информацию:"
+    )
     INFO_GEMINI_2_FLASH = f"""
 <b>{Texts.GEMINI_2_FLASH}</b>
 
@@ -1151,7 +1177,9 @@ class Russian(Texts):
 • MMMU: 66.1%
 • MathVista: 69.0%
 """
-    INFO_DEEP_SEEK = "🤖 <b>Выберите DeepSeek модель</b>, про которую вы хотите получить информацию:"
+    INFO_DEEP_SEEK = (
+        "🤖 <b>Выберите DeepSeek модель</b>, про которую вы хотите получить информацию:"
+    )
     INFO_DEEP_SEEK_V3 = f"""
 <b>{Texts.DEEP_SEEK_V3}</b>
 
@@ -1274,7 +1302,9 @@ class Russian(Texts):
 • <i>Прототипирование дизайна</i>: Быстрая генерация визуальных концепций для логотипов, постеров или веб-дизайна
 • <i>Эксперименты с художественными стилями</i>: Возможность экспериментировать с цветами, формами и текстурами для разработки новых визуальных решений
 """
-    INFO_FLUX = "🤖 <b>Выберите Flux модель</b>, про которую вы хотите получить информацию:"
+    INFO_FLUX = (
+        "🤖 <b>Выберите Flux модель</b>, про которую вы хотите получить информацию:"
+    )
     INFO_FLUX_1_DEV = f"""
 <b>{Texts.FLUX_1_DEV}</b>
 
@@ -1392,7 +1422,9 @@ class Russian(Texts):
     LANGUAGE_CHOSEN = "Выбранный язык: Русский 🇷🇺"
 
     # Maintenance Mode
-    MAINTENANCE_MODE = "🤖 Я в режиме тех. обслуживания. Пожалуйста, подождите, немного 🛠"
+    MAINTENANCE_MODE = (
+        "🤖 Я в режиме тех. обслуживания. Пожалуйста, подождите, немного 🛠"
+    )
 
     # Midjourney
     MIDJOURNEY_INFO = """
@@ -1403,16 +1435,24 @@ class Russian(Texts):
 <b>U</b> — Увеличение картинки
 <b>V</b> — Похожие варианты картинки
 """
-    MIDJOURNEY_ALREADY_CHOSE_UPSCALE = "Вы уже выбирали эту картинку, попробуйте новую 🙂"
+    MIDJOURNEY_ALREADY_CHOSE_UPSCALE = (
+        "Вы уже выбирали эту картинку, попробуйте новую 🙂"
+    )
 
     # Model
     MODEL = "Чтобы <b>сменить модель</b>, нажмите на кнопку ниже 👇"
     MODEL_CHANGE_AI = "🤖 Поменять AI модель"
-    MODEL_CHOOSE_CHAT_GPT = "Для выбора <b>ChatGPT 💭</b> модели нажмите на кнопку ниже 👇"
+    MODEL_CHOOSE_CHAT_GPT = (
+        "Для выбора <b>ChatGPT 💭</b> модели нажмите на кнопку ниже 👇"
+    )
     MODEL_CHOOSE_CLAUDE = "Для выбора <b>Claude 📄</b> модели нажмите на кнопку ниже 👇"
     MODEL_CHOOSE_GEMINI = "Для выбора <b>Gemini ✨</b> модели нажмите на кнопку ниже 👇"
-    MODEL_CHOOSE_DEEP_SEEK = "Для выбора <b>DeepSeek 🐳</b> модели нажмите на кнопку ниже 👇"
-    MODEL_CHOOSE_STABLE_DIFFUSION = "Для выбора <b>Stable Diffusion 🎆</b> модели нажмите на кнопку ниже 👇"
+    MODEL_CHOOSE_DEEP_SEEK = (
+        "Для выбора <b>DeepSeek 🐳</b> модели нажмите на кнопку ниже 👇"
+    )
+    MODEL_CHOOSE_STABLE_DIFFUSION = (
+        "Для выбора <b>Stable Diffusion 🎆</b> модели нажмите на кнопку ниже 👇"
+    )
     MODEL_CHOOSE_FLUX = "Для выбора <b>Flux 🫐</b> модели нажмите на кнопку ниже 👇"
     MODEL_CONTINUE_GENERATING = "Продолжить генерацию"
     MODEL_ALREADY_MAKE_REQUEST = "⚠️ Вы уже сделали запрос. Пожалуйста, подождите"
@@ -1432,65 +1472,97 @@ class Russian(Texts):
     @staticmethod
     def model_switched(model_name: str, model_type: ModelType, model_info: dict):
         if model_type == ModelType.TEXT:
-            model_role = model_info.get('role').split(' ')
-            model_role = ' '.join(model_role[1:] + [model_role[0]])
+            model_role = model_info.get("role").split(" ")
+            model_role = " ".join(model_role[1:] + [model_role[0]])
             facts = f"""<b>Факты и настройки:</b>
-📅 Знания до: {model_info.get('training_data')}
-📷 Работа с фото: {'Да ✅' if model_info.get('support_photos', False) else 'Нет ❌'}
-{Russian.VOICE_MESSAGES}: {'Вкл. ✅' if model_info.get(UserSettings.TURN_ON_VOICE_MESSAGES, False) else 'Выкл. ❌'}
+📅 Знания до: {model_info.get("training_data")}
+📷 Работа с фото: {"Да ✅" if model_info.get("support_photos", False) else "Нет ❌"}
+{Russian.VOICE_MESSAGES}: {"Вкл. ✅" if model_info.get(UserSettings.TURN_ON_VOICE_MESSAGES, False) else "Выкл. ❌"}
 🎭 Роль: {model_role}"""
         elif model_type == ModelType.SUMMARY:
-            model_focus = model_info.get(UserSettings.FOCUS, VideoSummaryFocus.INSIGHTFUL)
+            model_focus = model_info.get(
+                UserSettings.FOCUS, VideoSummaryFocus.INSIGHTFUL
+            )
             if model_focus == VideoSummaryFocus.INSIGHTFUL:
-                model_focus = ' '.join(reversed(Russian.VIDEO_SUMMARY_FOCUS_INSIGHTFUL.split(' ', 1)))
+                model_focus = " ".join(
+                    reversed(Russian.VIDEO_SUMMARY_FOCUS_INSIGHTFUL.split(" ", 1))
+                )
             elif model_focus == VideoSummaryFocus.FUNNY:
-                model_focus = ' '.join(reversed(Russian.VIDEO_SUMMARY_FOCUS_FUNNY.split(' ', 1)))
+                model_focus = " ".join(
+                    reversed(Russian.VIDEO_SUMMARY_FOCUS_FUNNY.split(" ", 1))
+                )
             elif model_focus == VideoSummaryFocus.ACTIONABLE:
-                model_focus = ' '.join(reversed(Russian.VIDEO_SUMMARY_FOCUS_ACTIONABLE.split(' ', 1)))
+                model_focus = " ".join(
+                    reversed(Russian.VIDEO_SUMMARY_FOCUS_ACTIONABLE.split(" ", 1))
+                )
             elif model_focus == VideoSummaryFocus.CONTROVERSIAL:
-                model_focus = ' '.join(reversed(Russian.VIDEO_SUMMARY_FOCUS_CONTROVERSIAL.split(' ', 1)))
+                model_focus = " ".join(
+                    reversed(Russian.VIDEO_SUMMARY_FOCUS_CONTROVERSIAL.split(" ", 1))
+                )
 
             model_format = model_info.get(UserSettings.FORMAT, VideoSummaryFormat.LIST)
             if model_format == VideoSummaryFormat.LIST:
-                model_format = ' '.join(reversed(Russian.VIDEO_SUMMARY_FORMAT_LIST.split(' ', 1)))
+                model_format = " ".join(
+                    reversed(Russian.VIDEO_SUMMARY_FORMAT_LIST.split(" ", 1))
+                )
             elif model_format == VideoSummaryFormat.FAQ:
-                model_format = ' '.join(reversed(Russian.VIDEO_SUMMARY_FORMAT_FAQ.split(' ', 1)))
+                model_format = " ".join(
+                    reversed(Russian.VIDEO_SUMMARY_FORMAT_FAQ.split(" ", 1))
+                )
 
             model_amount = model_info.get(UserSettings.AMOUNT, VideoSummaryAmount.AUTO)
             if model_amount == VideoSummaryAmount.AUTO:
-                model_amount = ' '.join(reversed(Russian.VIDEO_SUMMARY_AMOUNT_AUTO.split(' ', 1)))
+                model_amount = " ".join(
+                    reversed(Russian.VIDEO_SUMMARY_AMOUNT_AUTO.split(" ", 1))
+                )
             elif model_amount == VideoSummaryAmount.SHORT:
-                model_amount = ' '.join(reversed(Russian.VIDEO_SUMMARY_AMOUNT_SHORT.split(' ', 1)))
+                model_amount = " ".join(
+                    reversed(Russian.VIDEO_SUMMARY_AMOUNT_SHORT.split(" ", 1))
+                )
             elif model_amount == VideoSummaryAmount.DETAILED:
-                model_amount = ' '.join(reversed(Russian.VIDEO_SUMMARY_AMOUNT_DETAILED.split(' ', 1)))
+                model_amount = " ".join(
+                    reversed(Russian.VIDEO_SUMMARY_AMOUNT_DETAILED.split(" ", 1))
+                )
 
             facts = f"""<b>Факты и настройки:</b>
 {Russian.SETTINGS_FOCUS}: {model_focus}
 {Russian.SETTINGS_FORMAT}: {model_format}
 {Russian.SETTINGS_AMOUNT}: {model_amount}
-{Russian.VOICE_MESSAGES}: {'Вкл. ✅' if model_info.get(UserSettings.TURN_ON_VOICE_MESSAGES, False) else 'Выкл. ❌'}"""
+{Russian.VOICE_MESSAGES}: {"Вкл. ✅" if model_info.get(UserSettings.TURN_ON_VOICE_MESSAGES, False) else "Выкл. ❌"}"""
         elif model_type == ModelType.IMAGE:
             model_version = get_model_version(model_info)
-            model_version_info = f'\n{Russian.SETTINGS_VERSION}: {model_version}' if model_version else ''
+            model_version_info = (
+                f"\n{Russian.SETTINGS_VERSION}: {model_version}"
+                if model_version
+                else ""
+            )
             facts = f"""<b>Факты и настройки:</b>{model_version_info}
-📷 Работа с фото: {'Да ✅' if model_info.get('support_photos', False) else 'Нет ❌'}
-{Russian.SETTINGS_ASPECT_RATIO}: {'Пользовательское' if model_info.get(UserSettings.ASPECT_RATIO, AspectRatio.CUSTOM) == AspectRatio.CUSTOM else model_info.get(UserSettings.ASPECT_RATIO)}
-{Russian.SETTINGS_SEND_TYPE}: {'Документ 📄' if model_info.get(UserSettings.SEND_TYPE, SendType.IMAGE) == SendType.DOCUMENT else 'Картинка 🖼'}"""
+📷 Работа с фото: {"Да ✅" if model_info.get("support_photos", False) else "Нет ❌"}
+{Russian.SETTINGS_ASPECT_RATIO}: {"Пользовательское" if model_info.get(UserSettings.ASPECT_RATIO, AspectRatio.CUSTOM) == AspectRatio.CUSTOM else model_info.get(UserSettings.ASPECT_RATIO)}
+{Russian.SETTINGS_SEND_TYPE}: {"Документ 📄" if model_info.get(UserSettings.SEND_TYPE, SendType.IMAGE) == SendType.DOCUMENT else "Картинка 🖼"}"""
         elif model_type == ModelType.MUSIC:
             model_version = get_model_version(model_info)
-            model_version_info = f'\n{Russian.SETTINGS_VERSION}: {model_version}' if model_version else ''
+            model_version_info = (
+                f"\n{Russian.SETTINGS_VERSION}: {model_version}"
+                if model_version
+                else ""
+            )
             facts = f"""<b>Факты и настройки:</b>{model_version_info}
-{Russian.SETTINGS_SEND_TYPE}: {'Видео 📺' if model_info.get(UserSettings.SEND_TYPE, SendType.AUDIO) == SendType.VIDEO else 'Аудио 🎤'}"""
+{Russian.SETTINGS_SEND_TYPE}: {"Видео 📺" if model_info.get(UserSettings.SEND_TYPE, SendType.AUDIO) == SendType.VIDEO else "Аудио 🎤"}"""
         elif model_type == ModelType.VIDEO:
             model_version = get_model_version(model_info)
-            model_version_info = f'\n{Russian.SETTINGS_VERSION}: {model_version}' if model_version else ''
+            model_version_info = (
+                f"\n{Russian.SETTINGS_VERSION}: {model_version}"
+                if model_version
+                else ""
+            )
             facts = f"""<b>Факты и настройки:</b>{model_version_info}
-📷 Работа с фото: {'Да ✅' if model_info.get('support_photos', False) else 'Нет ❌'}
-{Russian.SETTINGS_ASPECT_RATIO}: {'Пользовательское' if model_info.get(UserSettings.ASPECT_RATIO, AspectRatio.CUSTOM) == AspectRatio.CUSTOM else model_info.get(UserSettings.ASPECT_RATIO)}
+📷 Работа с фото: {"Да ✅" if model_info.get("support_photos", False) else "Нет ❌"}
+{Russian.SETTINGS_ASPECT_RATIO}: {"Пользовательское" if model_info.get(UserSettings.ASPECT_RATIO, AspectRatio.CUSTOM) == AspectRatio.CUSTOM else model_info.get(UserSettings.ASPECT_RATIO)}
 {Russian.SETTINGS_DURATION}: {model_info.get(UserSettings.DURATION, 5)}
-{Russian.SETTINGS_SEND_TYPE}: {'Документ 📄' if model_info.get(UserSettings.SEND_TYPE, SendType.VIDEO) == SendType.DOCUMENT else 'Видео 📺'}"""
+{Russian.SETTINGS_SEND_TYPE}: {"Документ 📄" if model_info.get(UserSettings.SEND_TYPE, SendType.VIDEO) == SendType.DOCUMENT else "Видео 📺"}"""
         else:
-            facts = f"<b>Факты и настройки:</b> Скоро 🔜"
+            facts = "<b>Факты и настройки:</b> Скоро 🔜"
 
         return f"""
 <b>{model_name}</b>
@@ -1645,13 +1717,13 @@ class Russian(Texts):
 
     @staticmethod
     def model_wait_for_another_request(seconds: int) -> str:
-        word = Russian.morph.parse('секунда')[0]
+        word = Russian.morph.parse("секунда")[0]
         return f"⏳ Пожалуйста, подождите ещё <b>{seconds} {word.make_agree_with_number(seconds).word}</b> перед отправкой следующего запроса"
 
     @staticmethod
     def model_reached_usage_limit():
-        hours_word = Russian.morph.parse('час')[0]
-        minutes_word = Russian.morph.parse('минута')[0]
+        hours_word = Russian.morph.parse("час")[0]
+        minutes_word = Russian.morph.parse("минута")[0]
         hours, minutes = get_time_until_limit_update()
 
         return f"""
@@ -1682,7 +1754,7 @@ class Russian(Texts):
 
     @staticmethod
     def model_text_info():
-        return f"""
+        return """
 📕 <b>Инструкция</b>
 
 <b>Мои возможности:</b>
@@ -1703,7 +1775,7 @@ class Russian(Texts):
 
     @staticmethod
     def model_image_info():
-        return f"""
+        return """
 📕 <b>Инструкция</b>
 
 <b>Мои возможности:</b>
@@ -1724,7 +1796,7 @@ class Russian(Texts):
 
     @staticmethod
     def model_video_info():
-        return f"""
+        return """
 📕 <b>Инструкция</b>
 
 <b>Мои возможности:</b>
@@ -1783,7 +1855,7 @@ class Russian(Texts):
 
     @staticmethod
     def music_gen_forbidden_error(available_seconds: int) -> str:
-        word = Russian.morph.parse('секунда')[0]
+        word = Russian.morph.parse("секунда")[0]
 
         return f"""
 🚧 <b>Упс, небольшая проблема!</b>
@@ -1889,7 +1961,9 @@ class Russian(Texts):
 """
 
     @staticmethod
-    def package_info(currency: Currency, cost: str, gift_packages: list[Product]) -> str:
+    def package_info(
+        currency: Currency, cost: str, gift_packages: list[Product]
+    ) -> str:
         if currency == Currency.USD:
             cost = f"{Currency.SYMBOLS[currency]}{cost}"
             gift_packages_sum = f"{Currency.SYMBOLS[currency]}4"
@@ -1904,7 +1978,7 @@ class Russian(Texts):
         return f"""
 🛍 <b>Пакеты</b>
 
-<b>1 монета 🪙 = {cost}</b>{gift_packages_info if len(gift_packages) > 0 else ''}
+<b>1 монета 🪙 = {cost}</b>{gift_packages_info if len(gift_packages) > 0 else ""}
 
 Чтобы выбрать пакет, нажмите кнопку:
 """
@@ -1918,16 +1992,22 @@ class Russian(Texts):
 """
 
     @staticmethod
-    def package_confirmation(package_name: str, package_quantity: int, currency: Currency, price: str) -> str:
-        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
-        right_price_part = '' if currency == Currency.USD else Currency.SYMBOLS[currency]
-        word = Russian.morph.parse('пакет')[0]
+    def package_confirmation(
+        package_name: str, package_quantity: int, currency: Currency, price: str
+    ) -> str:
+        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ""
+        right_price_part = (
+            "" if currency == Currency.USD else Currency.SYMBOLS[currency]
+        )
+        word = Russian.morph.parse("пакет")[0]
 
         return f"Вы собираетесь купить {package_quantity} {word.make_agree_with_number(package_quantity).word} <b>{package_name}</b> за {left_price_part}{price}{right_price_part}"
 
     @staticmethod
-    def payment_package_description(user_id: str, package_name: str, package_quantity: int):
-        word = Russian.morph.parse('пакет')[0]
+    def payment_package_description(
+        user_id: str, package_name: str, package_quantity: int
+    ):
+        word = Russian.morph.parse("пакет")[0]
 
         return f"Оплата {package_quantity} {word.make_agree_with_number(package_quantity).word} {package_name} для пользователя: {user_id}"
 
@@ -1985,8 +2065,10 @@ class Russian(Texts):
 
     @staticmethod
     def payment_purchase_minimal_price(currency: Currency, current_price: str):
-        left_part_price = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
-        right_part_price = '' if currency == Currency.USD else Currency.SYMBOLS[currency]
+        left_part_price = Currency.SYMBOLS[currency] if currency == Currency.USD else ""
+        right_part_price = (
+            "" if currency == Currency.USD else Currency.SYMBOLS[currency]
+        )
         return f"""
 <b>😕 Ох-ох...</b>
 
@@ -2055,9 +2137,11 @@ class Russian(Texts):
         renewal_date,
     ) -> str:
         if subscription_status == SubscriptionStatus.CANCELED:
-            subscription_info = f"📫 <b>Статус подписки:</b> Отменена. Действует до {renewal_date}"
+            subscription_info = (
+                f"📫 <b>Статус подписки:</b> Отменена. Действует до {renewal_date}"
+            )
         elif subscription_status == SubscriptionStatus.TRIAL:
-            subscription_info = f"📫 <b>Статус подписки:</b> Бесплатный период"
+            subscription_info = "📫 <b>Статус подписки:</b> Бесплатный период"
         else:
             subscription_info = "📫 <b>Статус подписки:</b> Активна"
 
@@ -2069,7 +2153,7 @@ class Russian(Texts):
 🤖 <b>Текущая модель:</b> {current_model}
 
 💳 <b>Тип подписки:</b> {subscription_name}
-🗓 <b>Дата обновления подписки:</b> {f'{renewal_date}' if subscription_name != '🆓' else 'N/A'}
+🗓 <b>Дата обновления подписки:</b> {f"{renewal_date}" if subscription_name != "🆓" else "N/A"}
 {subscription_info}
 
 ─────────────
@@ -2083,8 +2167,8 @@ class Russian(Texts):
         daily_limits,
         additional_usage_quota,
     ) -> str:
-        hours_word = Russian.morph.parse('час')[0]
-        minutes_word = Russian.morph.parse('минута')[0]
+        hours_word = Russian.morph.parse("час")[0]
+        minutes_word = Russian.morph.parse("минута")[0]
         hours, minutes = get_time_until_limit_update()
 
         return f"""
@@ -2094,78 +2178,78 @@ class Russian(Texts):
 
 🔤 <b>Текстовые Модели</b>:
 <b>Базовые</b>:
-    ┣ ✉️ ChatGPT 4.0 Omni Mini{f': доп. {additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI] > 0 else ''}
-    ┣ 👽 ChatGPT 4.1 Mini{f': доп. {additional_usage_quota[Quota.CHAT_GPT_4_1_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_4_1_MINI] > 0 else ''}
-    ┣ 📜 Claude 3.5 Haiku{f': доп. {additional_usage_quota[Quota.CLAUDE_3_HAIKU]}' if additional_usage_quota[Quota.CLAUDE_3_HAIKU] > 0 else ''}
-    ┣ 🏎 Gemini 2.0 Flash{f': доп. {additional_usage_quota[Quota.GEMINI_2_FLASH]}' if additional_usage_quota[Quota.GEMINI_2_FLASH] > 0 else ''}
-    ┣ 🐬 DeepSeek V3{f': доп. {additional_usage_quota[Quota.DEEP_SEEK_V3]}' if additional_usage_quota[Quota.DEEP_SEEK_V3] > 0 else ''}
+    ┣ ✉️ ChatGPT 4.0 Omni Mini{f": доп. {additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI]}" if additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI] > 0 else ""}
+    ┣ 👽 ChatGPT 4.1 Mini{f": доп. {additional_usage_quota[Quota.CHAT_GPT_4_1_MINI]}" if additional_usage_quota[Quota.CHAT_GPT_4_1_MINI] > 0 else ""}
+    ┣ 📜 Claude 3.5 Haiku{f": доп. {additional_usage_quota[Quota.CLAUDE_3_HAIKU]}" if additional_usage_quota[Quota.CLAUDE_3_HAIKU] > 0 else ""}
+    ┣ 🏎 Gemini 2.0 Flash{f": доп. {additional_usage_quota[Quota.GEMINI_2_FLASH]}" if additional_usage_quota[Quota.GEMINI_2_FLASH] > 0 else ""}
+    ┣ 🐬 DeepSeek V3{f": доп. {additional_usage_quota[Quota.DEEP_SEEK_V3]}" if additional_usage_quota[Quota.DEEP_SEEK_V3] > 0 else ""}
     ┗ Дневной лимит: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI_MINI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI_MINI])}
 
 <b>Продвинутые</b>:
-    ┣ 💥 ChatGPT 4.0 Omni{f': доп. {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
-    ┣ 🛸 ChatGPT 4.1{f': доп. {additional_usage_quota[Quota.CHAT_GPT_4_1]}' if additional_usage_quota[Quota.CHAT_GPT_4_1] > 0 else ''}
-    ┣ 🧩 ChatGPT o4-mini{f': доп. {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ''}
-    ┣ 💫 Claude 3.7 Sonnet{f': доп. {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
-    ┣ 💼 Gemini 2.5 Pro{f': доп. {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
-    ┣ 🐦 Grok 2.0{f': доп. {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
-    ┣ 🐋 DeepSeek R1{f': доп. {additional_usage_quota[Quota.DEEP_SEEK_R1]}' if additional_usage_quota[Quota.DEEP_SEEK_R1] > 0 else ''}
-    ┣ 🌐 Perplexity{f': доп. {additional_usage_quota[Quota.PERPLEXITY]}' if additional_usage_quota[Quota.PERPLEXITY] > 0 else ''}
+    ┣ 💥 ChatGPT 4.0 Omni{f": доп. {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}" if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ""}
+    ┣ 🛸 ChatGPT 4.1{f": доп. {additional_usage_quota[Quota.CHAT_GPT_4_1]}" if additional_usage_quota[Quota.CHAT_GPT_4_1] > 0 else ""}
+    ┣ 🧩 ChatGPT o4-mini{f": доп. {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}" if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ""}
+    ┣ 💫 Claude 3.7 Sonnet{f": доп. {additional_usage_quota[Quota.CLAUDE_3_SONNET]}" if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ""}
+    ┣ 💼 Gemini 2.5 Pro{f": доп. {additional_usage_quota[Quota.GEMINI_2_PRO]}" if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ""}
+    ┣ 🐦 Grok 2.0{f": доп. {additional_usage_quota[Quota.GROK_2]}" if additional_usage_quota[Quota.GROK_2] > 0 else ""}
+    ┣ 🐋 DeepSeek R1{f": доп. {additional_usage_quota[Quota.DEEP_SEEK_R1]}" if additional_usage_quota[Quota.DEEP_SEEK_R1] > 0 else ""}
+    ┣ 🌐 Perplexity{f": доп. {additional_usage_quota[Quota.PERPLEXITY]}" if additional_usage_quota[Quota.PERPLEXITY] > 0 else ""}
     ┗ Дневной лимит: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}
 
 <b>Флагманские</b>:
-    ┣ 🧪 ChatGPT o3{f': доп. {additional_usage_quota[Quota.CHAT_GPT_O_3]}' if additional_usage_quota[Quota.CHAT_GPT_O_3] > 0 else ''}
-    ┣ 🚀 Claude 3.0 Opus{f': доп. {additional_usage_quota[Quota.CLAUDE_3_OPUS]}' if additional_usage_quota[Quota.CLAUDE_3_OPUS] > 0 else ''}
-    ┣ 🛡️ Gemini 1.0 Ultra{f': доп. {additional_usage_quota[Quota.GEMINI_1_ULTRA]}' if additional_usage_quota[Quota.GEMINI_1_ULTRA] > 0 else ''}
+    ┣ 🧪 ChatGPT o3{f": доп. {additional_usage_quota[Quota.CHAT_GPT_O_3]}" if additional_usage_quota[Quota.CHAT_GPT_O_3] > 0 else ""}
+    ┣ 🚀 Claude 3.0 Opus{f": доп. {additional_usage_quota[Quota.CLAUDE_3_OPUS]}" if additional_usage_quota[Quota.CLAUDE_3_OPUS] > 0 else ""}
+    ┣ 🛡️ Gemini 1.0 Ultra{f": доп. {additional_usage_quota[Quota.GEMINI_1_ULTRA]}" if additional_usage_quota[Quota.GEMINI_1_ULTRA] > 0 else ""}
     ┗ Дневной лимит: {format_number(daily_limits[Quota.CHAT_GPT_O_3])}/{format_number(subscription_limits[Quota.CHAT_GPT_O_3])}
 
 ─────────────
 
 📝 <b>Резюме Модели</b>:
-    ┣ 👀 YouTube{f': доп. {additional_usage_quota[Quota.EIGHTIFY]}' if additional_usage_quota[Quota.EIGHTIFY] > 0 else ''}
-    ┣ 📼 Видео{f': доп. {additional_usage_quota[Quota.GEMINI_VIDEO]}' if additional_usage_quota[Quota.GEMINI_VIDEO] > 0 else ''}
+    ┣ 👀 YouTube{f": доп. {additional_usage_quota[Quota.EIGHTIFY]}" if additional_usage_quota[Quota.EIGHTIFY] > 0 else ""}
+    ┣ 📼 Видео{f": доп. {additional_usage_quota[Quota.GEMINI_VIDEO]}" if additional_usage_quota[Quota.GEMINI_VIDEO] > 0 else ""}
     ┗ Дневной лимит: {format_number(daily_limits[Quota.EIGHTIFY])}/{format_number(subscription_limits[Quota.EIGHTIFY])}
 
 ─────────────
 
 🖼 <b>Графические Модели</b>:
 <b>Базовые</b>:
-    ┣ 🦄 Stable Diffusion XL{f': доп. {additional_usage_quota[Quota.STABLE_DIFFUSION_XL]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_XL] > 0 else ''}
-    ┣ 🌲 Flux 1.0 Dev{f': доп. {additional_usage_quota[Quota.FLUX_1_DEV]}' if additional_usage_quota[Quota.FLUX_1_DEV] > 0 else ''}
-    ┣ 🌌 Luma Photon{f': доп. {additional_usage_quota[Quota.LUMA_PHOTON]}' if additional_usage_quota[Quota.LUMA_PHOTON] > 0 else ''}
+    ┣ 🦄 Stable Diffusion XL{f": доп. {additional_usage_quota[Quota.STABLE_DIFFUSION_XL]}" if additional_usage_quota[Quota.STABLE_DIFFUSION_XL] > 0 else ""}
+    ┣ 🌲 Flux 1.0 Dev{f": доп. {additional_usage_quota[Quota.FLUX_1_DEV]}" if additional_usage_quota[Quota.FLUX_1_DEV] > 0 else ""}
+    ┣ 🌌 Luma Photon{f": доп. {additional_usage_quota[Quota.LUMA_PHOTON]}" if additional_usage_quota[Quota.LUMA_PHOTON] > 0 else ""}
     ┗ Дневной лимит: {format_number(daily_limits[Quota.STABLE_DIFFUSION_XL])}/{format_number(subscription_limits[Quota.STABLE_DIFFUSION_XL])}
 
 <b>Продвинутые</b>:
-    ┣ 👨‍🎨 DALL-E 3{f': доп. {additional_usage_quota[Quota.DALL_E]}' if additional_usage_quota[Quota.DALL_E] > 0 else ''}
-    ┣ 🎨 Midjourney 7{f': доп. {additional_usage_quota[Quota.MIDJOURNEY]}' if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ''}
-    ┣ 🧑‍🚀 Stable Diffusion 3.5{f': доп. {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ''}
-    ┣ 🏔 Flux 1.1 Pro{f': доп. {additional_usage_quota[Quota.FLUX_1_PRO]}' if additional_usage_quota[Quota.FLUX_1_PRO] > 0 else ''}
-    ┣ 🐼 Recraft 3{f': доп. {additional_usage_quota[Quota.RECRAFT]}' if additional_usage_quota[Quota.RECRAFT] > 0 else ''}
-    ┣ 📷 FaceSwap{f': доп. {additional_usage_quota[Quota.FACE_SWAP]}' if additional_usage_quota[Quota.FACE_SWAP] > 0 else ''}
-    ┣ 🪄 Photoshop AI{f': доп. {additional_usage_quota[Quota.PHOTOSHOP_AI]}' if additional_usage_quota[Quota.PHOTOSHOP_AI] > 0 else ''}
+    ┣ 👨‍🎨 DALL-E 3{f": доп. {additional_usage_quota[Quota.DALL_E]}" if additional_usage_quota[Quota.DALL_E] > 0 else ""}
+    ┣ 🎨 Midjourney 7{f": доп. {additional_usage_quota[Quota.MIDJOURNEY]}" if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ""}
+    ┣ 🧑‍🚀 Stable Diffusion 3.5{f": доп. {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}" if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ""}
+    ┣ 🏔 Flux 1.1 Pro{f": доп. {additional_usage_quota[Quota.FLUX_1_PRO]}" if additional_usage_quota[Quota.FLUX_1_PRO] > 0 else ""}
+    ┣ 🐼 Recraft 3{f": доп. {additional_usage_quota[Quota.RECRAFT]}" if additional_usage_quota[Quota.RECRAFT] > 0 else ""}
+    ┣ 📷 FaceSwap{f": доп. {additional_usage_quota[Quota.FACE_SWAP]}" if additional_usage_quota[Quota.FACE_SWAP] > 0 else ""}
+    ┣ 🪄 Photoshop AI{f": доп. {additional_usage_quota[Quota.PHOTOSHOP_AI]}" if additional_usage_quota[Quota.PHOTOSHOP_AI] > 0 else ""}
     ┗ Дневной лимит: {format_number(daily_limits[Quota.DALL_E])}/{format_number(subscription_limits[Quota.DALL_E])}
 
 ─────────────
 
 🎵 <b>Музыкальные Модели</b>:
-    ┣ 🎺 MusicGen{f': доп. {additional_usage_quota[Quota.MUSIC_GEN]}' if additional_usage_quota[Quota.MUSIC_GEN] > 0 else ''}
-    ┣ 🎸 Suno{f': доп. {additional_usage_quota[Quota.SUNO]}' if additional_usage_quota[Quota.SUNO] > 0 else ''}
+    ┣ 🎺 MusicGen{f": доп. {additional_usage_quota[Quota.MUSIC_GEN]}" if additional_usage_quota[Quota.MUSIC_GEN] > 0 else ""}
+    ┣ 🎸 Suno{f": доп. {additional_usage_quota[Quota.SUNO]}" if additional_usage_quota[Quota.SUNO] > 0 else ""}
     ┗ Дневной лимит: {format_number(daily_limits[Quota.SUNO])}/{format_number(subscription_limits[Quota.SUNO])}
 
 ─────────────
 
 📹 <b>Видео Модели</b>:
-    ┣ 🎬 Kling{f': доп. {additional_usage_quota[Quota.KLING]}' if additional_usage_quota[Quota.KLING] > 0 else ''}
-    ┣ 🎥 Runway{f': доп. {additional_usage_quota[Quota.RUNWAY]}' if additional_usage_quota[Quota.RUNWAY] > 0 else ''}
-    ┣ 🔆 Luma Ray{f': доп. {additional_usage_quota[Quota.LUMA_RAY]}' if additional_usage_quota[Quota.LUMA_RAY] > 0 else ''}
-    ┣ 🐇 Pika{f': доп. {additional_usage_quota[Quota.PIKA]}' if additional_usage_quota[Quota.PIKA] > 0 else ''}
+    ┣ 🎬 Kling{f": доп. {additional_usage_quota[Quota.KLING]}" if additional_usage_quota[Quota.KLING] > 0 else ""}
+    ┣ 🎥 Runway{f": доп. {additional_usage_quota[Quota.RUNWAY]}" if additional_usage_quota[Quota.RUNWAY] > 0 else ""}
+    ┣ 🔆 Luma Ray{f": доп. {additional_usage_quota[Quota.LUMA_RAY]}" if additional_usage_quota[Quota.LUMA_RAY] > 0 else ""}
+    ┣ 🐇 Pika{f": доп. {additional_usage_quota[Quota.PIKA]}" if additional_usage_quota[Quota.PIKA] > 0 else ""}
     ┗ Дневной лимит: {format_number(daily_limits[Quota.KLING])}/{format_number(subscription_limits[Quota.KLING])}
 
 ─────────────
 
-📷 <b>Работа с фото/документами</b>: {'✅' if daily_limits[Quota.WORK_WITH_FILES] or additional_usage_quota[Quota.WORK_WITH_FILES] else '❌'}
-🎭 <b>Доступ к каталогу с ролями</b>: {'✅' if daily_limits[Quota.ACCESS_TO_CATALOG] or additional_usage_quota[Quota.ACCESS_TO_CATALOG] else '❌'}
-🎙 <b>Голосовые сообщения</b>: {'✅' if daily_limits[Quota.VOICE_MESSAGES] or additional_usage_quota[Quota.VOICE_MESSAGES] else '❌'}
-⚡️ <b>Быстрые ответы</b>: {'✅' if daily_limits[Quota.FAST_MESSAGES] or additional_usage_quota[Quota.FAST_MESSAGES] else '❌'}
+📷 <b>Работа с фото/документами</b>: {"✅" if daily_limits[Quota.WORK_WITH_FILES] or additional_usage_quota[Quota.WORK_WITH_FILES] else "❌"}
+🎭 <b>Доступ к каталогу с ролями</b>: {"✅" if daily_limits[Quota.ACCESS_TO_CATALOG] or additional_usage_quota[Quota.ACCESS_TO_CATALOG] else "❌"}
+🎙 <b>Голосовые сообщения</b>: {"✅" if daily_limits[Quota.VOICE_MESSAGES] or additional_usage_quota[Quota.VOICE_MESSAGES] else "❌"}
+⚡️ <b>Быстрые ответы</b>: {"✅" if daily_limits[Quota.FAST_MESSAGES] or additional_usage_quota[Quota.FAST_MESSAGES] else "❌"}
 
 ─────────────
 
@@ -2202,7 +2286,9 @@ class Russian(Texts):
     PROFILE_RENEW_SUBSCRIPTION = "♻️ Возобновить подписку"
     PROFILE_RENEW_SUBSCRIPTION_SUCCESS = "✅ Возобновление подписки прошло успешно"
     PROFILE_CANCEL_SUBSCRIPTION = "❌ Отменить подписку"
-    PROFILE_CANCEL_SUBSCRIPTION_CONFIRMATION = "❗Вы уверены, что хотите отменить подписку?"
+    PROFILE_CANCEL_SUBSCRIPTION_CONFIRMATION = (
+        "❗Вы уверены, что хотите отменить подписку?"
+    )
     PROFILE_CANCEL_SUBSCRIPTION_SUCCESS = "💸 Отмена подписки прошла успешно"
     PROFILE_NO_ACTIVE_SUBSCRIPTION = "💸 У вас нет активной подписки"
 
@@ -2251,9 +2337,17 @@ class Russian(Texts):
     @staticmethod
     def settings_info(human_model: str, current_model: Model, generation_cost=1) -> str:
         if current_model == Model.DALL_E or current_model == Model.MIDJOURNEY:
-            additional_text = f"\nПри текущих настройках 1 запрос стоит: {generation_cost} 🖼"
-        elif current_model == Model.KLING or current_model == Model.RUNWAY or current_model == Model.LUMA_RAY:
-            additional_text = f"\nПри текущих настройках 1 запрос стоит: {generation_cost} 📹"
+            additional_text = (
+                f"\nПри текущих настройках 1 запрос стоит: {generation_cost} 🖼"
+            )
+        elif (
+            current_model == Model.KLING
+            or current_model == Model.RUNWAY
+            or current_model == Model.LUMA_RAY
+        ):
+            additional_text = (
+                f"\nПри текущих настройках 1 запрос стоит: {generation_cost} 📹"
+            )
         else:
             additional_text = ""
 
@@ -2314,7 +2408,7 @@ class Russian(Texts):
         product_price: float,
         currency: Currency,
     ):
-        word = Russian.morph.parse('пакет')[0]
+        word = Russian.morph.parse("пакет")[0]
 
         return f"""
 <b>{product_quantity} {word.make_agree_with_number(product_quantity).word} {product.names.get(LanguageCode.RU)} – {format_number(product_price)}{Currency.SYMBOLS[currency]}</b>
@@ -2323,24 +2417,33 @@ class Russian(Texts):
     SHOPPING_CART_BUY_NOW = "🛍 Купить сейчас"
     SHOPPING_CART_REMOVE = "➖ Удалить из корзины"
     SHOPPING_CART_GO_TO = "🛒 Открыть корзину"
-    SHOPPING_CART_GO_TO_OR_CONTINUE_SHOPPING = "Перейти к корзине или продолжить покупки?"
+    SHOPPING_CART_GO_TO_OR_CONTINUE_SHOPPING = (
+        "Перейти к корзине или продолжить покупки?"
+    )
     SHOPPING_CART_CONTINUE_SHOPPING = "🛍 Продолжить покупки"
     SHOPPING_CART_CLEAR = "🗑 Очистить корзину"
 
     @staticmethod
-    async def shopping_cart_info(currency: Currency, cart_items: list[dict], discount: int):
+    async def shopping_cart_info(
+        currency: Currency, cart_items: list[dict], discount: int
+    ):
         text = ""
         total_sum = 0
-        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
-        right_price_part = '' if currency == Currency.USD else Currency.SYMBOLS[currency]
+        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ""
+        right_price_part = (
+            "" if currency == Currency.USD else Currency.SYMBOLS[currency]
+        )
 
         for index, cart_item in enumerate(cart_items):
-            product_id, product_quantity = cart_item.get("product_id", ''), cart_item.get("quantity", 0)
+            product_id, product_quantity = (
+                cart_item.get("product_id", ""),
+                cart_item.get("quantity", 0),
+            )
 
             product = await get_product(product_id)
 
             is_last = index == len(cart_items) - 1
-            right_part = '\n' if not is_last else ''
+            right_part = "\n" if not is_last else ""
             price = Product.get_discount_price(
                 ProductType.PACKAGE,
                 product_quantity,
@@ -2363,10 +2466,15 @@ class Russian(Texts):
 """
 
     @staticmethod
-    async def shopping_cart_confirmation(cart_items: list[dict], currency: Currency, price: float) -> str:
+    async def shopping_cart_confirmation(
+        cart_items: list[dict], currency: Currency, price: float
+    ) -> str:
         text = ""
         for index, cart_item in enumerate(cart_items):
-            product_id, product_quantity = cart_item.get("product_id", ''), cart_item.get("quantity", 0)
+            product_id, product_quantity = (
+                cart_item.get("product_id", ""),
+                cart_item.get("quantity", 0),
+            )
 
             product = await get_product(product_id)
 
@@ -2528,24 +2636,34 @@ class Russian(Texts):
         user_discount: int,
         is_trial=False,
     ) -> str:
-        text_subscriptions = ''
+        text_subscriptions = ""
         for subscription in subscriptions:
             subscription_name = subscription.names.get(LanguageCode.RU)
             subscription_price = subscription.prices.get(currency)
-            subscription_has_trial = is_trial and subscription.details.get('has_trial', False)
+            subscription_has_trial = is_trial and subscription.details.get(
+                "has_trial", False
+            )
 
-            left_part_price = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
-            right_part_price = Currency.SYMBOLS[currency] if currency != Currency.USD else ''
+            left_part_price = (
+                Currency.SYMBOLS[currency] if currency == Currency.USD else ""
+            )
+            right_part_price = (
+                Currency.SYMBOLS[currency] if currency != Currency.USD else ""
+            )
             if subscription_name and subscription_price:
-                is_trial_info = ''
+                is_trial_info = ""
 
                 if subscription_has_trial and currency == Currency.RUB:
-                    is_trial_info = '1₽ первые 3 дня, затем '
+                    is_trial_info = "1₽ первые 3 дня, затем "
                 elif subscription_has_trial and currency == Currency.USD:
-                    is_trial_info = 'Бесплатно первые 3 дня, затем '
+                    is_trial_info = "Бесплатно первые 3 дня, затем "
 
-                text_subscriptions += f'<b>{subscription_name}</b>: '
-                per_period = 'в месяц' if subscription.category == ProductCategory.MONTHLY else 'в год'
+                text_subscriptions += f"<b>{subscription_name}</b>: "
+                per_period = (
+                    "в месяц"
+                    if subscription.category == ProductCategory.MONTHLY
+                    else "в год"
+                )
 
                 discount = get_user_discount(user_discount, 0, subscription.discount)
                 if discount:
@@ -2556,9 +2674,9 @@ class Russian(Texts):
                         currency,
                         discount,
                     )
-                    text_subscriptions += f'{is_trial_info}<s>{left_part_price}{subscription_price}{right_part_price}</s> {left_part_price}{discount_price}{right_part_price} {per_period}\n'
+                    text_subscriptions += f"{is_trial_info}<s>{left_part_price}{subscription_price}{right_part_price}</s> {left_part_price}{discount_price}{right_part_price} {per_period}\n"
                 else:
-                    text_subscriptions += f'{is_trial_info}{left_part_price}{subscription_price}{right_part_price} {per_period}\n'
+                    text_subscriptions += f"{is_trial_info}{left_part_price}{subscription_price}{right_part_price} {per_period}\n"
 
         return f"""
 💳 <b>Подписки</b>
@@ -2575,15 +2693,17 @@ class Russian(Texts):
         price: Union[str, int, float],
         is_trial: bool,
     ) -> str:
-        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
-        right_price_part = '' if currency == Currency.USD else Currency.SYMBOLS[currency]
-        period = 'месяц' if category == ProductCategory.MONTHLY else 'год'
+        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ""
+        right_price_part = (
+            "" if currency == Currency.USD else Currency.SYMBOLS[currency]
+        )
+        period = "месяц" if category == ProductCategory.MONTHLY else "год"
 
-        trial_info = ''
+        trial_info = ""
         if is_trial and currency == Currency.RUB:
-            trial_info = '1₽ первые 3 дня, затем '
+            trial_info = "1₽ первые 3 дня, затем "
         elif is_trial and currency == Currency.USD:
-            trial_info = 'Бесплатно первые 3 дня, затем '
+            trial_info = "Бесплатно первые 3 дня, затем "
 
         return f"""
 Вы собираетесь активировать подписку <b>{name} – {trial_info}{left_price_part}{price}{right_price_part}/{period}</b>
@@ -2695,7 +2815,9 @@ class Russian(Texts):
     ADMIN_ADS_SEND_NAME = "Отправьте название рекламной кампании, которое состоит из одного слова без спец. символов 📯"
     ADMIN_ADS_VALUE_ERROR = "Не похоже на название рекламной кампании"
 
-    ADMIN_BAN_INFO = "Отправь мне id пользователя, которого вы хотите забанить/разбанить ⛔️"
+    ADMIN_BAN_INFO = (
+        "Отправь мне id пользователя, которого вы хотите забанить/разбанить ⛔️"
+    )
     ADMIN_BAN_SUCCESS = "📛 Вы успешно забанили пользователя"
     ADMIN_UNBAN_SUCCESS = "🔥 Вы успешно разбанили пользователя"
 
@@ -2733,10 +2855,10 @@ class Russian(Texts):
     def admin_blast_confirmation(
         blast_letters: dict,
     ):
-        letters = ''
+        letters = ""
         for i, (language_code, letter) in enumerate(blast_letters.items()):
-            letters += f'{language_code}:\n{letter}'
-            letters += '\n' if i < len(blast_letters.items()) - 1 else ''
+            letters += f"{language_code}:\n{letter}"
+            letters += "\n" if i < len(blast_letters.items()) - 1 else ""
 
         return f"""
 📢 <b>Проверка</b>
@@ -2808,18 +2930,18 @@ class Russian(Texts):
         role_descriptions: dict,
         role_instructions: dict,
     ):
-        names = ''
+        names = ""
         for i, (language_code, name) in enumerate(role_names.items()):
-            names += f'{language_code}: {name}'
-            names += '\n' if i < len(role_names.items()) - 1 else ''
-        descriptions = ''
+            names += f"{language_code}: {name}"
+            names += "\n" if i < len(role_names.items()) - 1 else ""
+        descriptions = ""
         for i, (language_code, description) in enumerate(role_descriptions.items()):
-            descriptions += f'{language_code}: {description}'
-            descriptions += '\n' if i < len(role_descriptions.items()) - 1 else ''
-        instructions = ''
+            descriptions += f"{language_code}: {description}"
+            descriptions += "\n" if i < len(role_descriptions.items()) - 1 else ""
+        instructions = ""
         for i, (language_code, instruction) in enumerate(role_instructions.items()):
-            instructions += f'{language_code}: {instruction}'
-            instructions += '\n' if i < len(role_instructions.items()) - 1 else ''
+            instructions += f"{language_code}: {instruction}"
+            instructions += "\n" if i < len(role_instructions.items()) - 1 else ""
 
         return f"""
 🎩 <b>Роль</b>
@@ -2842,18 +2964,18 @@ class Russian(Texts):
         role_descriptions: dict[LanguageCode, str],
         role_instructions: dict[LanguageCode, str],
     ):
-        names = ''
+        names = ""
         for i, (language_code, name) in enumerate(role_names.items()):
-            names += f'{language_code}: {name}'
-            names += '\n' if i < len(role_names.items()) - 1 else ''
-        descriptions = ''
+            names += f"{language_code}: {name}"
+            names += "\n" if i < len(role_names.items()) - 1 else ""
+        descriptions = ""
         for i, (language_code, description) in enumerate(role_descriptions.items()):
-            descriptions += f'{language_code}: {description}'
-            descriptions += '\n' if i < len(role_descriptions.items()) - 1 else ''
-        instructions = ''
+            descriptions += f"{language_code}: {description}"
+            descriptions += "\n" if i < len(role_descriptions.items()) - 1 else ""
+        instructions = ""
         for i, (language_code, instruction) in enumerate(role_instructions.items()):
-            instructions += f'{language_code}: {instruction}'
-            instructions += '\n' if i < len(role_instructions.items()) - 1 else ''
+            instructions += f"{language_code}: {instruction}"
+            instructions += "\n" if i < len(role_instructions.items()) - 1 else ""
 
         return f"""
 🖌️ <b>Настройка роли</b>
@@ -2938,10 +3060,10 @@ class Russian(Texts):
         package_system_name: str,
         package_names: dict,
     ):
-        names = ''
+        names = ""
         for i, (language_code, name) in enumerate(package_names.items()):
-            names += f'{language_code}: {name}'
-            names += '\n' if i < len(package_names.items()) - 1 else ''
+            names += f"{language_code}: {name}"
+            names += "\n" if i < len(package_names.items()) - 1 else ""
 
         return f"""
 🌟 <b>Проверка</b>
@@ -3081,11 +3203,11 @@ class Russian(Texts):
     @staticmethod
     def admin_statistics_processing_request() -> str:
         texts = [
-            'Вызываю кибернетических уток, чтобы ускорить процесс. Кря-кря, и данные у нас! 🦆💻',
-            'Использую тайные заклинания кода, чтобы вызволить вашу статистику из пучины данных. Абракадабра! 🧙‍💾',
-            'Таймер установлен, чайник на плите. Пока я готовлю чай, данные собираются сами! ☕📊',
-            'Подключаюсь к космическим спутникам, чтобы найти нужную статистику. Вот это звёздный поиск! 🛰️✨',
-            'Зову на помощь армию пикселей. Они уже маршируют сквозь строки кода, чтобы доставить вам данные! 🪖🖥️',
+            "Вызываю кибернетических уток, чтобы ускорить процесс. Кря-кря, и данные у нас! 🦆💻",
+            "Использую тайные заклинания кода, чтобы вызволить вашу статистику из пучины данных. Абракадабра! 🧙‍💾",
+            "Таймер установлен, чайник на плите. Пока я готовлю чай, данные собираются сами! ☕📊",
+            "Подключаюсь к космическим спутникам, чтобы найти нужную статистику. Вот это звёздный поиск! 🛰️✨",
+            "Зову на помощь армию пикселей. Они уже маршируют сквозь строки кода, чтобы доставить вам данные! 🪖🖥️",
         ]
 
         return random.choice(texts)
@@ -3119,19 +3241,25 @@ class Russian(Texts):
         count_subscription_users: dict,
         count_subscription_users_before: dict,
     ):
-        is_all_time = period == 'всё время'
+        is_all_time = period == "всё время"
 
-        subscription_info = ''
-        for index, (subscription_product_name, subscription_product_ids) in enumerate(subscription_products.items()):
+        subscription_info = ""
+        for index, (subscription_product_name, subscription_product_ids) in enumerate(
+            subscription_products.items()
+        ):
             is_last = index == len(subscription_products) - 1
-            left_part = '┣' if not is_last else '┗'
-            right_part = '\n' if not is_last else ''
+            left_part = "┣" if not is_last else "┗"
+            right_part = "\n" if not is_last else ""
             count_current_subscription_users = 0
             count_current_subscription_users_before = 0
             for subscription_product_id in subscription_product_ids:
-                count_current_subscription_users += count_subscription_users[subscription_product_id]
-                count_current_subscription_users_before += count_subscription_users_before[subscription_product_id]
-            subscription_info += f'    {left_part} <b>{subscription_product_name}:</b> {count_current_subscription_users} {calculate_percentage_difference(is_all_time, count_current_subscription_users, count_current_subscription_users_before)}{right_part}'
+                count_current_subscription_users += count_subscription_users[
+                    subscription_product_id
+                ]
+                count_current_subscription_users_before += (
+                    count_subscription_users_before[subscription_product_id]
+                )
+            subscription_info += f"    {left_part} <b>{subscription_product_name}:</b> {count_current_subscription_users} {calculate_percentage_difference(is_all_time, count_current_subscription_users, count_current_subscription_users_before)}{right_part}"
 
         return f"""
 #statistics #users
@@ -3139,19 +3267,19 @@ class Russian(Texts):
 📊 <b>{period}</b>
 
 👤 <b>Пользователи</b>
-1️⃣ <b>{'Всего пользователей' if is_all_time else 'Новых пользователей'}:</b> {count_all_users} {calculate_percentage_difference(is_all_time, count_all_users, count_all_users_before)}
+1️⃣ <b>{"Всего пользователей" if is_all_time else "Новых пользователей"}:</b> {count_all_users} {calculate_percentage_difference(is_all_time, count_all_users, count_all_users_before)}
     ┣ 🇺🇸 {count_english_users} ({round((count_english_users / count_all_users) * 100, 2) if count_all_users else 0}%) {calculate_percentage_difference(is_all_time, count_english_users, count_english_users_before)}
     ┣ 🇷🇺 {count_russian_users} ({round((count_russian_users / count_all_users) * 100, 2) if count_all_users else 0}%) {calculate_percentage_difference(is_all_time, count_russian_users, count_russian_users_before)}
     ┣ 🇪🇸 {count_spanish_users} ({round((count_spanish_users / count_all_users) * 100, 2) if count_all_users else 0}%) {calculate_percentage_difference(is_all_time, count_spanish_users, count_spanish_users_before)}
     ┣ 🇮🇳 {count_hindi_users} ({round((count_hindi_users / count_all_users) * 100, 2) if count_all_users else 0}%) {calculate_percentage_difference(is_all_time, count_hindi_users, count_hindi_users_before)}
     ┗ 🌍 {count_other_users} ({round((count_other_users / count_all_users) * 100, 2) if count_all_users else 0}%) {calculate_percentage_difference(is_all_time, count_other_users, count_other_users_before)}
-2️⃣ <b>{'Активированные' if is_all_time else 'Активные'}:</b> {count_activated_users} {calculate_percentage_difference(is_all_time, count_activated_users, count_activated_users_before)}
+2️⃣ <b>{"Активированные" if is_all_time else "Активные"}:</b> {count_activated_users} {calculate_percentage_difference(is_all_time, count_activated_users, count_activated_users_before)}
 3️⃣ <b>Перешли по реферальной ссылке:</b> {count_referral_users} {calculate_percentage_difference(is_all_time, count_referral_users, count_referral_users_before)}
 4️⃣ <b>Перешли по рекламной ссылке:</b> {count_campaign_users} {calculate_percentage_difference(is_all_time, count_campaign_users, count_campaign_users_before)}
 5️⃣ <b>Покупатели:</b> {count_paid_users} {calculate_percentage_difference(is_all_time, count_paid_users, count_paid_users_before)}
 6️⃣ <b>Подписчики:</b>
 {subscription_info}
-7️⃣ <b>{'Заблокировали бота' if is_all_time else 'Заблокировали бота из пришедших'}:</b> {count_blocked_users} {calculate_percentage_difference(is_all_time, count_blocked_users, count_blocked_users_before)}
+7️⃣ <b>{"Заблокировали бота" if is_all_time else "Заблокировали бота из пришедших"}:</b> {count_blocked_users} {calculate_percentage_difference(is_all_time, count_blocked_users, count_blocked_users_before)}
 """
 
     @staticmethod
@@ -3161,7 +3289,7 @@ class Russian(Texts):
         count_all_transactions: dict,
         count_all_transactions_before: dict,
     ):
-        is_all_time = period == 'всё время'
+        is_all_time = period == "всё время"
 
         all_success_requests = 0
         all_success_requests_before = 0
@@ -3172,23 +3300,31 @@ class Russian(Texts):
         all_requests = 0
         all_requests_before = 0
 
-        text_info = ''
-        for index, (text_product_id, text_product_name) in enumerate(text_products.items()):
-            all_success_requests += count_all_transactions[text_product_id]['SUCCESS']
-            all_success_requests_before += count_all_transactions_before[text_product_id]['SUCCESS']
-            all_fail_requests += count_all_transactions[text_product_id]['FAIL']
-            all_fail_requests_before += count_all_transactions_before[text_product_id]['FAIL']
-            all_example_requests += count_all_transactions[text_product_id]['EXAMPLE']
-            all_example_requests_before += count_all_transactions_before[text_product_id]['EXAMPLE']
-            all_requests += count_all_transactions[text_product_id]['ALL']
-            all_requests_before += count_all_transactions_before[text_product_id]['ALL']
+        text_info = ""
+        for index, (text_product_id, text_product_name) in enumerate(
+            text_products.items()
+        ):
+            all_success_requests += count_all_transactions[text_product_id]["SUCCESS"]
+            all_success_requests_before += count_all_transactions_before[
+                text_product_id
+            ]["SUCCESS"]
+            all_fail_requests += count_all_transactions[text_product_id]["FAIL"]
+            all_fail_requests_before += count_all_transactions_before[text_product_id][
+                "FAIL"
+            ]
+            all_example_requests += count_all_transactions[text_product_id]["EXAMPLE"]
+            all_example_requests_before += count_all_transactions_before[
+                text_product_id
+            ]["EXAMPLE"]
+            all_requests += count_all_transactions[text_product_id]["ALL"]
+            all_requests_before += count_all_transactions_before[text_product_id]["ALL"]
 
-            emoji_number = ''.join(f'{digit}\uFE0F\u20E3' for digit in str(index + 1))
+            emoji_number = "".join(f"{digit}\ufe0f\u20e3" for digit in str(index + 1))
             text_info += f"""{emoji_number} <b>{text_product_name}:</b>
-    ┣ ✅ Удачных: {count_all_transactions[text_product_id]['SUCCESS']} {calculate_percentage_difference(is_all_time, count_all_transactions[text_product_id]['SUCCESS'], count_all_transactions_before[text_product_id]['SUCCESS'])}
-    ┣ ❌ С ошибкой: {count_all_transactions[text_product_id]['FAIL']} {calculate_percentage_difference(is_all_time, count_all_transactions[text_product_id]['FAIL'], count_all_transactions_before[text_product_id]['FAIL'])}
-    ┣ 🚀 Примеров: {count_all_transactions[text_product_id]['EXAMPLE']} {calculate_percentage_difference(is_all_time, count_all_transactions[text_product_id]['EXAMPLE'], count_all_transactions_before[text_product_id]['EXAMPLE'])}
-    ┗ 📝 Всего: {count_all_transactions[text_product_id]['ALL']} {calculate_percentage_difference(is_all_time, count_all_transactions[text_product_id]['ALL'], count_all_transactions_before[text_product_id]['ALL'])}
+    ┣ ✅ Удачных: {count_all_transactions[text_product_id]["SUCCESS"]} {calculate_percentage_difference(is_all_time, count_all_transactions[text_product_id]["SUCCESS"], count_all_transactions_before[text_product_id]["SUCCESS"])}
+    ┣ ❌ С ошибкой: {count_all_transactions[text_product_id]["FAIL"]} {calculate_percentage_difference(is_all_time, count_all_transactions[text_product_id]["FAIL"], count_all_transactions_before[text_product_id]["FAIL"])}
+    ┣ 🚀 Примеров: {count_all_transactions[text_product_id]["EXAMPLE"]} {calculate_percentage_difference(is_all_time, count_all_transactions[text_product_id]["EXAMPLE"], count_all_transactions_before[text_product_id]["EXAMPLE"])}
+    ┗ 📝 Всего: {count_all_transactions[text_product_id]["ALL"]} {calculate_percentage_difference(is_all_time, count_all_transactions[text_product_id]["ALL"], count_all_transactions_before[text_product_id]["ALL"])}
 """
 
         return f"""
@@ -3212,7 +3348,7 @@ class Russian(Texts):
         count_all_transactions: dict,
         count_all_transactions_before: dict,
     ):
-        is_all_time = period == 'всё время'
+        is_all_time = period == "всё время"
 
         all_success_requests = 0
         all_success_requests_before = 0
@@ -3221,20 +3357,30 @@ class Russian(Texts):
         all_requests = 0
         all_requests_before = 0
 
-        summary_info = ''
-        for index, (summary_product_id, summary_product_name) in enumerate(summary_products.items()):
-            all_success_requests += count_all_transactions[summary_product_id]['SUCCESS']
-            all_success_requests_before += count_all_transactions_before[summary_product_id]['SUCCESS']
-            all_fail_requests += count_all_transactions[summary_product_id]['FAIL']
-            all_fail_requests_before += count_all_transactions_before[summary_product_id]['FAIL']
-            all_requests += count_all_transactions[summary_product_id]['ALL']
-            all_requests_before += count_all_transactions_before[summary_product_id]['ALL']
+        summary_info = ""
+        for index, (summary_product_id, summary_product_name) in enumerate(
+            summary_products.items()
+        ):
+            all_success_requests += count_all_transactions[summary_product_id][
+                "SUCCESS"
+            ]
+            all_success_requests_before += count_all_transactions_before[
+                summary_product_id
+            ]["SUCCESS"]
+            all_fail_requests += count_all_transactions[summary_product_id]["FAIL"]
+            all_fail_requests_before += count_all_transactions_before[
+                summary_product_id
+            ]["FAIL"]
+            all_requests += count_all_transactions[summary_product_id]["ALL"]
+            all_requests_before += count_all_transactions_before[summary_product_id][
+                "ALL"
+            ]
 
-            emoji_number = ''.join(f'{digit}\uFE0F\u20E3' for digit in str(index + 1))
+            emoji_number = "".join(f"{digit}\ufe0f\u20e3" for digit in str(index + 1))
             summary_info += f"""{emoji_number} <b>{summary_product_name}:</b>
-    ┣ ✅ Удачных: {count_all_transactions[summary_product_id]['SUCCESS']} {calculate_percentage_difference(is_all_time, count_all_transactions[summary_product_id]['SUCCESS'], count_all_transactions_before[summary_product_id]['SUCCESS'])}
-    ┣ ❌ С ошибкой: {count_all_transactions[summary_product_id]['FAIL']} {calculate_percentage_difference(is_all_time, count_all_transactions[summary_product_id]['FAIL'], count_all_transactions_before[summary_product_id]['FAIL'])}
-    ┗ 📝 Всего: {count_all_transactions[summary_product_id]['ALL']} {calculate_percentage_difference(is_all_time, count_all_transactions[summary_product_id]['ALL'], count_all_transactions_before[summary_product_id]['ALL'])}
+    ┣ ✅ Удачных: {count_all_transactions[summary_product_id]["SUCCESS"]} {calculate_percentage_difference(is_all_time, count_all_transactions[summary_product_id]["SUCCESS"], count_all_transactions_before[summary_product_id]["SUCCESS"])}
+    ┣ ❌ С ошибкой: {count_all_transactions[summary_product_id]["FAIL"]} {calculate_percentage_difference(is_all_time, count_all_transactions[summary_product_id]["FAIL"], count_all_transactions_before[summary_product_id]["FAIL"])}
+    ┗ 📝 Всего: {count_all_transactions[summary_product_id]["ALL"]} {calculate_percentage_difference(is_all_time, count_all_transactions[summary_product_id]["ALL"], count_all_transactions_before[summary_product_id]["ALL"])}
 """
 
         return f"""
@@ -3257,7 +3403,7 @@ class Russian(Texts):
         count_all_transactions: dict,
         count_all_transactions_before: dict,
     ):
-        is_all_time = period == 'всё время'
+        is_all_time = period == "всё время"
 
         all_success_requests = 0
         all_success_requests_before = 0
@@ -3268,23 +3414,33 @@ class Russian(Texts):
         all_requests = 0
         all_requests_before = 0
 
-        image_info = ''
-        for index, (image_product_id, image_product_name) in enumerate(image_products.items()):
-            all_success_requests += count_all_transactions[image_product_id]['SUCCESS']
-            all_success_requests_before += count_all_transactions_before[image_product_id]['SUCCESS']
-            all_fail_requests += count_all_transactions[image_product_id]['FAIL']
-            all_fail_requests_before += count_all_transactions_before[image_product_id]['FAIL']
-            all_example_requests += count_all_transactions[image_product_id]['EXAMPLE']
-            all_example_requests_before += count_all_transactions_before[image_product_id]['EXAMPLE']
-            all_requests += count_all_transactions[image_product_id]['ALL']
-            all_requests_before += count_all_transactions_before[image_product_id]['ALL']
+        image_info = ""
+        for index, (image_product_id, image_product_name) in enumerate(
+            image_products.items()
+        ):
+            all_success_requests += count_all_transactions[image_product_id]["SUCCESS"]
+            all_success_requests_before += count_all_transactions_before[
+                image_product_id
+            ]["SUCCESS"]
+            all_fail_requests += count_all_transactions[image_product_id]["FAIL"]
+            all_fail_requests_before += count_all_transactions_before[image_product_id][
+                "FAIL"
+            ]
+            all_example_requests += count_all_transactions[image_product_id]["EXAMPLE"]
+            all_example_requests_before += count_all_transactions_before[
+                image_product_id
+            ]["EXAMPLE"]
+            all_requests += count_all_transactions[image_product_id]["ALL"]
+            all_requests_before += count_all_transactions_before[image_product_id][
+                "ALL"
+            ]
 
-            emoji_number = ''.join(f'{digit}\uFE0F\u20E3' for digit in str(index + 1))
+            emoji_number = "".join(f"{digit}\ufe0f\u20e3" for digit in str(index + 1))
             image_info += f"""{emoji_number} <b>{image_product_name}:</b>
-    ┣ ✅ Удачных: {count_all_transactions[image_product_id]['SUCCESS']} {calculate_percentage_difference(is_all_time, count_all_transactions[image_product_id]['SUCCESS'], count_all_transactions_before[image_product_id]['SUCCESS'])}
-    ┣ ❌ С ошибкой: {count_all_transactions[image_product_id]['FAIL']} {calculate_percentage_difference(is_all_time, count_all_transactions[image_product_id]['FAIL'], count_all_transactions_before[image_product_id]['FAIL'])}
-    ┣ 🚀 Примеров: {count_all_transactions[image_product_id]['EXAMPLE']} {calculate_percentage_difference(is_all_time, count_all_transactions[image_product_id]['EXAMPLE'], count_all_transactions_before[image_product_id]['EXAMPLE'])}
-    ┗ 📝 Всего: {count_all_transactions[image_product_id]['ALL']} {calculate_percentage_difference(is_all_time, count_all_transactions[image_product_id]['ALL'], count_all_transactions_before[image_product_id]['ALL'])}
+    ┣ ✅ Удачных: {count_all_transactions[image_product_id]["SUCCESS"]} {calculate_percentage_difference(is_all_time, count_all_transactions[image_product_id]["SUCCESS"], count_all_transactions_before[image_product_id]["SUCCESS"])}
+    ┣ ❌ С ошибкой: {count_all_transactions[image_product_id]["FAIL"]} {calculate_percentage_difference(is_all_time, count_all_transactions[image_product_id]["FAIL"], count_all_transactions_before[image_product_id]["FAIL"])}
+    ┣ 🚀 Примеров: {count_all_transactions[image_product_id]["EXAMPLE"]} {calculate_percentage_difference(is_all_time, count_all_transactions[image_product_id]["EXAMPLE"], count_all_transactions_before[image_product_id]["EXAMPLE"])}
+    ┗ 📝 Всего: {count_all_transactions[image_product_id]["ALL"]} {calculate_percentage_difference(is_all_time, count_all_transactions[image_product_id]["ALL"], count_all_transactions_before[image_product_id]["ALL"])}
 """
 
         return f"""
@@ -3308,7 +3464,7 @@ class Russian(Texts):
         count_all_transactions: dict,
         count_all_transactions_before: dict,
     ):
-        is_all_time = period == 'всё время'
+        is_all_time = period == "всё время"
 
         all_success_requests = 0
         all_success_requests_before = 0
@@ -3319,23 +3475,33 @@ class Russian(Texts):
         all_requests = 0
         all_requests_before = 0
 
-        music_info = ''
-        for index, (music_product_id, music_product_name) in enumerate(music_products.items()):
-            all_success_requests += count_all_transactions[music_product_id]['SUCCESS']
-            all_success_requests_before += count_all_transactions_before[music_product_id]['SUCCESS']
-            all_fail_requests += count_all_transactions[music_product_id]['FAIL']
-            all_fail_requests_before += count_all_transactions_before[music_product_id]['FAIL']
-            all_example_requests += count_all_transactions[music_product_id]['EXAMPLE']
-            all_example_requests_before += count_all_transactions_before[music_product_id]['EXAMPLE']
-            all_requests += count_all_transactions[music_product_id]['ALL']
-            all_requests_before += count_all_transactions_before[music_product_id]['ALL']
+        music_info = ""
+        for index, (music_product_id, music_product_name) in enumerate(
+            music_products.items()
+        ):
+            all_success_requests += count_all_transactions[music_product_id]["SUCCESS"]
+            all_success_requests_before += count_all_transactions_before[
+                music_product_id
+            ]["SUCCESS"]
+            all_fail_requests += count_all_transactions[music_product_id]["FAIL"]
+            all_fail_requests_before += count_all_transactions_before[music_product_id][
+                "FAIL"
+            ]
+            all_example_requests += count_all_transactions[music_product_id]["EXAMPLE"]
+            all_example_requests_before += count_all_transactions_before[
+                music_product_id
+            ]["EXAMPLE"]
+            all_requests += count_all_transactions[music_product_id]["ALL"]
+            all_requests_before += count_all_transactions_before[music_product_id][
+                "ALL"
+            ]
 
-            emoji_number = ''.join(f'{digit}\uFE0F\u20E3' for digit in str(index + 1))
+            emoji_number = "".join(f"{digit}\ufe0f\u20e3" for digit in str(index + 1))
             music_info += f"""{emoji_number} <b>{music_product_name}:</b>
-    ┣ ✅ Удачных: {count_all_transactions[music_product_id]['SUCCESS']} {calculate_percentage_difference(is_all_time, count_all_transactions[music_product_id]['SUCCESS'], count_all_transactions_before[music_product_id]['SUCCESS'])}
-    ┣ ❌ С ошибкой: {count_all_transactions[music_product_id]['FAIL']} {calculate_percentage_difference(is_all_time, count_all_transactions[music_product_id]['FAIL'], count_all_transactions_before[music_product_id]['FAIL'])}
-    ┣ 🚀 Примеров: {count_all_transactions[music_product_id]['EXAMPLE']} {calculate_percentage_difference(is_all_time, count_all_transactions[music_product_id]['EXAMPLE'], count_all_transactions_before[music_product_id]['EXAMPLE'])}
-    ┗ 📝 Всего: {count_all_transactions[music_product_id]['ALL']} {calculate_percentage_difference(is_all_time, count_all_transactions[music_product_id]['ALL'], count_all_transactions_before[music_product_id]['ALL'])}
+    ┣ ✅ Удачных: {count_all_transactions[music_product_id]["SUCCESS"]} {calculate_percentage_difference(is_all_time, count_all_transactions[music_product_id]["SUCCESS"], count_all_transactions_before[music_product_id]["SUCCESS"])}
+    ┣ ❌ С ошибкой: {count_all_transactions[music_product_id]["FAIL"]} {calculate_percentage_difference(is_all_time, count_all_transactions[music_product_id]["FAIL"], count_all_transactions_before[music_product_id]["FAIL"])}
+    ┣ 🚀 Примеров: {count_all_transactions[music_product_id]["EXAMPLE"]} {calculate_percentage_difference(is_all_time, count_all_transactions[music_product_id]["EXAMPLE"], count_all_transactions_before[music_product_id]["EXAMPLE"])}
+    ┗ 📝 Всего: {count_all_transactions[music_product_id]["ALL"]} {calculate_percentage_difference(is_all_time, count_all_transactions[music_product_id]["ALL"], count_all_transactions_before[music_product_id]["ALL"])}
 """
 
         return f"""
@@ -3359,7 +3525,7 @@ class Russian(Texts):
         count_all_transactions: dict,
         count_all_transactions_before: dict,
     ):
-        is_all_time = period == 'всё время'
+        is_all_time = period == "всё время"
 
         all_success_requests = 0
         all_success_requests_before = 0
@@ -3368,20 +3534,28 @@ class Russian(Texts):
         all_requests = 0
         all_requests_before = 0
 
-        video_info = ''
-        for index, (video_product_id, video_product_name) in enumerate(video_products.items()):
-            all_success_requests += count_all_transactions[video_product_id]['SUCCESS']
-            all_success_requests_before += count_all_transactions_before[video_product_id]['SUCCESS']
-            all_fail_requests += count_all_transactions[video_product_id]['FAIL']
-            all_fail_requests_before += count_all_transactions_before[video_product_id]['FAIL']
-            all_requests += count_all_transactions[video_product_id]['ALL']
-            all_requests_before += count_all_transactions_before[video_product_id]['ALL']
+        video_info = ""
+        for index, (video_product_id, video_product_name) in enumerate(
+            video_products.items()
+        ):
+            all_success_requests += count_all_transactions[video_product_id]["SUCCESS"]
+            all_success_requests_before += count_all_transactions_before[
+                video_product_id
+            ]["SUCCESS"]
+            all_fail_requests += count_all_transactions[video_product_id]["FAIL"]
+            all_fail_requests_before += count_all_transactions_before[video_product_id][
+                "FAIL"
+            ]
+            all_requests += count_all_transactions[video_product_id]["ALL"]
+            all_requests_before += count_all_transactions_before[video_product_id][
+                "ALL"
+            ]
 
-            emoji_number = ''.join(f'{digit}\uFE0F\u20E3' for digit in str(index + 1))
+            emoji_number = "".join(f"{digit}\ufe0f\u20e3" for digit in str(index + 1))
             video_info += f"""{emoji_number} <b>{video_product_name}:</b>
-    ┣ ✅ Удачных: {count_all_transactions[video_product_id]['SUCCESS']} {calculate_percentage_difference(is_all_time, count_all_transactions[video_product_id]['SUCCESS'], count_all_transactions_before[video_product_id]['SUCCESS'])}
-    ┣ ❌ С ошибкой: {count_all_transactions[video_product_id]['FAIL']} {calculate_percentage_difference(is_all_time, count_all_transactions[video_product_id]['FAIL'], count_all_transactions_before[video_product_id]['FAIL'])}
-    ┗ 📝 Всего: {count_all_transactions[video_product_id]['ALL']} {calculate_percentage_difference(is_all_time, count_all_transactions[video_product_id]['ALL'], count_all_transactions_before[video_product_id]['ALL'])}
+    ┣ ✅ Удачных: {count_all_transactions[video_product_id]["SUCCESS"]} {calculate_percentage_difference(is_all_time, count_all_transactions[video_product_id]["SUCCESS"], count_all_transactions_before[video_product_id]["SUCCESS"])}
+    ┣ ❌ С ошибкой: {count_all_transactions[video_product_id]["FAIL"]} {calculate_percentage_difference(is_all_time, count_all_transactions[video_product_id]["FAIL"], count_all_transactions_before[video_product_id]["FAIL"])}
+    ┗ 📝 Всего: {count_all_transactions[video_product_id]["ALL"]} {calculate_percentage_difference(is_all_time, count_all_transactions[video_product_id]["ALL"], count_all_transactions_before[video_product_id]["ALL"])}
 """
 
         return f"""
@@ -3409,7 +3583,7 @@ class Russian(Texts):
         count_games: dict,
         count_games_before: dict,
     ):
-        is_all_time = period == 'всё время'
+        is_all_time = period == "всё время"
 
         all_liked = 0
         all_liked_before = 0
@@ -3418,31 +3592,44 @@ class Russian(Texts):
         all_none = 0
         all_none_before = 0
 
-        reaction_info = ''
+        reaction_info = ""
         for index, (product_with_reaction_id, product_with_reactions_name) in enumerate(
-            products_with_reactions.items()):
-            all_liked += count_reactions[product_with_reaction_id][GenerationReaction.LIKED]
-            all_liked_before += count_reactions_before[product_with_reaction_id][GenerationReaction.LIKED]
-            all_disliked += count_reactions[product_with_reaction_id][GenerationReaction.DISLIKED]
-            all_disliked_before += count_reactions_before[product_with_reaction_id][GenerationReaction.DISLIKED]
-            all_none += count_reactions[product_with_reaction_id][GenerationReaction.NONE]
-            all_none_before += count_reactions_before[product_with_reaction_id][GenerationReaction.NONE]
+            products_with_reactions.items()
+        ):
+            all_liked += count_reactions[product_with_reaction_id][
+                GenerationReaction.LIKED
+            ]
+            all_liked_before += count_reactions_before[product_with_reaction_id][
+                GenerationReaction.LIKED
+            ]
+            all_disliked += count_reactions[product_with_reaction_id][
+                GenerationReaction.DISLIKED
+            ]
+            all_disliked_before += count_reactions_before[product_with_reaction_id][
+                GenerationReaction.DISLIKED
+            ]
+            all_none += count_reactions[product_with_reaction_id][
+                GenerationReaction.NONE
+            ]
+            all_none_before += count_reactions_before[product_with_reaction_id][
+                GenerationReaction.NONE
+            ]
 
-            emoji_number = ''.join(f'{digit}\uFE0F\u20E3' for digit in str(index + 1))
+            emoji_number = "".join(f"{digit}\ufe0f\u20e3" for digit in str(index + 1))
             reaction_info += f"""{emoji_number} <b>{product_with_reactions_name}:</b>
     ┣ 👍 {count_reactions[product_with_reaction_id][GenerationReaction.LIKED]} {calculate_percentage_difference(is_all_time, count_reactions[product_with_reaction_id][GenerationReaction.LIKED], count_reactions_before[product_with_reaction_id][GenerationReaction.LIKED])}
     ┣ 👎 {count_reactions[product_with_reaction_id][GenerationReaction.DISLIKED]} {calculate_percentage_difference(is_all_time, count_reactions[product_with_reaction_id][GenerationReaction.DISLIKED], count_reactions_before[product_with_reaction_id][GenerationReaction.DISLIKED])}
     ┗ 🤷 {count_reactions[product_with_reaction_id][GenerationReaction.NONE]} {calculate_percentage_difference(is_all_time, count_reactions[product_with_reaction_id][GenerationReaction.NONE], count_reactions_before[product_with_reaction_id][GenerationReaction.NONE])}
 """
 
-        feedback_statuses = [feedback_status for feedback_status in list(FeedbackStatus.__members__.keys())]
+        feedback_statuses = list(FeedbackStatus.__members__.keys())
         all_feedbacks = 0
         all_feedbacks_before = 0
         for feedback_status in feedback_statuses:
             all_feedbacks += count_feedbacks[feedback_status]
             all_feedbacks_before += count_feedbacks_before[feedback_status]
 
-        game_types = [game_type for game_type in list(GameType.__members__.keys())]
+        game_types = list(GameType.__members__.keys())
         all_games = 0
         all_games_before = 0
         for game_type in game_types:
@@ -3488,17 +3675,21 @@ class Russian(Texts):
         count_activated_promo_codes: int,
         count_activated_promo_codes_before: int,
     ):
-        is_all_time = period == 'всё время'
+        is_all_time = period == "всё время"
 
         all_bonuses = 0
         all_bonuses_before = 0
-        credits_info = ''
-        for index, (package_product_id, package_product_name) in enumerate(package_products.items()):
-            all_bonuses += count_all_transactions[package_product_id]['BONUS']
-            all_bonuses_before += count_all_transactions_before[package_product_id]['BONUS']
+        credits_info = ""
+        for index, (package_product_id, package_product_name) in enumerate(
+            package_products.items()
+        ):
+            all_bonuses += count_all_transactions[package_product_id]["BONUS"]
+            all_bonuses_before += count_all_transactions_before[package_product_id][
+                "BONUS"
+            ]
 
             is_last = index == len(package_products) - 1
-            right_part = '\n' if not is_last else ''
+            right_part = "\n" if not is_last else ""
             credits_info += f"    ┣ {package_product_name}: {count_all_transactions[package_product_id]['BONUS']} {calculate_percentage_difference(is_all_time, count_all_transactions[package_product_id]['BONUS'], count_all_transactions_before[package_product_id]['BONUS'])}{right_part}"
 
         return f"""
@@ -3508,10 +3699,10 @@ class Russian(Texts):
 
 🎁 <b>Бонусы</b>
 1️⃣ <b>Кредитов приобретено:</b>
-    ┣ 👤 За приглашения друзей: {count_credits['INVITE_FRIENDS']} {calculate_percentage_difference(is_all_time, count_credits['INVITE_FRIENDS'], count_credits_before['INVITE_FRIENDS'])}
-    ┣ 📡 За обратную связь: {count_credits['LEAVE_FEEDBACKS']} {calculate_percentage_difference(is_all_time, count_credits['LEAVE_FEEDBACKS'], count_credits_before['LEAVE_FEEDBACKS'])}
-    ┣ 🎮 За игры: {count_credits['PLAY_GAMES']} {calculate_percentage_difference(is_all_time, count_credits['PLAY_GAMES'], count_credits_before['PLAY_GAMES'])}
-    ┗ 🪙 Всего: {count_credits['ALL']} {calculate_percentage_difference(is_all_time, count_credits['ALL'], count_credits_before['ALL'])}
+    ┣ 👤 За приглашения друзей: {count_credits["INVITE_FRIENDS"]} {calculate_percentage_difference(is_all_time, count_credits["INVITE_FRIENDS"], count_credits_before["INVITE_FRIENDS"])}
+    ┣ 📡 За обратную связь: {count_credits["LEAVE_FEEDBACKS"]} {calculate_percentage_difference(is_all_time, count_credits["LEAVE_FEEDBACKS"], count_credits_before["LEAVE_FEEDBACKS"])}
+    ┣ 🎮 За игры: {count_credits["PLAY_GAMES"]} {calculate_percentage_difference(is_all_time, count_credits["PLAY_GAMES"], count_credits_before["PLAY_GAMES"])}
+    ┗ 🪙 Всего: {count_credits["ALL"]} {calculate_percentage_difference(is_all_time, count_credits["ALL"], count_credits_before["ALL"])}
 2️⃣ <b>Кредитов потрачено на:</b>
 {credits_info}
     ┗ Всего: {all_bonuses} {calculate_percentage_difference(is_all_time, all_bonuses, all_bonuses_before)}
@@ -3526,33 +3717,33 @@ class Russian(Texts):
         count_expense_money: dict,
         count_expense_money_before: dict,
     ):
-        is_all_time = period == 'всё время'
+        is_all_time = period == "всё время"
 
-        ai_info = ''
+        ai_info = ""
         final_sum = 0
         final_sum_before = 0
         for index, (ai_product_id, ai_product_name) in enumerate(ai_products.items()):
             is_last = index == len(ai_products) - 1
-            left_part = '┣' if not is_last else '┗'
-            right_part = '\n' if not is_last else ''
+            left_part = "┣" if not is_last else "┗"
+            right_part = "\n" if not is_last else ""
 
-            final_sum += count_expense_money[ai_product_id]['ALL']
-            final_sum_before += count_expense_money_before[ai_product_id]['ALL']
+            final_sum += count_expense_money[ai_product_id]["ALL"]
+            final_sum_before += count_expense_money_before[ai_product_id]["ALL"]
 
             if (
-                count_expense_money[ai_product_id]['EXAMPLE_ALL'] or
-                count_expense_money[ai_product_id]['AVERAGE_EXAMPLE_PRICE']
+                count_expense_money[ai_product_id]["EXAMPLE_ALL"]
+                or count_expense_money[ai_product_id]["AVERAGE_EXAMPLE_PRICE"]
             ):
                 ai_info += f"""    {left_part} {ai_product_name}:
-            ┣ 🎁 СЦП: ${round(count_expense_money[ai_product_id]['AVERAGE_EXAMPLE_PRICE'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['AVERAGE_EXAMPLE_PRICE'], count_expense_money_before[ai_product_id]['AVERAGE_EXAMPLE_PRICE'])}
-            ┣ 🚀 Примеры: ${round(count_expense_money[ai_product_id]['EXAMPLE_ALL'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['EXAMPLE_ALL'], count_expense_money_before[ai_product_id]['EXAMPLE_ALL'])}
-            ┣ 💸 СЦЗ: ${round(count_expense_money[ai_product_id]['AVERAGE_PRICE'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['AVERAGE_PRICE'], count_expense_money_before[ai_product_id]['AVERAGE_PRICE'])}
-            ┗ 💰 Всего: ${round(count_expense_money[ai_product_id]['ALL'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['ALL'], count_expense_money_before[ai_product_id]['ALL'])}{right_part}"""
+            ┣ 🎁 СЦП: ${round(count_expense_money[ai_product_id]["AVERAGE_EXAMPLE_PRICE"], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]["AVERAGE_EXAMPLE_PRICE"], count_expense_money_before[ai_product_id]["AVERAGE_EXAMPLE_PRICE"])}
+            ┣ 🚀 Примеры: ${round(count_expense_money[ai_product_id]["EXAMPLE_ALL"], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]["EXAMPLE_ALL"], count_expense_money_before[ai_product_id]["EXAMPLE_ALL"])}
+            ┣ 💸 СЦЗ: ${round(count_expense_money[ai_product_id]["AVERAGE_PRICE"], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]["AVERAGE_PRICE"], count_expense_money_before[ai_product_id]["AVERAGE_PRICE"])}
+            ┗ 💰 Всего: ${round(count_expense_money[ai_product_id]["ALL"], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]["ALL"], count_expense_money_before[ai_product_id]["ALL"])}{right_part}"""
                 continue
 
             ai_info += f"""    {left_part} {ai_product_name}:
-            ┣ 💸 СЦЗ: ${round(count_expense_money[ai_product_id]['AVERAGE_PRICE'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['AVERAGE_PRICE'], count_expense_money_before[ai_product_id]['AVERAGE_PRICE'])}
-            ┗ 💰 Всего: ${round(count_expense_money[ai_product_id]['ALL'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]['ALL'], count_expense_money_before[ai_product_id]['ALL'])}{right_part}"""
+            ┣ 💸 СЦЗ: ${round(count_expense_money[ai_product_id]["AVERAGE_PRICE"], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]["AVERAGE_PRICE"], count_expense_money_before[ai_product_id]["AVERAGE_PRICE"])}
+            ┗ 💰 Всего: ${round(count_expense_money[ai_product_id]["ALL"], 4)} {calculate_percentage_difference(is_all_time, count_expense_money[ai_product_id]["ALL"], count_expense_money_before[ai_product_id]["ALL"])}{right_part}"""
 
         return f"""
 #statistics #expenses
@@ -3573,18 +3764,20 @@ class Russian(Texts):
         count_expense_money: dict,
         count_expense_money_before: dict,
     ):
-        is_all_time = period == 'всё время'
+        is_all_time = period == "всё время"
 
-        tech_info = ''
+        tech_info = ""
         final_sum = 0
         final_sum_before = 0
-        for index, (tech_product_id, tech_product_name) in enumerate(tech_products.items()):
+        for index, (tech_product_id, tech_product_name) in enumerate(
+            tech_products.items()
+        ):
             is_last = index == len(tech_products) - 1
-            left_part = '┣' if not is_last else '┗'
-            right_part = '\n' if not is_last else ''
+            left_part = "┣" if not is_last else "┗"
+            right_part = "\n" if not is_last else ""
 
-            final_sum += count_expense_money[tech_product_id]['ALL']
-            final_sum_before += count_expense_money_before[tech_product_id]['ALL']
+            final_sum += count_expense_money[tech_product_id]["ALL"]
+            final_sum_before += count_expense_money_before[tech_product_id]["ALL"]
 
             tech_info += f"    {left_part} {tech_product_name}: ${round(count_expense_money[tech_product_id]['ALL'], 3)} {calculate_percentage_difference(is_all_time, count_expense_money[tech_product_id]['ALL'], count_expense_money_before[tech_product_id]['ALL'])}{right_part}"
 
@@ -3607,15 +3800,17 @@ class Russian(Texts):
         count_expense_money: dict,
         count_expense_money_before: dict,
     ):
-        is_all_time = period == 'всё время'
+        is_all_time = period == "всё время"
 
-        subscription_info = ''
+        subscription_info = ""
         final_sum = 0
         final_sum_before = 0
-        for index, (subscription_product_name, subscription_product_ids) in enumerate(subscription_products.items()):
+        for index, (subscription_product_name, subscription_product_ids) in enumerate(
+            subscription_products.items()
+        ):
             is_last = index == len(subscription_products) - 1
-            left_part = '┣' if not is_last else '┗'
-            right_part = '\n' if not is_last else ''
+            left_part = "┣" if not is_last else "┗"
+            right_part = "\n" if not is_last else ""
             text_requests_price = 0
             text_requests_price_before = 0
             summary_requests_price = 0
@@ -3632,20 +3827,46 @@ class Russian(Texts):
             all_price_before = 0
 
             for subscription_product_id in subscription_product_ids:
-                text_requests_price += count_expense_money[subscription_product_id]['TEXT']
-                text_requests_price_before += count_expense_money_before[subscription_product_id]['TEXT']
-                summary_requests_price += count_expense_money[subscription_product_id]['SUMMARY']
-                summary_requests_price_before += count_expense_money_before[subscription_product_id]['SUMMARY']
-                image_requests_price += count_expense_money[subscription_product_id]['IMAGE']
-                image_requests_price_before += count_expense_money_before[subscription_product_id]['IMAGE']
-                music_requests_price += count_expense_money[subscription_product_id]['MUSIC']
-                music_requests_price_before += count_expense_money_before[subscription_product_id]['MUSIC']
-                video_requests_price += count_expense_money[subscription_product_id]['VIDEO']
-                video_requests_price_before += count_expense_money_before[subscription_product_id]['VIDEO']
-                average_price += count_expense_money[subscription_product_id]['AVERAGE_PRICE']
-                average_price_before += count_expense_money_before[subscription_product_id]['AVERAGE_PRICE']
-                all_price += count_expense_money[subscription_product_id]['ALL']
-                all_price_before += count_expense_money_before[subscription_product_id]['ALL']
+                text_requests_price += count_expense_money[subscription_product_id][
+                    "TEXT"
+                ]
+                text_requests_price_before += count_expense_money_before[
+                    subscription_product_id
+                ]["TEXT"]
+                summary_requests_price += count_expense_money[subscription_product_id][
+                    "SUMMARY"
+                ]
+                summary_requests_price_before += count_expense_money_before[
+                    subscription_product_id
+                ]["SUMMARY"]
+                image_requests_price += count_expense_money[subscription_product_id][
+                    "IMAGE"
+                ]
+                image_requests_price_before += count_expense_money_before[
+                    subscription_product_id
+                ]["IMAGE"]
+                music_requests_price += count_expense_money[subscription_product_id][
+                    "MUSIC"
+                ]
+                music_requests_price_before += count_expense_money_before[
+                    subscription_product_id
+                ]["MUSIC"]
+                video_requests_price += count_expense_money[subscription_product_id][
+                    "VIDEO"
+                ]
+                video_requests_price_before += count_expense_money_before[
+                    subscription_product_id
+                ]["VIDEO"]
+                average_price += count_expense_money[subscription_product_id][
+                    "AVERAGE_PRICE"
+                ]
+                average_price_before += count_expense_money_before[
+                    subscription_product_id
+                ]["AVERAGE_PRICE"]
+                all_price += count_expense_money[subscription_product_id]["ALL"]
+                all_price_before += count_expense_money_before[subscription_product_id][
+                    "ALL"
+                ]
 
             final_sum += all_price
             final_sum_before += all_price_before
@@ -3676,7 +3897,7 @@ class Russian(Texts):
         count_expense_money: dict,
         count_expense_money_before: dict,
     ):
-        is_all_time = period == 'всё время'
+        is_all_time = period == "всё время"
 
         return f"""
 #statistics #expenses
@@ -3684,7 +3905,7 @@ class Russian(Texts):
 📊 <b>{period}</b>
 
 📉 <b>Расходы</b>
-<b>Всего:</b> ${round(count_expense_money['ALL'], 4)} {calculate_percentage_difference(is_all_time, count_expense_money['ALL'], count_expense_money_before['ALL'])}
+<b>Всего:</b> ${round(count_expense_money["ALL"], 4)} {calculate_percentage_difference(is_all_time, count_expense_money["ALL"], count_expense_money_before["ALL"])}
 """
 
     @staticmethod
@@ -3695,25 +3916,31 @@ class Russian(Texts):
         count_income_money: dict,
         count_income_money_before: dict,
     ):
-        is_all_time = period == 'всё время'
+        is_all_time = period == "всё время"
 
-        subscription_info = ''
-        for index, (subscription_product_name, subscription_product_ids) in enumerate(subscription_products.items()):
-            if 'Бесплатные' in subscription_product_name:
+        subscription_info = ""
+        for index, (subscription_product_name, subscription_product_ids) in enumerate(
+            subscription_products.items()
+        ):
+            if "Бесплатные" in subscription_product_name:
                 continue
 
             is_last = index == len(subscription_products) - 1
-            right_part = '\n' if not is_last else ''
+            right_part = "\n" if not is_last else ""
             current_income_money = 0
             current_income_money_before = 0
             for subscription_product_id in subscription_product_ids:
                 current_income_money += count_income_money[subscription_product_id]
-                current_income_money_before += count_income_money_before[subscription_product_id]
+                current_income_money_before += count_income_money_before[
+                    subscription_product_id
+                ]
             subscription_info += f"    ┣ {subscription_product_name}: {round(current_income_money, 2)}₽ {calculate_percentage_difference(is_all_time, current_income_money, current_income_money_before)}{right_part}"
-        package_info = ''
-        for index, (package_product_id, package_product_name) in enumerate(package_products.items()):
+        package_info = ""
+        for index, (package_product_id, package_product_name) in enumerate(
+            package_products.items()
+        ):
             is_last = index == len(package_products) - 1
-            right_part = '\n' if not is_last else ''
+            right_part = "\n" if not is_last else ""
             package_info += f"    ┣ {package_product_name}: {round(count_income_money[package_product_id], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money[package_product_id], count_income_money_before[package_product_id])}{right_part}"
 
         return f"""
@@ -3725,14 +3952,14 @@ class Russian(Texts):
 
 1️⃣ <b>Подписки:</b>
 {subscription_info}
-    ┗ Всего: {round(count_income_money['SUBSCRIPTION_ALL'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['SUBSCRIPTION_ALL'], count_income_money_before['SUBSCRIPTION_ALL'])}
+    ┗ Всего: {round(count_income_money["SUBSCRIPTION_ALL"], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money["SUBSCRIPTION_ALL"], count_income_money_before["SUBSCRIPTION_ALL"])}
 2️⃣ <b>Пакеты:</b>
 {package_info}
-    ┗ Всего: {round(count_income_money['PACKAGES_ALL'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['PACKAGES_ALL'], count_income_money_before['PACKAGES_ALL'])}
+    ┗ Всего: {round(count_income_money["PACKAGES_ALL"], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money["PACKAGES_ALL"], count_income_money_before["PACKAGES_ALL"])}
 
-<b>Средний чек:</b> {round(count_income_money['AVERAGE_PRICE'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['AVERAGE_PRICE'], count_income_money_before['AVERAGE_PRICE'])}
-<b>Всего:</b> {round(count_income_money['ALL'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['ALL'], count_income_money_before['ALL'])}
-<b>Вал:</b> {round(count_income_money['VAL'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['VAL'], count_income_money_before['VAL'])}
+<b>Средний чек:</b> {round(count_income_money["AVERAGE_PRICE"], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money["AVERAGE_PRICE"], count_income_money_before["AVERAGE_PRICE"])}
+<b>Всего:</b> {round(count_income_money["ALL"], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money["ALL"], count_income_money_before["ALL"])}
+<b>Вал:</b> {round(count_income_money["VAL"], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money["VAL"], count_income_money_before["VAL"])}
 """
 
     @staticmethod

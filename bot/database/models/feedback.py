@@ -3,13 +3,13 @@ from enum import StrEnum
 
 
 class FeedbackStatus(StrEnum):
-    WAITING = 'WAITING'
-    APPROVED = 'APPROVED'
-    DENIED = 'DENIED'
+    WAITING = "WAITING"
+    APPROVED = "APPROVED"
+    DENIED = "DENIED"
 
 
 class Feedback:
-    COLLECTION_NAME = 'feedbacks'
+    COLLECTION_NAME = "feedbacks"
 
     id: str
     user_id: str

@@ -19,8 +19,10 @@ async def write_request(
         status,
         details,
     )
-    await firebase.db.collection(Request.COLLECTION_NAME).document(request.id).set(
-        request.to_dict()
+    await (
+        firebase.db.collection(Request.COLLECTION_NAME)
+        .document(request.id)
+        .set(request.to_dict())
     )
 
     return request

@@ -4,7 +4,7 @@ from bot.locales.types import LanguageCode
 
 
 class Role:
-    COLLECTION_NAME = 'roles'
+    COLLECTION_NAME = "roles"
 
     id: str
     translated_names: dict[LanguageCode, str]

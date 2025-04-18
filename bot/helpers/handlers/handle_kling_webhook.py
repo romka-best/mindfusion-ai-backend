@@ -6,9 +6,9 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import StorageKey
 
-from bot.config import config, MessageSticker
-from bot.database.models.common import Quota, Model, SendType, Currency
-from bot.database.models.generation import GenerationStatus, Generation
+from bot.config import MessageSticker, config
+from bot.database.models.common import Currency, Model, Quota, SendType
+from bot.database.models.generation import Generation, GenerationStatus
 from bot.database.models.request import Request, RequestStatus
 from bot.database.models.transaction import TransactionType
 from bot.database.models.user import User, UserSettings
@@ -23,17 +23,17 @@ from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.senders.send_video import send_video
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
 from bot.integrations.kling import Kling
-from bot.keyboards.common.common import build_reaction_keyboard, build_error_keyboard
-from bot.locales.main import get_user_language, get_localization
+from bot.keyboards.common.common import build_error_keyboard, build_reaction_keyboard
+from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
 
 
 async def handle_kling_webhook(bot: Bot, dp: Dispatcher, body: dict):
-    body = body.get('data')
-    if body.get('status') == 'processing':
+    body = body.get("data")
+    if body.get("status") == "processing":
         return
 
-    generation = await get_generation(body.get('task_id'))
+    generation = await get_generation(body.get("task_id"))
     if not generation:
         return
     elif generation.status == GenerationStatus.FINISHED:
@@ -44,26 +44,30 @@ async def handle_kling_webhook(bot: Bot, dp: Dispatcher, body: dict):
 
     user_language_code = await get_user_language(user.id, dp.storage)
 
-    generation_error = body.get('error', {}).get('raw_message', '')
+    generation_error = body.get("error", {}).get("raw_message", "")
     try:
-        body_output = body.get('output', {}) \
-            .get('works', [{}])[0] \
-            .get('video', {})
-        generation_result = body_output.get('resource_without_watermark')
-        generation.details['width'] = body_output.get('width')
-        generation.details['height'] = body_output.get('height')
+        body_output = body.get("output", {}).get("works", [{}])[0].get("video", {})
+        generation_result = body_output.get("resource_without_watermark")
+        generation.details["width"] = body_output.get("width")
+        generation.details["height"] = body_output.get("height")
     except TypeError:
         generation_result = None
 
     generation.status = GenerationStatus.FINISHED
     if generation_error or not generation_result:
         generation.has_error = True
-        await update_generation(generation.id, {
-            'status': generation.status,
-            'has_error': generation.has_error,
-        })
+        await update_generation(
+            generation.id,
+            {
+                "status": generation.status,
+                "has_error": generation.has_error,
+            },
+        )
 
-        if 'inappropriate image detected' in generation_error.lower() or 'the prompt contains sensitive words' in generation_error.lower():
+        if (
+            "inappropriate image detected" in generation_error.lower()
+            or "the prompt contains sensitive words" in generation_error.lower()
+        ):
             await bot.send_sticker(
                 chat_id=user.telegram_chat_id,
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
@@ -79,18 +83,23 @@ async def handle_kling_webhook(bot: Bot, dp: Dispatcher, body: dict):
                 bot=bot,
                 user_id=user.id,
                 info=generation_error,
-                hashtags=['kling', 'webhook'],
+                hashtags=["kling", "webhook"],
             )
-            logging.exception(f'Error in kling_webhook: {generation_error}')
+            logging.exception(f"Error in kling_webhook: {generation_error}")
     else:
         generation.result = generation_result
-        await update_generation(generation.id, {
-            'status': generation.status,
-            'result': generation.result,
-            'seconds': generation.seconds,
-        })
+        await update_generation(
+            generation.id,
+            {
+                "status": generation.status,
+                "result": generation.result,
+                "seconds": generation.seconds,
+            },
+        )
 
-    asyncio.create_task(handle_kling(bot, dp, user, user_language_code, request, generation))
+    asyncio.create_task(
+        handle_kling(bot, dp, user, user_language_code, request, generation)
+    )
 
 
 async def handle_kling(
@@ -101,13 +110,16 @@ async def handle_kling(
     request: Request,
     generation: Generation,
 ):
-    prompt = generation.details.get('prompt')
+    prompt = generation.details.get("prompt")
 
     if generation.result:
-        footer_text = f'\n\n📹 {user.daily_limits[Quota.KLING] + user.additional_usage_quota[Quota.KLING]}' \
-            if user.settings[Model.KLING][UserSettings.SHOW_USAGE_QUOTA] and \
-               user.daily_limits[Quota.KLING] != float('inf') else ''
-        caption = f'{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}'
+        footer_text = (
+            f"\n\n📹 {user.daily_limits[Quota.KLING] + user.additional_usage_quota[Quota.KLING]}"
+            if user.settings[Model.KLING][UserSettings.SHOW_USAGE_QUOTA]
+            and user.daily_limits[Quota.KLING] != float("inf")
+            else ""
+        )
+        caption = f"{get_localization(user_language_code).GENERATION_VIDEO_SUCCESS}{footer_text}"
 
         reply_markup = build_reaction_keyboard(generation.id)
         if user.settings[Model.KLING][UserSettings.SEND_TYPE] == SendType.DOCUMENT:
@@ -124,10 +136,10 @@ async def handle_kling(
                 chat_id=user.telegram_chat_id,
                 result=generation.result,
                 caption=caption,
-                filename=f'{uuid.uuid4()}.mp4',
-                duration=generation.details.get('duration', 5),
-                width=generation.details.get('width'),
-                height=generation.details.get('height'),
+                filename=f"{uuid.uuid4()}.mp4",
+                duration=generation.details.get("duration", 5),
+                width=generation.details.get("width"),
+                height=generation.details.get("height"),
                 reply_markup=build_reaction_keyboard(generation.id),
             )
     elif generation.has_error:
@@ -144,11 +156,11 @@ async def handle_kling(
 
     if request.status != RequestStatus.FINISHED:
         request.status = RequestStatus.FINISHED
-        await update_request(request.id, {
-            'status': request.status
-        })
+        await update_request(request.id, {"status": request.status})
 
-        total_price = Kling.get_price_for_video(generation.details.get('mode'), generation.details.get('duration'))
+        total_price = Kling.get_price_for_video(
+            generation.details.get("mode"), generation.details.get("duration")
+        )
         update_tasks = [
             write_transaction(
                 user_id=user.id,
@@ -159,18 +171,20 @@ async def handle_kling(
                 currency=Currency.USD,
                 quantity=1 if generation.result else 0,
                 details={
-                    'result': generation.result,
-                    'prompt': prompt,
-                    'has_error': generation.has_error,
+                    "result": generation.result,
+                    "prompt": prompt,
+                    "has_error": generation.has_error,
                 },
             ),
             update_user_usage_quota(
                 user,
                 Quota.KLING,
                 Kling.get_cost_for_video(
-                    generation.details.get('mode'),
-                    generation.details.get('duration'),
-                ) if generation.result else 0,
+                    generation.details.get("mode"),
+                    generation.details.get("duration"),
+                )
+                if generation.result
+                else 0,
             ),
         ]
 
@@ -182,7 +196,7 @@ async def handle_kling(
                 chat_id=int(user.telegram_chat_id),
                 user_id=int(user.id),
                 bot_id=bot.id,
-            )
+            ),
         )
         await state.clear()
 

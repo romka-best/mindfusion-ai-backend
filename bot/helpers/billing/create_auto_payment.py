@@ -25,48 +25,56 @@ async def create_auto_payment(
     order_items: list[OrderItem],
 ) -> dict:
     if payment_method == PaymentMethod.YOOKASSA:
-        url = f'https://api.yookassa.ru/v3/payments'
+        url = "https://api.yookassa.ru/v3/payments"
         headers = {
-            'Content-Type': 'application/json',
-            'Idempotence-Key': str(uuid.uuid4()),
+            "Content-Type": "application/json",
+            "Idempotence-Key": str(uuid.uuid4()),
         }
         items = []
         for order_item in order_items:
-            product, price, quantity = order_item.product, order_item.price, order_item.quantity
-            items.append({
-                'amount': {
-                    'value': price,
-                    'currency': Currency.RUB,
-                },
-                'description': product.names.get(language_code),
-                'vat_code': 1,
-                'quantity': quantity,
-            })
+            product, price, quantity = (
+                order_item.product,
+                order_item.price,
+                order_item.quantity,
+            )
+            items.append(
+                {
+                    "amount": {
+                        "value": price,
+                        "currency": Currency.RUB,
+                    },
+                    "description": product.names.get(language_code),
+                    "vat_code": 1,
+                    "quantity": quantity,
+                }
+            )
         payload = {
-            'amount': {
-                'value': amount,
-                'currency': Currency.RUB,
+            "amount": {
+                "value": amount,
+                "currency": Currency.RUB,
             },
-            'capture': True,
-            'payment_method_id': provider_auto_payment_charge_id,
-            'description': description,
-            'merchant_customer_id': user_id,
-            'receipt': {
-                'customer': {
-                    'full_name': user_id,
-                    'email': 'me@romandanilov.com',
+            "capture": True,
+            "payment_method_id": provider_auto_payment_charge_id,
+            "description": description,
+            "merchant_customer_id": user_id,
+            "receipt": {
+                "customer": {
+                    "full_name": user_id,
+                    "email": "me@romandanilov.com",
                 },
-                'items': items,
+                "items": items,
             },
         }
 
         async with aiohttp.ClientSession(
             auth=BasicAuth(Configuration.account_id, Configuration.secret_key)
         ) as session:
-            async with session.post(url, headers=headers, data=json.dumps(payload)) as response:
+            async with session.post(
+                url, headers=headers, data=json.dumps(payload)
+            ) as response:
                 body = await response.json()
                 logging.info(body)
                 if response.ok:
                     return body
     else:
-        raise NotImplementedError(f'Payment method is not defined: {payment_method}')
+        raise NotImplementedError(f"Payment method is not defined: {payment_method}")

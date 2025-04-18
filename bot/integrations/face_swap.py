@@ -6,15 +6,15 @@ from filetype import filetype
 
 from bot.config import config
 
-FACE_SWAP_API_URL = 'https://developer.remaker.ai/api/remaker'
+FACE_SWAP_API_URL = "https://developer.remaker.ai/api/remaker"
 FACE_SWAP_API_KEY = config.FACE_SWAP_API_KEY.get_secret_value()
 
 
 class FaceSwap:
     def __init__(self, session: aiohttp.ClientSession = None) -> None:
         self.headers = {
-            'accept': 'application/json',
-            'authorization': FACE_SWAP_API_KEY,
+            "accept": "application/json",
+            "authorization": FACE_SWAP_API_KEY,
         }
         self.session = session
 
@@ -29,7 +29,9 @@ class FaceSwap:
         await self.session.close()
 
     async def request(self, method: str, url: str, **kwargs):
-        async with self.session.request(method, url, headers=self.headers, **kwargs) as response:
+        async with self.session.request(
+            method, url, headers=self.headers, **kwargs
+        ) as response:
             response.raise_for_status()
             return await response.json()
 
@@ -57,31 +59,33 @@ class Videos(APIResource):
             media_type = kind.mime
             extension = kind.extension
         else:
-            media_type = 'image/jpeg'
-            extension = 'jpeg'
+            media_type = "image/jpeg"
+            extension = "jpeg"
 
         form_data = aiohttp.FormData()
-        form_data.add_field('target_video_url', video_url)
+        form_data.add_field("target_video_url", video_url)
         form_data.add_field(
-            'swap_image',
+            "swap_image",
             response_content,
-            filename=f'uploaded_image.{extension}',
-            content_type=media_type
+            filename=f"uploaded_image.{extension}",
+            content_type=media_type,
         )
 
         data = await self.request(
-            'POST',
-            f'{FACE_SWAP_API_URL}/v2/face-swap-video/create-job',
+            "POST",
+            f"{FACE_SWAP_API_URL}/v2/face-swap-video/create-job",
             data=form_data,
         )
-        return data['result']['job_id']
+        return data["result"]["job_id"]
 
     async def get_generation(
         self,
         job_id: str,
     ):
-        data = await self.request('GET', f'{FACE_SWAP_API_URL}/v2/face-swap-video/{job_id}')
-        return data['result']
+        data = await self.request(
+            "GET", f"{FACE_SWAP_API_URL}/v2/face-swap-video/{job_id}"
+        )
+        return data["result"]
 
 
 async def generate_face_swap_video(

@@ -9,7 +9,9 @@ from google.cloud import firestore
 from bot.database.models.common import PaymentMethod
 from bot.database.models.subscription import Subscription, SubscriptionStatus
 from bot.database.operations.product.getters import get_product
-from bot.database.operations.subscription.updaters import update_subscription_in_transaction
+from bot.database.operations.subscription.updaters import (
+    update_subscription_in_transaction,
+)
 from bot.helpers.senders.send_message_to_admins import send_message_to_admins
 from bot.locales.main import get_localization
 from bot.locales.types import LanguageCode
@@ -23,10 +25,16 @@ async def unsubscribe_wrapper(transaction, old_subscription: Subscription, bot: 
 async def unsubscribe(transaction, old_subscription: Subscription, bot: Bot):
     current_date = datetime.now(timezone.utc)
 
-    await update_subscription_in_transaction(transaction, old_subscription.id, {
-        'status': SubscriptionStatus.CANCELED,
-        'end_date': current_date if old_subscription.status == SubscriptionStatus.TRIAL else old_subscription.end_date,
-    })
+    await update_subscription_in_transaction(
+        transaction,
+        old_subscription.id,
+        {
+            "status": SubscriptionStatus.CANCELED,
+            "end_date": current_date
+            if old_subscription.status == SubscriptionStatus.TRIAL
+            else old_subscription.end_date,
+        },
+    )
 
     if old_subscription.payment_method == PaymentMethod.STRIPE:
         await stripe.Subscription.modify_async(
@@ -48,20 +56,24 @@ async def unsubscribe(transaction, old_subscription: Subscription, bot: Bot):
     if old_subscription.status == SubscriptionStatus.TRIAL:
         await send_message_to_admins(
             bot=bot,
-            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+            message=get_localization(
+                LanguageCode.RU
+            ).admin_payment_subscription_changed_status(
                 status=SubscriptionStatus.CANCELED,
                 subscription=old_subscription,
                 product=product,
                 is_trial=True,
-            )
+            ),
         )
     else:
         await send_message_to_admins(
             bot=bot,
-            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+            message=get_localization(
+                LanguageCode.RU
+            ).admin_payment_subscription_changed_status(
                 status=SubscriptionStatus.CANCELED,
                 subscription=old_subscription,
                 product=product,
                 is_trial=False,
-            )
+            ),
         )

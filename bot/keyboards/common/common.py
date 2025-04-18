@@ -1,4 +1,4 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.database.models.generation import GenerationReaction
 from bot.locales.main import get_localization
@@ -10,7 +10,7 @@ def build_start_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).START_QUICK_GUIDE,
-                callback_data='start:quick_guide'
+                callback_data="start:quick_guide",
             )
         ],
     ]
@@ -23,7 +23,7 @@ def build_start_chosen_keyboard(language_code: LanguageCode) -> InlineKeyboardMa
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_BACK,
-                callback_data='start:back'
+                callback_data="start:back",
             )
         ],
     ]
@@ -31,12 +31,14 @@ def build_start_chosen_keyboard(language_code: LanguageCode) -> InlineKeyboardMa
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def build_continue_generating_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+def build_continue_generating_keyboard(
+    language_code: LanguageCode,
+) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).MODEL_CONTINUE_GENERATING,
-                callback_data='continue_generation:continue'
+                callback_data="continue_generation:continue",
             )
         ]
     ]
@@ -48,12 +50,12 @@ def build_reaction_keyboard(generation_id: str) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
-                text='👍',
-                callback_data=f'reaction:{GenerationReaction.LIKED}:{generation_id}'
+                text="👍",
+                callback_data=f"reaction:{GenerationReaction.LIKED}:{generation_id}",
             ),
             InlineKeyboardButton(
-                text='👎',
-                callback_data=f'reaction:{GenerationReaction.DISLIKED}:{generation_id}'
+                text="👎",
+                callback_data=f"reaction:{GenerationReaction.DISLIKED}:{generation_id}",
             ),
         ],
     ]
@@ -66,19 +68,19 @@ def build_buy_motivation_keyboard(language_code: LanguageCode) -> InlineKeyboard
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).OPEN_BUY_SUBSCRIPTIONS_INFO,
-                callback_data='buy_motivation:open_buy_subscriptions_info'
+                callback_data="buy_motivation:open_buy_subscriptions_info",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).OPEN_BUY_PACKAGES_INFO,
-                callback_data='buy_motivation:open_buy_packages_info'
+                callback_data="buy_motivation:open_buy_packages_info",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).OPEN_BONUS_INFO,
-                callback_data='buy_motivation:open_bonus_info'
+                callback_data="buy_motivation:open_bonus_info",
             )
         ],
     ]
@@ -86,12 +88,14 @@ def build_buy_motivation_keyboard(language_code: LanguageCode) -> InlineKeyboard
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def build_time_limit_exceeded_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+def build_time_limit_exceeded_keyboard(
+    language_code: LanguageCode,
+) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).REMOVE_RESTRICTION,
-                callback_data='time_limit_exceeded:remove_restriction'
+                callback_data="time_limit_exceeded:remove_restriction",
             )
         ],
     ]
@@ -99,24 +103,26 @@ def build_time_limit_exceeded_keyboard(language_code: LanguageCode) -> InlineKey
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def build_time_limit_exceeded_chosen_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+def build_time_limit_exceeded_chosen_keyboard(
+    language_code: LanguageCode,
+) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).OPEN_BUY_SUBSCRIPTIONS_INFO,
-                callback_data='limit_exceeded:open_buy_subscriptions_info'
+                callback_data="limit_exceeded:open_buy_subscriptions_info",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).OPEN_BUY_PACKAGES_INFO,
-                callback_data='limit_exceeded:open_buy_packages_info'
+                callback_data="limit_exceeded:open_buy_packages_info",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).OPEN_BONUS_INFO,
-                callback_data='limit_exceeded:open_bonus_info'
+                callback_data="limit_exceeded:open_bonus_info",
             )
         ],
     ]
@@ -124,24 +130,26 @@ def build_time_limit_exceeded_chosen_keyboard(language_code: LanguageCode) -> In
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def build_notify_about_quota_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
+def build_notify_about_quota_keyboard(
+    language_code: LanguageCode,
+) -> InlineKeyboardMarkup:
     buttons = [
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).MODEL_CHANGE_AI,
-                callback_data=f'notify_about_quota:change_ai'
+                callback_data="notify_about_quota:change_ai",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).MODEL_SWITCHED_TO_AI_EXAMPLES,
-                callback_data=f'notify_about_quota:examples'
+                callback_data="notify_about_quota:examples",
             )
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).NOTIFY_ABOUT_QUOTA_TURN_OFF,
-                callback_data=f'notify_about_quota:turn_off'
+                callback_data="notify_about_quota:turn_off",
             )
         ],
     ]
@@ -154,7 +162,7 @@ def build_suggestions_keyboard(language_code: LanguageCode) -> InlineKeyboardMar
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).MODEL_CHANGE_AI,
-                callback_data='suggestions:change_ai_model'
+                callback_data="suggestions:change_ai_model",
             )
         ],
     ]
@@ -167,7 +175,7 @@ def build_cancel_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_CANCEL,
-                callback_data='common:cancel'
+                callback_data="common:cancel",
             )
         ],
     ]
@@ -180,8 +188,8 @@ def build_error_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).TECH_SUPPORT,
-                url='https://t.me/roman_danilov',
-                callback_data='error:tech_support'
+                url="https://t.me/roman_danilov",
+                callback_data="error:tech_support",
             )
         ],
     ]

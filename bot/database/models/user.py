@@ -3,79 +3,79 @@ from enum import StrEnum
 from typing import Optional
 
 from bot.database.models.common import (
-    Currency,
-    Model,
-    Quota,
+    AspectRatio,
     ChatGPTVersion,
     ClaudeGPTVersion,
-    GeminiGPTVersion,
-    GrokGPTVersion,
-    DeepSeekVersion,
-    PerplexityGPTVersion,
-    EightifyVersion,
-    GeminiVideoVersion,
-    VideoSummaryFocus,
-    VideoSummaryFormat,
-    VideoSummaryAmount,
-    DALLEVersion,
-    DALLEResolution,
+    Currency,
     DALLEQuality,
-    MidjourneyVersion,
-    StableDiffusionVersion,
-    FluxVersion,
-    FluxSafetyTolerance,
-    LumaPhotonVersion,
-    RecraftVersion,
+    DALLEResolution,
+    DALLEVersion,
+    DeepSeekVersion,
+    EightifyVersion,
     FaceSwapVersion,
-    PhotoshopAIVersion,
-    MusicGenVersion,
-    SunoVersion,
-    AspectRatio,
-    SendType,
-    KlingVersion,
+    FluxSafetyTolerance,
+    FluxVersion,
+    GeminiGPTVersion,
+    GeminiVideoVersion,
+    GrokGPTVersion,
     KlingDuration,
     KlingMode,
-    RunwayVersion,
-    RunwayResolution,
-    RunwayDuration,
-    LumaRayVersion,
-    LumaRayQuality,
+    KlingVersion,
+    LumaPhotonVersion,
     LumaRayDuration,
+    LumaRayQuality,
+    LumaRayVersion,
+    MidjourneyVersion,
+    Model,
+    MusicGenVersion,
+    PerplexityGPTVersion,
+    PhotoshopAIVersion,
     PikaVersion,
+    Quota,
+    RecraftVersion,
+    RunwayDuration,
+    RunwayResolution,
+    RunwayVersion,
+    SendType,
+    StableDiffusionVersion,
+    SunoVersion,
+    VideoSummaryAmount,
+    VideoSummaryFocus,
+    VideoSummaryFormat,
 )
 from bot.database.models.subscription import SUBSCRIPTION_FREE_LIMITS
 from bot.locales.types import LanguageCode
 
 
 class UserSettings:
-    SHOW_THE_NAME_OF_THE_CHATS = 'show_the_name_of_the_chats'
-    SHOW_THE_NAME_OF_THE_ROLES = 'show_the_name_of_the_roles'
-    SHOW_USAGE_QUOTA = 'show_usage_quota'
-    SHOW_EXAMPLES = 'show_examples'
-    TURN_ON_VOICE_MESSAGES = 'turn_on_voice_messages'
-    VOICE = 'voice'
-    GENDER = 'gender'
-    RESOLUTION = 'resolution'
-    ASPECT_RATIO = 'aspect_ratio'
-    QUALITY = 'quality'
-    VERSION = 'version'
-    SEND_TYPE = 'send_type'
-    SAFETY_TOLERANCE = 'safety_tolerance'
-    FOCUS = 'focus'
-    FORMAT = 'format'
-    AMOUNT = 'amount'
-    DURATION = 'duration'
-    MODE = 'mode'
+    SHOW_THE_NAME_OF_THE_CHATS = "show_the_name_of_the_chats"
+    SHOW_THE_NAME_OF_THE_ROLES = "show_the_name_of_the_roles"
+    SHOW_USAGE_QUOTA = "show_usage_quota"
+    SHOW_EXAMPLES = "show_examples"
+    TURN_ON_VOICE_MESSAGES = "turn_on_voice_messages"
+    VOICE = "voice"
+    GENDER = "gender"
+    RESOLUTION = "resolution"
+    ASPECT_RATIO = "aspect_ratio"
+    QUALITY = "quality"
+    VERSION = "version"
+    SEND_TYPE = "send_type"
+    SAFETY_TOLERANCE = "safety_tolerance"
+    FOCUS = "focus"
+    FORMAT = "format"
+    AMOUNT = "amount"
+    DURATION = "duration"
+    MODE = "mode"
 
 
 class UserGender(StrEnum):
-    MALE = 'MALE'
-    FEMALE = 'FEMALE'
-    UNSPECIFIED = 'UNSPECIFIED'
+    MALE = "MALE"
+    FEMALE = "FEMALE"
+    UNSPECIFIED = "UNSPECIFIED"
 
 
 class User:
-    COLLECTION_NAME = 'users'
+    COLLECTION_NAME = "users"
 
     id: str
     first_name: str
@@ -151,7 +151,7 @@ class User:
             UserSettings.SHOW_THE_NAME_OF_THE_ROLES: False,
             UserSettings.SHOW_USAGE_QUOTA: False,
             UserSettings.TURN_ON_VOICE_MESSAGES: False,
-            UserSettings.VOICE: 'alloy',
+            UserSettings.VOICE: "alloy",
             UserSettings.VERSION: ChatGPTVersion.V4_Omni_Mini,
             UserSettings.SHOW_EXAMPLES: True,
         },
@@ -160,7 +160,7 @@ class User:
             UserSettings.SHOW_THE_NAME_OF_THE_ROLES: False,
             UserSettings.SHOW_USAGE_QUOTA: False,
             UserSettings.TURN_ON_VOICE_MESSAGES: False,
-            UserSettings.VOICE: 'alloy',
+            UserSettings.VOICE: "alloy",
             UserSettings.VERSION: ClaudeGPTVersion.V3_Sonnet,
             UserSettings.SHOW_EXAMPLES: True,
         },
@@ -169,7 +169,7 @@ class User:
             UserSettings.SHOW_THE_NAME_OF_THE_ROLES: False,
             UserSettings.SHOW_USAGE_QUOTA: False,
             UserSettings.TURN_ON_VOICE_MESSAGES: False,
-            UserSettings.VOICE: 'alloy',
+            UserSettings.VOICE: "alloy",
             UserSettings.VERSION: GeminiGPTVersion.V2_Flash,
             UserSettings.SHOW_EXAMPLES: True,
         },
@@ -178,7 +178,7 @@ class User:
             UserSettings.SHOW_THE_NAME_OF_THE_ROLES: False,
             UserSettings.SHOW_USAGE_QUOTA: False,
             UserSettings.TURN_ON_VOICE_MESSAGES: False,
-            UserSettings.VOICE: 'alloy',
+            UserSettings.VOICE: "alloy",
             UserSettings.VERSION: GrokGPTVersion.V2,
             UserSettings.SHOW_EXAMPLES: False,
         },
@@ -187,7 +187,7 @@ class User:
             UserSettings.SHOW_THE_NAME_OF_THE_ROLES: False,
             UserSettings.SHOW_USAGE_QUOTA: False,
             UserSettings.TURN_ON_VOICE_MESSAGES: False,
-            UserSettings.VOICE: 'alloy',
+            UserSettings.VOICE: "alloy",
             UserSettings.VERSION: DeepSeekVersion.V3,
             UserSettings.SHOW_EXAMPLES: True,
         },
@@ -196,14 +196,14 @@ class User:
             UserSettings.SHOW_THE_NAME_OF_THE_ROLES: False,
             UserSettings.SHOW_USAGE_QUOTA: False,
             UserSettings.TURN_ON_VOICE_MESSAGES: False,
-            UserSettings.VOICE: 'alloy',
+            UserSettings.VOICE: "alloy",
             UserSettings.VERSION: PerplexityGPTVersion.Sonar,
             UserSettings.SHOW_EXAMPLES: False,
         },
         Model.EIGHTIFY: {
             UserSettings.SHOW_USAGE_QUOTA: False,
             UserSettings.TURN_ON_VOICE_MESSAGES: False,
-            UserSettings.VOICE: 'alloy',
+            UserSettings.VOICE: "alloy",
             UserSettings.VERSION: EightifyVersion.LATEST,
             UserSettings.FOCUS: VideoSummaryFocus.INSIGHTFUL,
             UserSettings.FORMAT: VideoSummaryFormat.LIST,
@@ -213,7 +213,7 @@ class User:
         Model.GEMINI_VIDEO: {
             UserSettings.SHOW_USAGE_QUOTA: False,
             UserSettings.TURN_ON_VOICE_MESSAGES: False,
-            UserSettings.VOICE: 'alloy',
+            UserSettings.VOICE: "alloy",
             UserSettings.VERSION: GeminiVideoVersion.LATEST,
             UserSettings.FOCUS: VideoSummaryFocus.INSIGHTFUL,
             UserSettings.FORMAT: VideoSummaryFormat.LIST,
@@ -336,7 +336,7 @@ class User:
         current_chat_id: str,
         telegram_chat_id: str,
         stripe_id: str,
-        language_code='en',
+        language_code="en",
         interface_language_code=LanguageCode.EN,
         is_premium=False,
         is_blocked=False,
@@ -344,7 +344,7 @@ class User:
         current_model=Model.CHAT_GPT,
         currency=Currency.RUB,
         balance=0,
-        subscription_id='',
+        subscription_id="",
         last_subscription_limit_update=None,
         had_subscription=False,
         daily_limits=None,
@@ -374,17 +374,25 @@ class User:
         self.telegram_chat_id = str(telegram_chat_id)
         self.stripe_id = stripe_id
         self.had_subscription = had_subscription
-        self.daily_limits = daily_limits if daily_limits is not None else SUBSCRIPTION_FREE_LIMITS
-        self.additional_usage_quota = additional_usage_quota if additional_usage_quota is not None \
+        self.daily_limits = (
+            daily_limits if daily_limits is not None else SUBSCRIPTION_FREE_LIMITS
+        )
+        self.additional_usage_quota = (
+            additional_usage_quota
+            if additional_usage_quota is not None
             else self.DEFAULT_ADDITIONAL_USAGE_QUOTA
+        )
         self.settings = settings if settings is not None else self.DEFAULT_SETTINGS
         self.referred_by = referred_by
         self.discount = discount
         self.utm = utm if utm is not None else {}
 
         current_time = datetime.now(timezone.utc)
-        self.last_subscription_limit_update = last_subscription_limit_update \
-            if last_subscription_limit_update is not None else current_time
+        self.last_subscription_limit_update = (
+            last_subscription_limit_update
+            if last_subscription_limit_update is not None
+            else current_time
+        )
         self.created_at = created_at if created_at is not None else current_time
         self.edited_at = edited_at if edited_at is not None else current_time
 

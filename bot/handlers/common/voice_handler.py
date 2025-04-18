@@ -6,20 +6,20 @@ import tempfile
 import time
 import uuid
 
+from aiogram import Bot, F, Router
+from aiogram.fsm.context import FSMContext
+from aiogram.types import File, Message
 from filetype import filetype
 from pydub import AudioSegment
-from aiogram import Router, F, Bot
-from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, File
 
 from bot.database.models.common import (
-    Quota,
     Currency,
-    Model,
     MidjourneyAction,
+    Model,
+    Quota,
 )
 from bot.database.models.transaction import TransactionType
-from bot.database.models.user import UserSettings, User
+from bot.database.models.user import User, UserSettings
 from bot.database.operations.product.getters import get_product_by_quota
 from bot.database.operations.transaction.writers import write_transaction
 from bot.database.operations.user.getters import get_user
@@ -56,29 +56,33 @@ from bot.utils.is_time_limit_exceeded import is_time_limit_exceeded
 voice_router = Router()
 
 
-async def process_voice_message(bot: Bot, voice: File, user: User, user_language_code: LanguageCode):
+async def process_voice_message(
+    bot: Bot, voice: File, user: User, user_language_code: LanguageCode
+):
     unique_id = uuid.uuid4()
     with tempfile.TemporaryDirectory() as tempdir:
-        wav_path = os.path.join(tempdir, f'{unique_id}.wav')
+        wav_path = os.path.join(tempdir, f"{unique_id}.wav")
 
         voice_ogg = io.BytesIO()
         await bot.download_file(voice.file_path, voice_ogg, timeout=300)
-        extension = await asyncio.to_thread(lambda: filetype.guess(voice_ogg.getvalue()).extension)
+        extension = await asyncio.to_thread(
+            lambda: filetype.guess(voice_ogg.getvalue()).extension
+        )
 
         audio_data = {
-            'file': voice_ogg,
-            'format': extension,
+            "file": voice_ogg,
+            "format": extension,
         }
         audio = await asyncio.to_thread(AudioSegment.from_file, **audio_data)
         audio_in_seconds = audio.duration_seconds
 
         audio_export_data = {
-            'out_f': wav_path,
-            'format': 'wav',
+            "out_f": wav_path,
+            "format": "wav",
         }
         await asyncio.to_thread(audio.export, **audio_export_data)
 
-        audio_file = await asyncio.to_thread(lambda: open(wav_path, 'rb'))
+        audio_file = await asyncio.to_thread(lambda: open(wav_path, "rb"))
         audio_file_size = await asyncio.to_thread(lambda: os.path.getsize(wav_path))
         if audio_file_size > 25 * 1024 * 1024:
             await asyncio.to_thread(audio_file.close)
@@ -103,9 +107,9 @@ async def process_voice_message(bot: Bot, voice: File, user: User, user_language
             currency=Currency.USD,
             quantity=1,
             details={
-                'subtype': 'STT',
-                'text': text,
-                'has_error': False,
+                "subtype": "STT",
+                "text": text,
+                "has_error": False,
             },
         )
 
@@ -118,7 +122,10 @@ async def handle_voice(message: Message, state: FSMContext):
     user = await get_user(user_id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    if not (user.daily_limits[Quota.VOICE_MESSAGES] or user.additional_usage_quota[Quota.VOICE_MESSAGES]):
+    if not (
+        user.daily_limits[Quota.VOICE_MESSAGES]
+        or user.additional_usage_quota[Quota.VOICE_MESSAGES]
+    ):
         await message.answer(
             text=get_localization(user_language_code).VOICE_MESSAGES_FORBIDDEN_ERROR,
             reply_markup=build_buy_motivation_keyboard(user_language_code),
@@ -127,16 +134,18 @@ async def handle_voice(message: Message, state: FSMContext):
 
     current_time = time.time()
 
-    user_quota = get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION])
+    user_quota = get_quota_by_model(
+        user.current_model, user.settings[user.current_model][UserSettings.VERSION]
+    )
     if not user_quota:
         raise NotImplementedError(
-            f'User Model Is Not Found: {user.current_model}, {user.settings[user.current_model][UserSettings.VERSION]}'
+            f"User Model Is Not Found: {user.current_model}, {user.settings[user.current_model][UserSettings.VERSION]}"
         )
 
     need_exit = (
-        await is_already_processing(message, state, current_time) or
-        await is_messages_limit_exceeded(message, state, user, user_quota) or
-        await is_time_limit_exceeded(message, state, user, current_time)
+        await is_already_processing(message, state, current_time)
+        or await is_messages_limit_exceeded(message, state, user, user_quota)
+        or await is_time_limit_exceeded(message, state, user, current_time)
     )
     if need_exit:
         return
@@ -148,7 +157,9 @@ async def handle_voice(message: Message, state: FSMContext):
     else:
         voice_file = await message.bot.get_file(message.audio.file_id)
 
-    text = await process_voice_message(message.bot, voice_file, user, user_language_code)
+    text = await process_voice_message(
+        message.bot, voice_file, user, user_language_code
+    )
     if not text:
         return
 
@@ -198,8 +209,6 @@ async def handle_voice(message: Message, state: FSMContext):
     elif user.current_model == Model.PIKA:
         await handle_pika(message, state, user)
     else:
-        raise NotImplementedError(
-            f'User model is not found: {user.current_model}'
-        )
+        raise NotImplementedError(f"User model is not found: {user.current_model}")
 
     await state.update_data(recognized_text=None)

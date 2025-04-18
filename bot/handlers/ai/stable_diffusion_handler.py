@@ -6,10 +6,15 @@ from aiogram import Router
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 from aiogram.utils.chat_action import ChatActionSender
 
-from bot.config import config, MessageEffect, MessageSticker
+from bot.config import MessageEffect, MessageSticker, config
 from bot.database.main import firebase
 from bot.database.models.common import Model, Quota, StableDiffusionVersion
 from bot.database.models.generation import GenerationStatus
@@ -19,7 +24,9 @@ from bot.database.operations.generation.getters import get_generations_by_reques
 from bot.database.operations.generation.updaters import update_generation
 from bot.database.operations.generation.writers import write_generation
 from bot.database.operations.product.getters import get_product_by_quota
-from bot.database.operations.request.getters import get_started_requests_by_user_id_and_product_id
+from bot.database.operations.request.getters import (
+    get_started_requests_by_user_id_and_product_id,
+)
 from bot.database.operations.request.updaters import update_request
 from bot.database.operations.request.writers import write_request
 from bot.database.operations.user.getters import get_user
@@ -31,7 +38,7 @@ from bot.integrations.replicate_ai import create_stable_diffusion_image
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.ai.stable_diffusion import build_stable_diffusion_keyboard
 from bot.keyboards.common.common import build_error_keyboard
-from bot.locales.main import get_user_language, get_localization
+from bot.locales.main import get_localization, get_user_language
 from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
 
@@ -41,7 +48,7 @@ PRICE_STABLE_DIFFUSION_XL = 0.000975
 PRICE_STABLE_DIFFUSION_3 = 0.04
 
 
-@stable_diffusion_router.message(Command('stable_diffusion'))
+@stable_diffusion_router.message(Command("stable_diffusion"))
 async def stable_diffusion(message: Message, state: FSMContext):
     await state.clear()
 
@@ -59,23 +66,32 @@ async def stable_diffusion(message: Message, state: FSMContext):
     )
 
 
-@stable_diffusion_router.callback_query(lambda c: c.data.startswith('stable_diffusion:'))
-async def stable_diffusion_choose_selection(callback_query: CallbackQuery, state: FSMContext):
+@stable_diffusion_router.callback_query(
+    lambda c: c.data.startswith("stable_diffusion:")
+)
+async def stable_diffusion_choose_selection(
+    callback_query: CallbackQuery, state: FSMContext
+):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
     user = await get_user(user_id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    chosen_version = callback_query.data.split(':')[1]
+    chosen_version = callback_query.data.split(":")[1]
 
     if (
-        user.current_model == Model.STABLE_DIFFUSION and
-        chosen_version == user.settings[Model.STABLE_DIFFUSION][UserSettings.VERSION]
+        user.current_model == Model.STABLE_DIFFUSION
+        and chosen_version
+        == user.settings[Model.STABLE_DIFFUSION][UserSettings.VERSION]
     ):
         await callback_query.message.answer(
-            text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
-            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.STABLE_DIFFUSION),
+            text=get_localization(
+                user_language_code
+            ).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
+            reply_markup=build_switched_to_ai_keyboard(
+                user_language_code, Model.STABLE_DIFFUSION
+            ),
         )
     else:
         keyboard = callback_query.message.reply_markup.inline_keyboard
@@ -86,35 +102,47 @@ async def stable_diffusion_choose_selection(callback_query: CallbackQuery, state
             new_row = []
             for button in row:
                 text = button.text
-                callback_data = button.callback_data.split(':', 1)[1]
+                callback_data = button.callback_data.split(":", 1)[1]
 
                 if callback_data == chosen_version:
-                    if '✅' not in text:
-                        text += ' ✅'
+                    if "✅" not in text:
+                        text += " ✅"
                         keyboard_changed = True
                 else:
-                    text = text.replace(' ✅', '')
-                new_row.append(InlineKeyboardButton(text=text, callback_data=button.callback_data))
+                    text = text.replace(" ✅", "")
+                new_row.append(
+                    InlineKeyboardButton(text=text, callback_data=button.callback_data)
+                )
             new_keyboard.append(new_row)
-        await callback_query.message.edit_reply_markup(reply_markup=InlineKeyboardMarkup(inline_keyboard=new_keyboard))
+        await callback_query.message.edit_reply_markup(
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=new_keyboard)
+        )
 
-        reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.STABLE_DIFFUSION)
+        reply_markup = build_switched_to_ai_keyboard(
+            user_language_code, Model.STABLE_DIFFUSION
+        )
         if keyboard_changed:
             user.current_model = Model.STABLE_DIFFUSION
             user.settings[Model.STABLE_DIFFUSION][UserSettings.VERSION] = chosen_version
-            await update_user(user_id, {
-                'current_model': user.current_model,
-                'settings': user.settings,
-            })
+            await update_user(
+                user_id,
+                {
+                    "current_model": user.current_model,
+                    "settings": user.settings,
+                },
+            )
 
             text = await get_switched_to_ai_model(
                 user,
-                get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
+                get_quota_by_model(
+                    user.current_model,
+                    user.settings[user.current_model][UserSettings.VERSION],
+                ),
                 user_language_code,
             )
             if not text:
                 raise NotImplementedError(
-                    f'Model version is not found: {user.settings[user.current_model][UserSettings.VERSION]}'
+                    f"Model version is not found: {user.settings[user.current_model][UserSettings.VERSION]}"
                 )
 
             answered_message = await callback_query.message.answer(
@@ -125,12 +153,16 @@ async def stable_diffusion_choose_selection(callback_query: CallbackQuery, state
 
             try:
                 await callback_query.bot.unpin_all_chat_messages(user.telegram_chat_id)
-                await callback_query.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+                await callback_query.bot.pin_chat_message(
+                    user.telegram_chat_id, answered_message.message_id
+                )
             except (TelegramBadRequest, TelegramRetryAfter):
                 pass
         else:
             await callback_query.message.answer(
-                text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
+                text=get_localization(
+                    user_language_code
+                ).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
                 reply_markup=reply_markup,
             )
 
@@ -147,18 +179,18 @@ async def handle_stable_diffusion(
     user_language_code = await get_user_language(user.id, state.storage)
     user_data = await state.get_data()
 
-    prompt = user_data.get('recognized_text', None)
+    prompt = user_data.get("recognized_text", None)
     if prompt is None:
         if message.caption:
             prompt = message.caption
         elif message.text:
             prompt = message.text
         else:
-            prompt = ''
+            prompt = ""
 
     image_link = None
     if image_filename:
-        image_path = f'users/vision/{user.id}/{image_filename}'
+        image_path = f"users/vision/{user.id}/{image_filename}"
         image = await firebase.bucket.get_blob(image_path)
         image_link = firebase.get_public_url(image.name)
 
@@ -173,7 +205,9 @@ async def handle_stable_diffusion(
     async with ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id):
         product = await get_product_by_quota(user_quota)
 
-        user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
+        user_not_finished_requests = (
+            await get_started_requests_by_user_id_and_product_id(user.id, product.id)
+        )
 
         if len(user_not_finished_requests):
             await message.reply(
@@ -187,14 +221,19 @@ async def handle_stable_diffusion(
 
         request = await write_request(
             user_id=user.id,
-            processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
+            processing_message_ids=[
+                processing_sticker.message_id,
+                processing_message.message_id,
+            ],
             product_id=product.id,
             requested=1,
         )
 
         try:
             if user_language_code != LanguageCode.EN:
-                prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
+                prompt = await translate_text(
+                    prompt, user_language_code, LanguageCode.EN
+                )
             result_id = await create_stable_diffusion_image(
                 prompt,
                 user.settings[Model.STABLE_DIFFUSION][UserSettings.VERSION],
@@ -208,8 +247,8 @@ async def handle_stable_diffusion(
                 product_id=product.id,
                 has_error=result_id is None,
                 details={
-                    'prompt': prompt,
-                }
+                    "prompt": prompt,
+                },
             )
         except Exception as e:
             await message.answer_sticker(
@@ -224,13 +263,11 @@ async def handle_stable_diffusion(
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
-                hashtags=['stable_diffusion'],
+                hashtags=["stable_diffusion"],
             )
 
             request.status = RequestStatus.FINISHED
-            await update_request(request.id, {
-                'status': request.status
-            })
+            await update_request(request.id, {"status": request.status})
 
             generations = await get_generations_by_request_id(request.id)
             for generation in generations:
@@ -239,8 +276,8 @@ async def handle_stable_diffusion(
                 await update_generation(
                     generation.id,
                     {
-                        'status': generation.status,
-                        'has_error': generation.has_error,
+                        "status": generation.status,
+                        "has_error": generation.has_error,
                     },
                 )
 
@@ -265,12 +302,13 @@ async def handle_stable_diffusion_example(
 ):
     current_date = datetime.now(timezone.utc)
     if (
-        not user.subscription_id and
-        user.current_model == Model.STABLE_DIFFUSION and
-        user.settings[user.current_model][UserSettings.VERSION] == StableDiffusionVersion.XL and
-        user.settings[user.current_model][UserSettings.SHOW_EXAMPLES] and
-        user.daily_limits[Quota.STABLE_DIFFUSION_XL] in [1] and
-        (current_date - user.last_subscription_limit_update).days <= 3
+        not user.subscription_id
+        and user.current_model == Model.STABLE_DIFFUSION
+        and user.settings[user.current_model][UserSettings.VERSION]
+        == StableDiffusionVersion.XL
+        and user.settings[user.current_model][UserSettings.SHOW_EXAMPLES]
+        and user.daily_limits[Quota.STABLE_DIFFUSION_XL] in [1]
+        and (current_date - user.last_subscription_limit_update).days <= 3
     ):
         product = await get_product_by_quota(Quota.STABLE_DIFFUSION_3)
 
@@ -280,14 +318,16 @@ async def handle_stable_diffusion_example(
             product_id=product.id,
             requested=1,
             details={
-                'prompt': prompt,
-                'is_suggestion': True,
-            }
+                "prompt": prompt,
+                "is_suggestion": True,
+            },
         )
 
         try:
             if user_language_code != LanguageCode.EN:
-                prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
+                prompt = await translate_text(
+                    prompt, user_language_code, LanguageCode.EN
+                )
             result_id = await create_stable_diffusion_image(
                 prompt,
                 StableDiffusionVersion.V3,
@@ -300,22 +340,20 @@ async def handle_stable_diffusion_example(
                 product_id=product.id,
                 has_error=result_id is None,
                 details={
-                    'prompt': prompt,
-                    'is_suggestion': True,
-                }
+                    "prompt": prompt,
+                    "is_suggestion": True,
+                },
             )
         except Exception as e:
             await send_error_info(
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
-                hashtags=['stable_diffusion', 'example'],
+                hashtags=["stable_diffusion", "example"],
             )
 
             request.status = RequestStatus.FINISHED
-            await update_request(request.id, {
-                'status': request.status
-            })
+            await update_request(request.id, {"status": request.status})
 
             generations = await get_generations_by_request_id(request.id)
             for generation in generations:
@@ -324,7 +362,7 @@ async def handle_stable_diffusion_example(
                 await update_generation(
                     generation.id,
                     {
-                        'status': generation.status,
-                        'has_error': generation.has_error,
+                        "status": generation.status,
+                        "has_error": generation.has_error,
                     },
                 )

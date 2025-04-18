@@ -26,14 +26,16 @@ async def initialize_user_for_the_first_time(
 ):
     full_name = telegram_user.first_name
     if telegram_user.last_name:
-        full_name += f' {telegram_user.last_name}'
+        full_name += f" {telegram_user.last_name}"
     # create user in stripe
     stripe_customer = await stripe.Customer.create_async(
         name=full_name,
     )
 
     await write_cart_in_transaction(transaction, str(telegram_user.id), [])
-    chat = await write_chat_in_transaction(transaction, str(telegram_user.id), telegram_chat_id, title)
+    chat = await write_chat_in_transaction(
+        transaction, str(telegram_user.id), telegram_chat_id, title
+    )
     user = await write_user_in_transaction(
         transaction,
         telegram_user,

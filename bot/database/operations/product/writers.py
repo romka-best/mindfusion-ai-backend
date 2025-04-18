@@ -1,5 +1,5 @@
 from bot.database.main import firebase
-from bot.database.models.product import ProductType, Product, ProductCategory
+from bot.database.models.product import Product, ProductCategory, ProductType
 from bot.database.operations.product.helpers import create_product_object
 from bot.locales.types import LanguageCode
 
@@ -30,6 +30,10 @@ async def write_product(
         discount,
         details,
     )
-    await firebase.db.collection(Product.COLLECTION_NAME).document(product.id).set(product.to_dict())
+    await (
+        firebase.db.collection(Product.COLLECTION_NAME)
+        .document(product.id)
+        .set(product.to_dict())
+    )
 
     return product

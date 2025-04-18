@@ -4,8 +4,12 @@ import traceback
 
 from aiogram import Bot
 from aiogram.enums import ParseMode
-from aiogram.exceptions import TelegramForbiddenError, TelegramRetryAfter, TelegramNetworkError
-from aiogram.types import URLInputFile, Message
+from aiogram.exceptions import (
+    TelegramForbiddenError,
+    TelegramNetworkError,
+    TelegramRetryAfter,
+)
+from aiogram.types import Message, URLInputFile
 from aiohttp import ClientOSError
 from redis.exceptions import ConnectionError
 
@@ -41,9 +45,7 @@ async def delayed_send_video(
             parse_mode=parse_mode,
         )
     except TelegramForbiddenError:
-        asyncio.create_task(
-            update_user(chat_id, {'is_blocked': True})
-        )
+        asyncio.create_task(update_user(chat_id, {"is_blocked": True}))
     except TelegramRetryAfter as e:
         answered_message = await delayed_send_video(
             bot,
@@ -57,7 +59,13 @@ async def delayed_send_video(
             reply_to_message_id,
             parse_mode,
         )
-    except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramNetworkError):
+    except (
+        ConnectionResetError,
+        OSError,
+        ClientOSError,
+        ConnectionError,
+        TelegramNetworkError,
+    ):
         answered_message = await delayed_send_video(
             bot,
             chat_id,
@@ -72,7 +80,7 @@ async def delayed_send_video(
         )
     except Exception as e:
         error_trace = traceback.format_exc()
-        logging.exception(f'Error in delayed_send_video: {error_trace}')
+        logging.exception(f"Error in delayed_send_video: {error_trace}")
 
         answered_message = await bot.send_message(
             chat_id=chat_id,
@@ -82,12 +90,7 @@ async def delayed_send_video(
             allow_sending_without_reply=True,
         )
 
-        await send_error_info(
-            bot=bot,
-            user_id=chat_id,
-            info=str(e),
-            hashtags=['video']
-        )
+        await send_error_info(bot=bot, user_id=chat_id, info=str(e), hashtags=["video"])
 
     return answered_message
 
@@ -121,7 +124,7 @@ async def send_video(
             parse_mode=parse_mode,
         )
     except TelegramForbiddenError:
-        asyncio.create_task(update_user(chat_id, {'is_blocked': True}))
+        asyncio.create_task(update_user(chat_id, {"is_blocked": True}))
     except TelegramRetryAfter as e:
         answered_message = await delayed_send_video(
             bot,
@@ -135,7 +138,13 @@ async def send_video(
             reply_to_message_id,
             parse_mode,
         )
-    except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramNetworkError):
+    except (
+        ConnectionResetError,
+        OSError,
+        ClientOSError,
+        ConnectionError,
+        TelegramNetworkError,
+    ):
         answered_message = await delayed_send_video(
             bot,
             chat_id,
@@ -150,7 +159,7 @@ async def send_video(
         )
     except Exception as e:
         error_trace = traceback.format_exc()
-        logging.exception(f'Error in send_video: {error_trace}')
+        logging.exception(f"Error in send_video: {error_trace}")
 
         answered_message = await bot.send_message(
             chat_id=chat_id,
@@ -160,11 +169,6 @@ async def send_video(
             allow_sending_without_reply=True,
         )
 
-        await send_error_info(
-            bot=bot,
-            user_id=chat_id,
-            info=str(e),
-            hashtags=['video']
-        )
+        await send_error_info(bot=bot, user_id=chat_id, info=str(e), hashtags=["video"])
 
     return answered_message

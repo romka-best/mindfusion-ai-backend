@@ -7,7 +7,9 @@ from bot.database.models.campaign import Campaign
 
 
 async def get_campaign(campaign_id: str) -> Optional[Campaign]:
-    campaign_ref = firebase.db.collection(Campaign.COLLECTION_NAME).document(str(campaign_id))
+    campaign_ref = firebase.db.collection(Campaign.COLLECTION_NAME).document(
+        str(campaign_id)
+    )
     campaign = await campaign_ref.get()
 
     if campaign.exists:
@@ -15,10 +17,12 @@ async def get_campaign(campaign_id: str) -> Optional[Campaign]:
 
 
 async def get_campaign_by_name(name: str) -> Optional[Campaign]:
-    campaign_stream = firebase.db.collection(Campaign.COLLECTION_NAME) \
-        .where(filter=FieldFilter('utm.campaign', '==', name)) \
-        .limit(1) \
+    campaign_stream = (
+        firebase.db.collection(Campaign.COLLECTION_NAME)
+        .where(filter=FieldFilter("utm.campaign", "==", name))
+        .limit(1)
         .stream()
+    )
 
     async for doc in campaign_stream:
         return Campaign(**doc.to_dict())

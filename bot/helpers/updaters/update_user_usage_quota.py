@@ -1,6 +1,9 @@
 from bot.database.models.common import Quota
 from bot.database.models.user import User
-from bot.database.operations.user.updaters import update_user, update_user_in_transaction
+from bot.database.operations.user.updaters import (
+    update_user,
+    update_user_in_transaction,
+)
 
 TEXT_SIMPLE_QUOTA = [
     Quota.CHAT_GPT4_OMNI_MINI,
@@ -54,7 +57,9 @@ VIDEO_QUOTA = [
 ]
 
 
-def get_user_with_updated_quota(user: User, user_quota: Quota, quantity_to_delete: int) -> User:
+def get_user_with_updated_quota(
+    user: User, user_quota: Quota, quantity_to_delete: int
+) -> User:
     quantity_deleted = 0
     while quantity_deleted != quantity_to_delete:
         if user.daily_limits[user_quota] > 0:
@@ -89,25 +94,36 @@ def get_user_with_updated_quota(user: User, user_quota: Quota, quantity_to_delet
     return user
 
 
-async def update_user_usage_quota(user: User, user_quota: Quota, quantity_to_delete: int):
+async def update_user_usage_quota(
+    user: User, user_quota: Quota, quantity_to_delete: int
+):
     if quantity_to_delete < 0:
         return
 
     user = get_user_with_updated_quota(user, user_quota, quantity_to_delete)
 
-    await update_user(user.id, {
-        'daily_limits': user.daily_limits,
-        'additional_usage_quota': user.additional_usage_quota,
-    })
+    await update_user(
+        user.id,
+        {
+            "daily_limits": user.daily_limits,
+            "additional_usage_quota": user.additional_usage_quota,
+        },
+    )
 
 
-async def update_user_usage_quota_in_transaction(transaction, user: User, user_quota: Quota, quantity_to_delete: int):
+async def update_user_usage_quota_in_transaction(
+    transaction, user: User, user_quota: Quota, quantity_to_delete: int
+):
     if quantity_to_delete < 0:
         return
 
     user = get_user_with_updated_quota(user, user_quota, quantity_to_delete)
 
-    await update_user_in_transaction(transaction, user.id, {
-        'daily_limits': user.daily_limits,
-        'additional_usage_quota': user.additional_usage_quota,
-    })
+    await update_user_in_transaction(
+        transaction,
+        user.id,
+        {
+            "daily_limits": user.daily_limits,
+            "additional_usage_quota": user.additional_usage_quota,
+        },
+    )

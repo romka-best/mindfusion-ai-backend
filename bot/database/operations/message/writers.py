@@ -11,8 +11,14 @@ async def write_message(
     is_in_context=True,
     photo_filenames=None,
 ) -> Message:
-    message = await create_message_object(chat_id, sender, sender_id, content, is_in_context, photo_filenames)
-    await firebase.db.collection(Message.COLLECTION_NAME).document(message.id).set(message.to_dict())
+    message = await create_message_object(
+        chat_id, sender, sender_id, content, is_in_context, photo_filenames
+    )
+    await (
+        firebase.db.collection(Message.COLLECTION_NAME)
+        .document(message.id)
+        .set(message.to_dict())
+    )
 
     return message
 
@@ -26,7 +32,12 @@ async def write_message_in_transaction(
     is_in_context=True,
     photo_filenames=None,
 ) -> Message:
-    message = await create_message_object(chat_id, sender, sender_id, content, is_in_context, photo_filenames)
-    transaction.set(firebase.db.collection(Message.COLLECTION_NAME).document(message.id), message.to_dict())
+    message = await create_message_object(
+        chat_id, sender, sender_id, content, is_in_context, photo_filenames
+    )
+    transaction.set(
+        firebase.db.collection(Message.COLLECTION_NAME).document(message.id),
+        message.to_dict(),
+    )
 
     return message

@@ -1,6 +1,6 @@
 from aiogram import Bot
 
-from bot.config import config, MessageSticker
+from bot.config import MessageSticker, config
 from bot.database.operations.user.getters import get_user
 from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_localization

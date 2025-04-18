@@ -7,17 +7,22 @@ from aiogram import Router
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 from aiogram.utils.chat_action import ChatActionSender
 from filetype import filetype
 from google.api_core.exceptions import ResourceExhausted
-from google.generativeai.types import StopCandidateException, BlockedPromptException
+from google.generativeai.types import BlockedPromptException, StopCandidateException
 
-from bot.config import config, MessageEffect, MessageSticker
+from bot.config import MessageEffect, MessageSticker, config
 from bot.database.main import firebase
-from bot.database.models.common import Model, GeminiGPTVersion, Quota, Currency
+from bot.database.models.common import Currency, GeminiGPTVersion, Model, Quota
 from bot.database.models.transaction import TransactionType
-from bot.database.models.user import UserSettings, User
+from bot.database.models.user import User, UserSettings
 from bot.database.operations.chat.getters import get_chat
 from bot.database.operations.message.getters import get_messages_by_chat_id
 from bot.database.operations.message.writers import write_message
@@ -26,7 +31,9 @@ from bot.database.operations.role.getters import get_role
 from bot.database.operations.transaction.writers import write_transaction
 from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user
-from bot.helpers.creaters.create_new_message_and_update_user import create_new_message_and_update_user
+from bot.helpers.creaters.create_new_message_and_update_user import (
+    create_new_message_and_update_user,
+)
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.reply_with_voice import reply_with_voice
@@ -36,11 +43,11 @@ from bot.integrations.google import get_response_message
 from bot.keyboards.ai.gemini import build_gemini_keyboard
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import (
-    build_error_keyboard,
-    build_continue_generating_keyboard,
     build_buy_motivation_keyboard,
+    build_continue_generating_keyboard,
+    build_error_keyboard,
 )
-from bot.locales.main import get_user_language, get_localization
+from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
 
 gemini_router = Router()
@@ -53,7 +60,7 @@ PRICE_GEMINI_1_ULTRA_INPUT = 0.00000125
 PRICE_GEMINI_1_ULTRA_OUTPUT = 0.000005
 
 
-@gemini_router.message(Command('gemini'))
+@gemini_router.message(Command("gemini"))
 async def gemini(message: Message, state: FSMContext):
     await state.clear()
 
@@ -71,20 +78,29 @@ async def gemini(message: Message, state: FSMContext):
     )
 
 
-@gemini_router.callback_query(lambda c: c.data.startswith('gemini:'))
-async def handle_gemini_choose_selection(callback_query: CallbackQuery, state: FSMContext):
+@gemini_router.callback_query(lambda c: c.data.startswith("gemini:"))
+async def handle_gemini_choose_selection(
+    callback_query: CallbackQuery, state: FSMContext
+):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
     user = await get_user(user_id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    chosen_version = callback_query.data.split(':')[1]
+    chosen_version = callback_query.data.split(":")[1]
 
-    if user.current_model == Model.GEMINI and chosen_version == user.settings[Model.GEMINI][UserSettings.VERSION]:
+    if (
+        user.current_model == Model.GEMINI
+        and chosen_version == user.settings[Model.GEMINI][UserSettings.VERSION]
+    ):
         await callback_query.message.answer(
-            text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
-            reply_markup=build_switched_to_ai_keyboard(user_language_code, Model.GEMINI),
+            text=get_localization(
+                user_language_code
+            ).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,
+            reply_markup=build_switched_to_ai_keyboard(
+                user_language_code, Model.GEMINI
+            ),
         )
     else:
         keyboard = callback_query.message.reply_markup.inline_keyboard
@@ -95,35 +111,45 @@ async def handle_gemini_choose_selection(callback_query: CallbackQuery, state: F
             new_row = []
             for button in row:
                 text = button.text
-                callback_data = button.callback_data.split(':', 1)[1]
+                callback_data = button.callback_data.split(":", 1)[1]
 
                 if callback_data == chosen_version:
-                    if '✅' not in text:
-                        text += ' ✅'
+                    if "✅" not in text:
+                        text += " ✅"
                         keyboard_changed = True
                 else:
-                    text = text.replace(' ✅', '')
-                new_row.append(InlineKeyboardButton(text=text, callback_data=button.callback_data))
+                    text = text.replace(" ✅", "")
+                new_row.append(
+                    InlineKeyboardButton(text=text, callback_data=button.callback_data)
+                )
             new_keyboard.append(new_row)
-        await callback_query.message.edit_reply_markup(reply_markup=InlineKeyboardMarkup(inline_keyboard=new_keyboard))
+        await callback_query.message.edit_reply_markup(
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=new_keyboard)
+        )
 
         reply_markup = build_switched_to_ai_keyboard(user_language_code, Model.GEMINI)
         if keyboard_changed:
             user.current_model = Model.GEMINI
             user.settings[Model.GEMINI][UserSettings.VERSION] = chosen_version
-            await update_user(user_id, {
-                'current_model': user.current_model,
-                'settings': user.settings,
-            })
+            await update_user(
+                user_id,
+                {
+                    "current_model": user.current_model,
+                    "settings": user.settings,
+                },
+            )
 
             text = await get_switched_to_ai_model(
                 user,
-                get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
+                get_quota_by_model(
+                    user.current_model,
+                    user.settings[user.current_model][UserSettings.VERSION],
+                ),
                 user_language_code,
             )
             if not text:
                 raise NotImplementedError(
-                    f'Model version is not found: {user.settings[user.current_model][UserSettings.VERSION]}'
+                    f"Model version is not found: {user.settings[user.current_model][UserSettings.VERSION]}"
                 )
 
             answered_message = await callback_query.message.answer(
@@ -134,11 +160,15 @@ async def handle_gemini_choose_selection(callback_query: CallbackQuery, state: F
 
             try:
                 await callback_query.bot.unpin_all_chat_messages(user.telegram_chat_id)
-                await callback_query.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+                await callback_query.bot.pin_chat_message(
+                    user.telegram_chat_id, answered_message.message_id
+                )
             except (TelegramBadRequest, TelegramRetryAfter):
                 pass
         else:
-            text = get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL
+            text = get_localization(
+                user_language_code
+            ).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL
             await callback_query.message.answer(
                 text=text,
                 reply_markup=reply_markup,
@@ -160,19 +190,21 @@ async def handle_gemini(
     user_language_code = await get_user_language(user.id, state.storage)
     user_data = await state.get_data()
 
-    text = user_data.get('recognized_text', None)
+    text = user_data.get("recognized_text", None)
     if text is None:
         if message.caption:
             text = message.caption
         elif message.text:
             text = message.text
         else:
-            text = ''
+            text = ""
 
     if filenames and len(filenames):
-        await write_message(user.current_chat_id, 'user', user.id, text, True, filenames)
+        await write_message(
+            user.current_chat_id, "user", user.id, text, True, filenames
+        )
     else:
-        await write_message(user.current_chat_id, 'user', user.id, text)
+        await write_message(user.current_chat_id, "user", user.id, text)
 
     chat = await get_chat(user.current_chat_id)
     if user_quota == Quota.GEMINI_2_FLASH or user_quota == Quota.GEMINI_1_ULTRA:
@@ -189,8 +221,9 @@ async def handle_gemini(
     sorted_messages = sorted(messages, key=lambda m: m.created_at)
     if single_mode:
         sorted_messages = [sorted_messages[-1]]
-    system_prompt = role.translated_instructions.get(user_language_code) or \
-                    role.translated_instructions.get(LanguageCode.EN)
+    system_prompt = role.translated_instructions.get(
+        user_language_code
+    ) or role.translated_instructions.get(LanguageCode.EN)
     history = []
     for sorted_message in sorted_messages:
         parts = []
@@ -199,7 +232,7 @@ async def handle_gemini(
 
         if sorted_message.photo_filenames:
             for photo_filename in sorted_message.photo_filenames:
-                photo_path = f'users/vision/{user.id}/{photo_filename}'
+                photo_path = f"users/vision/{user.id}/{photo_filename}"
                 photo = await firebase.bucket.get_blob(photo_path)
                 photo_link = firebase.get_public_url(photo.name)
 
@@ -212,25 +245,33 @@ async def handle_gemini(
                     media_type = kind.mime
                 else:
                     try:
-                        response_content.decode('utf-8')
-                        media_type = 'text/plain'
+                        response_content.decode("utf-8")
+                        media_type = "text/plain"
                     except UnicodeDecodeError:
-                        media_type = 'image/jpeg'
+                        media_type = "image/jpeg"
 
-                if not media_type.startswith('image') and not single_mode:
+                if not media_type.startswith("image") and not single_mode:
                     continue
 
-                data = await asyncio.to_thread(lambda: base64.b64encode(response_content).decode('utf-8'))
-                parts.append({
-                    'mime_type': media_type,
-                    'data': data,
-                })
+                data = await asyncio.to_thread(
+                    lambda: base64.b64encode(response_content).decode("utf-8")
+                )
+                parts.append(
+                    {
+                        "mime_type": media_type,
+                        "data": data,
+                    }
+                )
 
         if parts:
-            history.append({
-                'role': sorted_message.sender if sorted_message.sender == 'user' else 'model',
-                'parts': parts,
-            })
+            history.append(
+                {
+                    "role": sorted_message.sender
+                    if sorted_message.sender == "user"
+                    else "model",
+                    "parts": parts,
+                }
+            )
 
     processing_sticker = await message.answer_sticker(
         sticker=config.MESSAGE_STICKERS.get(MessageSticker.TEXT_GENERATION),
@@ -249,7 +290,9 @@ async def handle_gemini(
         try:
             try:
                 response = await get_response_message(
-                    model_version=user.settings[user.current_model][UserSettings.VERSION],
+                    model_version=user.settings[user.current_model][
+                        UserSettings.VERSION
+                    ],
                     system_prompt=system_prompt,
                     history=history,
                 )
@@ -260,21 +303,21 @@ async def handle_gemini(
                     history=history,
                 )
 
-            response_message = response['message']
+            response_message = response["message"]
             if user_quota == Quota.GEMINI_2_FLASH:
-                input_price = response['input_tokens'] * PRICE_GEMINI_2_FLASH_INPUT
-                output_price = response['output_tokens'] * PRICE_GEMINI_2_FLASH_OUTPUT
+                input_price = response["input_tokens"] * PRICE_GEMINI_2_FLASH_INPUT
+                output_price = response["output_tokens"] * PRICE_GEMINI_2_FLASH_OUTPUT
             elif user_quota == Quota.GEMINI_2_PRO:
-                input_price = response['input_tokens'] * PRICE_GEMINI_2_PRO_INPUT
-                output_price = response['output_tokens'] * PRICE_GEMINI_2_PRO_OUTPUT
+                input_price = response["input_tokens"] * PRICE_GEMINI_2_PRO_INPUT
+                output_price = response["output_tokens"] * PRICE_GEMINI_2_PRO_OUTPUT
             elif user_quota == Quota.GEMINI_1_ULTRA:
-                input_price = response['input_tokens'] * PRICE_GEMINI_1_ULTRA_INPUT
-                output_price = response['output_tokens'] * PRICE_GEMINI_1_ULTRA_OUTPUT
+                input_price = response["input_tokens"] * PRICE_GEMINI_1_ULTRA_INPUT
+                output_price = response["output_tokens"] * PRICE_GEMINI_1_ULTRA_OUTPUT
 
             product = await get_product_by_quota(user_quota)
 
             total_price = round(input_price + output_price, 6)
-            message_role, message_content = 'assistant', response_message
+            message_role, message_content = "assistant", response_message
             await write_transaction(
                 user_id=user.id,
                 type=TransactionType.EXPENSE,
@@ -284,17 +327,19 @@ async def handle_gemini(
                 currency=Currency.USD,
                 quantity=1,
                 details={
-                    'input_tokens': response['input_tokens'],
-                    'output_tokens': response['output_tokens'],
-                    'request': text,
-                    'answer': message_content,
-                    'is_suggestion': False,
-                    'has_error': False,
+                    "input_tokens": response["input_tokens"],
+                    "output_tokens": response["output_tokens"],
+                    "request": text,
+                    "answer": message_content,
+                    "is_suggestion": False,
+                    "has_error": False,
                 },
             )
 
             transaction = firebase.db.transaction()
-            await create_new_message_and_update_user(transaction, message_role, message_content, user, user_quota)
+            await create_new_message_and_update_user(
+                transaction, message_role, message_content, user, user_quota
+            )
 
             if user.settings[user.current_model][UserSettings.TURN_ON_VOICE_MESSAGES]:
                 reply_markup = build_continue_generating_keyboard(user_language_code)
@@ -302,26 +347,47 @@ async def handle_gemini(
                     message=message,
                     text=message_content,
                     user_id=user.id,
-                    reply_markup=reply_markup if response['finish_reason'] == 'MAX_TOKENS' else None,
+                    reply_markup=reply_markup
+                    if response["finish_reason"] == "MAX_TOKENS"
+                    else None,
                     voice=user.settings[user.current_model][UserSettings.VOICE],
                 )
             else:
-                chat_info = f'💬 {chat.title}\n' if (
-                    user.settings[user.current_model][UserSettings.SHOW_THE_NAME_OF_THE_CHATS]
-                ) else ''
-                role_info = f'{role.translated_names.get(user_language_code) or role.translated_names.get(LanguageCode.EN)}\n' if (
-                    user.settings[user.current_model][UserSettings.SHOW_THE_NAME_OF_THE_ROLES]
-                ) else ''
-                header_text = f'{chat_info}{role_info}\n' if chat_info or role_info else ''
-                footer_text = f'\n\n✉️ {user.daily_limits[user_quota] + user.additional_usage_quota[user_quota] + 1}' \
-                    if user.settings[user.current_model][UserSettings.SHOW_USAGE_QUOTA] and \
-                       user.daily_limits[user_quota] != float('inf') else ''
+                chat_info = (
+                    f"💬 {chat.title}\n"
+                    if (
+                        user.settings[user.current_model][
+                            UserSettings.SHOW_THE_NAME_OF_THE_CHATS
+                        ]
+                    )
+                    else ""
+                )
+                role_info = (
+                    f"{role.translated_names.get(user_language_code) or role.translated_names.get(LanguageCode.EN)}\n"
+                    if (
+                        user.settings[user.current_model][
+                            UserSettings.SHOW_THE_NAME_OF_THE_ROLES
+                        ]
+                    )
+                    else ""
+                )
+                header_text = (
+                    f"{chat_info}{role_info}\n" if chat_info or role_info else ""
+                )
+                footer_text = (
+                    f"\n\n✉️ {user.daily_limits[user_quota] + user.additional_usage_quota[user_quota] + 1}"
+                    if user.settings[user.current_model][UserSettings.SHOW_USAGE_QUOTA]
+                    and user.daily_limits[user_quota] != float("inf")
+                    else ""
+                )
                 reply_markup = build_continue_generating_keyboard(user_language_code)
-                full_text = f'{header_text}{message_content}{footer_text}'
+                full_text = f"{header_text}{message_content}{footer_text}"
                 await send_ai_message(
                     message=message,
                     text=full_text,
-                    reply_markup=reply_markup if response['finish_reason'] == 'MAX_TOKENS' else None,
+                    reply_markup=reply_markup
+                    if response["finish_reason"] == "MAX_TOKENS"
+                    else None,
                 )
         except (StopCandidateException, BlockedPromptException):
             await message.answer_sticker(
@@ -345,7 +411,7 @@ async def handle_gemini(
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
-                hashtags=['gemini'],
+                hashtags=["gemini"],
             )
         finally:
             await processing_sticker.delete()
@@ -375,26 +441,26 @@ async def handle_gemini_2_pro_example(
     try:
         current_date = datetime.now(timezone.utc)
         if (
-            not user.subscription_id and
-            user.current_model == Model.GEMINI and
-            user.settings[user.current_model][UserSettings.SHOW_EXAMPLES] and
-            user.daily_limits[Quota.GEMINI_2_FLASH] + 1 in [3, 7] and
-            (current_date - user.last_subscription_limit_update).days <= 3
+            not user.subscription_id
+            and user.current_model == Model.GEMINI
+            and user.settings[user.current_model][UserSettings.SHOW_EXAMPLES]
+            and user.daily_limits[Quota.GEMINI_2_FLASH] + 1 in [3, 7]
+            and (current_date - user.last_subscription_limit_update).days <= 3
         ):
             response = await get_response_message(
                 model_version=GeminiGPTVersion.V2_Pro,
                 system_prompt=system_prompt,
                 history=history,
             )
-            response_message = response['message']
+            response_message = response["message"]
 
             product = await get_product_by_quota(Quota.GEMINI_2_PRO)
 
-            input_price = response['input_tokens'] * PRICE_GEMINI_2_PRO_INPUT
-            output_price = response['output_tokens'] * PRICE_GEMINI_2_PRO_OUTPUT
+            input_price = response["input_tokens"] * PRICE_GEMINI_2_PRO_INPUT
+            output_price = response["output_tokens"] * PRICE_GEMINI_2_PRO_OUTPUT
 
             total_price = round(input_price + output_price, 6)
-            message_role, message_content = 'assistant', response_message
+            _, message_content = "assistant", response_message
             await write_transaction(
                 user_id=user.id,
                 type=TransactionType.EXPENSE,
@@ -404,18 +470,18 @@ async def handle_gemini_2_pro_example(
                 currency=Currency.USD,
                 quantity=1,
                 details={
-                    'input_tokens': response['input_tokens'],
-                    'output_tokens': response['output_tokens'],
-                    'request': prompt,
-                    'answer': message_content,
-                    'is_suggestion': True,
-                    'has_error': False,
+                    "input_tokens": response["input_tokens"],
+                    "output_tokens": response["output_tokens"],
+                    "request": prompt,
+                    "answer": message_content,
+                    "is_suggestion": True,
+                    "has_error": False,
                 },
             )
 
-            header_text = f'{get_localization(user_language_code).example_text_model(get_localization(user_language_code).GEMINI_2_PRO)}\n\n'
-            footer_text = f'\n{get_localization(user_language_code).EXAMPLE_INFO}'
-            full_text = f'{header_text}{message_content}{footer_text}'
+            header_text = f"{get_localization(user_language_code).example_text_model(get_localization(user_language_code).GEMINI_2_PRO)}\n\n"
+            footer_text = f"\n{get_localization(user_language_code).EXAMPLE_INFO}"
+            full_text = f"{header_text}{message_content}{footer_text}"
             await send_ai_message(
                 message=message,
                 text=full_text,
@@ -426,5 +492,5 @@ async def handle_gemini_2_pro_example(
             bot=message.bot,
             user_id=user.id,
             info=str(e),
-            hashtags=['gemini', 'example'],
+            hashtags=["gemini", "example"],
         )

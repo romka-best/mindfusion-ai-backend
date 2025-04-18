@@ -24,13 +24,17 @@ async def get_count_of_games(
     games_query = firebase.db.collection(Game.COLLECTION_NAME)
 
     if start_date:
-        games_query = games_query.where(filter=FieldFilter('created_at', '>=', start_date))
+        games_query = games_query.where(
+            filter=FieldFilter("created_at", ">=", start_date)
+        )
     if end_date:
-        games_query = games_query.where(filter=FieldFilter('created_at', '<=', end_date))
+        games_query = games_query.where(
+            filter=FieldFilter("created_at", "<=", end_date)
+        )
     if status:
-        games_query = games_query.where(filter=FieldFilter('status', '==', status))
+        games_query = games_query.where(filter=FieldFilter("status", "==", status))
     if type:
-        games_query = games_query.where(filter=FieldFilter('type', '==', type))
+        games_query = games_query.where(filter=FieldFilter("type", "==", type))
 
     games_aggregate_query = await games_query.count().get()
 
@@ -42,13 +46,18 @@ async def get_count_of_games_by_user_id(
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
 ) -> int:
-    games_query = firebase.db.collection(Game.COLLECTION_NAME) \
-        .where(filter=FieldFilter('user_id', '==', user_id))
+    games_query = firebase.db.collection(Game.COLLECTION_NAME).where(
+        filter=FieldFilter("user_id", "==", user_id)
+    )
 
     if start_date:
-        games_query = games_query.where(filter=FieldFilter('created_at', '>=', start_date))
+        games_query = games_query.where(
+            filter=FieldFilter("created_at", ">=", start_date)
+        )
     if end_date:
-        games_query = games_query.where(filter=FieldFilter('created_at', '<=', end_date))
+        games_query = games_query.where(
+            filter=FieldFilter("created_at", "<=", end_date)
+        )
 
     games_query = await games_query.count().get()
 
@@ -62,11 +71,15 @@ async def get_sum_of_games_reward(
     games_query = firebase.db.collection(Game.COLLECTION_NAME)
 
     if start_date:
-        games_query = games_query.where(filter=FieldFilter('created_at', '>=', start_date))
+        games_query = games_query.where(
+            filter=FieldFilter("created_at", ">=", start_date)
+        )
     if end_date:
-        games_query = games_query.where(filter=FieldFilter('created_at', '<=', end_date))
+        games_query = games_query.where(
+            filter=FieldFilter("created_at", "<=", end_date)
+        )
 
-    games_aggregate_query = await games_query.sum('reward').get()
+    games_aggregate_query = await games_query.sum("reward").get()
 
     return int(games_aggregate_query[0][0].value)
 
@@ -78,12 +91,14 @@ async def get_games(
     games_query = firebase.db.collection(Game.COLLECTION_NAME)
 
     if start_date:
-        games_query = games_query.where(filter=FieldFilter('created_at', '>=', start_date))
+        games_query = games_query.where(
+            filter=FieldFilter("created_at", ">=", start_date)
+        )
     if end_date:
-        games_query = games_query.where(filter=FieldFilter('created_at', '<=', end_date))
+        games_query = games_query.where(
+            filter=FieldFilter("created_at", "<=", end_date)
+        )
 
     games = games_query.stream()
 
-    return [
-        Game(**game.to_dict()) async for game in games
-    ]
+    return [Game(**game.to_dict()) async for game in games]

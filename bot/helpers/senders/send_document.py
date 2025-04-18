@@ -4,7 +4,11 @@ import traceback
 import uuid
 
 from aiogram import Bot
-from aiogram.exceptions import TelegramForbiddenError, TelegramRetryAfter, TelegramNetworkError
+from aiogram.exceptions import (
+    TelegramForbiddenError,
+    TelegramNetworkError,
+    TelegramRetryAfter,
+)
 from aiogram.types import URLInputFile
 from aiohttp import ClientOSError
 from redis.exceptions import ConnectionError
@@ -25,19 +29,19 @@ async def delayed_send_document(
     await asyncio.sleep(timeout)
 
     try:
-        extension = document.rsplit('.', 1)[-1]
+        extension = document.rsplit(".", 1)[-1]
         await bot.send_document(
             chat_id=chat_id,
-            document=URLInputFile(document, filename=f'{uuid.uuid4()}.{extension}', timeout=300),
+            document=URLInputFile(
+                document, filename=f"{uuid.uuid4()}.{extension}", timeout=300
+            ),
             reply_markup=reply_markup,
             caption=caption,
             reply_to_message_id=reply_to_message_id,
             allow_sending_without_reply=True,
         )
     except TelegramForbiddenError:
-        asyncio.create_task(
-            update_user(chat_id, {'is_blocked': True})
-        )
+        asyncio.create_task(update_user(chat_id, {"is_blocked": True}))
     except TelegramRetryAfter as e:
         asyncio.create_task(
             delayed_send_document(
@@ -50,13 +54,21 @@ async def delayed_send_document(
                 reply_to_message_id,
             )
         )
-    except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramNetworkError):
+    except (
+        ConnectionResetError,
+        OSError,
+        ClientOSError,
+        ConnectionError,
+        TelegramNetworkError,
+    ):
         asyncio.create_task(
-            delayed_send_document(bot, chat_id, document, 60, reply_markup, caption, reply_to_message_id)
+            delayed_send_document(
+                bot, chat_id, document, 60, reply_markup, caption, reply_to_message_id
+            )
         )
     except Exception:
         error_trace = traceback.format_exc()
-        logging.exception(f'Error in delayed_send_document: {error_trace}')
+        logging.exception(f"Error in delayed_send_document: {error_trace}")
 
 
 async def send_document(
@@ -68,17 +80,19 @@ async def send_document(
     reply_to_message_id=None,
 ):
     try:
-        extension = document.rsplit('.', 1)[-1]
+        extension = document.rsplit(".", 1)[-1]
         await bot.send_document(
             chat_id=chat_id,
-            document=URLInputFile(document, filename=f'{uuid.uuid4()}.{extension}', timeout=300),
+            document=URLInputFile(
+                document, filename=f"{uuid.uuid4()}.{extension}", timeout=300
+            ),
             reply_markup=reply_markup,
             caption=caption,
             reply_to_message_id=reply_to_message_id,
             allow_sending_without_reply=True,
         )
     except TelegramForbiddenError:
-        asyncio.create_task(update_user(chat_id, {'is_blocked': True}))
+        asyncio.create_task(update_user(chat_id, {"is_blocked": True}))
     except TelegramRetryAfter as e:
         asyncio.create_task(
             delayed_send_document(
@@ -91,13 +105,21 @@ async def send_document(
                 reply_to_message_id,
             )
         )
-    except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramNetworkError):
+    except (
+        ConnectionResetError,
+        OSError,
+        ClientOSError,
+        ConnectionError,
+        TelegramNetworkError,
+    ):
         asyncio.create_task(
-            delayed_send_document(bot, chat_id, document, 60, reply_markup, caption, reply_to_message_id)
+            delayed_send_document(
+                bot, chat_id, document, 60, reply_markup, caption, reply_to_message_id
+            )
         )
     except Exception as e:
         error_trace = traceback.format_exc()
-        logging.error(f'Error in send_document: {error_trace}')
+        logging.error(f"Error in send_document: {error_trace}")
 
         await bot.send_message(
             chat_id=chat_id,
@@ -111,5 +133,5 @@ async def send_document(
             bot=bot,
             user_id=chat_id,
             info=str(e),
-            hashtags=['document'],
+            hashtags=["document"],
         )

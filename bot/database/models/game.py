@@ -3,21 +3,21 @@ from enum import StrEnum
 
 
 class GameType(StrEnum):
-    BOWLING = 'BOWLING'
-    SOCCER = 'SOCCER'
-    BASKETBALL = 'BASKETBALL'
-    DARTS = 'DARTS'
-    DICE = 'DICE'
-    CASINO = 'CASINO'
+    BOWLING = "BOWLING"
+    SOCCER = "SOCCER"
+    BASKETBALL = "BASKETBALL"
+    DARTS = "DARTS"
+    DICE = "DICE"
+    CASINO = "CASINO"
 
 
 class GameStatus(StrEnum):
-    LOST = 'LOST'
-    WON = 'WON'
+    LOST = "LOST"
+    WON = "WON"
 
 
 class Game:
-    COLLECTION_NAME = 'games'
+    COLLECTION_NAME = "games"
 
     id: str
     user_id: str

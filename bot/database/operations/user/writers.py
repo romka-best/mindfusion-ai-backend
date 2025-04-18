@@ -20,7 +20,9 @@ async def write_user_in_transaction(
     utm=None,
     discount=0,
 ) -> User:
-    user_ref = firebase.db.collection(User.COLLECTION_NAME).document(str(telegram_user.id))
+    user_ref = firebase.db.collection(User.COLLECTION_NAME).document(
+        str(telegram_user.id)
+    )
     user_data = (await user_ref.get()).to_dict() or {}
 
     created_user = create_user_object(

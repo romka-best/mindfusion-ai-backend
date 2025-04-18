@@ -2,28 +2,39 @@ import asyncio
 
 from aiogram import Router
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
-from aiogram.filters import Command, CommandStart, ChatMemberUpdatedFilter, KICKED, MEMBER
+from aiogram.filters import (
+    KICKED,
+    MEMBER,
+    ChatMemberUpdatedFilter,
+    Command,
+    CommandStart,
+)
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery, ChatMemberUpdated, URLInputFile
+from aiogram.types import CallbackQuery, ChatMemberUpdated, Message, URLInputFile
 from google.cloud.firestore_v1 import Increment
 
-from bot.config import config, MessageEffect, MessageSticker
+from bot.config import MessageEffect, MessageSticker, config
 from bot.database.main import firebase
 from bot.database.models.common import (
-    Quota,
     UTM,
     ChatGPTVersion,
     ClaudeGPTVersion,
+    DeepSeekVersion,
     GeminiGPTVersion,
     GrokGPTVersion,
-    DeepSeekVersion,
+    Quota,
 )
 from bot.database.models.generation import Generation
 from bot.database.models.user import UserSettings
 from bot.database.operations.campaign.getters import get_campaign, get_campaign_by_name
 from bot.database.operations.generation.updaters import update_generation
-from bot.database.operations.user.getters import get_user, get_count_of_users_by_referral
-from bot.database.operations.user.initialize_user_for_the_first_time import initialize_user_for_the_first_time
+from bot.database.operations.user.getters import (
+    get_count_of_users_by_referral,
+    get_user,
+)
+from bot.database.operations.user.initialize_user_for_the_first_time import (
+    initialize_user_for_the_first_time,
+)
 from bot.database.operations.user.updaters import update_user
 from bot.handlers.ai.chat_gpt_handler import handle_chatgpt
 from bot.handlers.ai.claude_handler import handle_claude
@@ -33,7 +44,7 @@ from bot.handlers.ai.grok_handler import handle_grok
 from bot.handlers.ai.model_handler import handle_model
 from bot.handlers.common.catalog_handler import handle_catalog_prompts
 from bot.handlers.payment.bonus_handler import handle_bonus
-from bot.handlers.payment.payment_handler import handle_subscribe, handle_package
+from bot.handlers.payment.payment_handler import handle_package, handle_subscribe
 from bot.helpers.checkers.check_user_last_activity import set_notification_stage
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
@@ -42,9 +53,9 @@ from bot.helpers.setters.set_commands import set_commands_for_user
 from bot.helpers.updaters.update_daily_limits import update_user_daily_limits
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import (
-    build_start_keyboard,
-    build_start_chosen_keyboard,
     build_error_keyboard,
+    build_start_chosen_keyboard,
+    build_start_keyboard,
     build_time_limit_exceeded_chosen_keyboard,
 )
 from bot.keyboards.payment.bonus import build_bonus_suggestion_keyboard
@@ -60,7 +71,7 @@ async def start(message: Message, state: FSMContext):
     tasks = []
     params = message.text.split()
     user_utm = {}
-    utm = [value for key, value in vars(UTM).items() if not key.startswith('__')]
+    utm = [value for key, value in vars(UTM).items() if not key.startswith("__")]
 
     user_id = str(message.from_user.id)
     user = await get_user(user_id)
@@ -70,166 +81,195 @@ async def start(message: Message, state: FSMContext):
         referred_by = None
         referred_by_user = None
         if len(params) > 1:
-            sub_params = params[1].split('_')
+            sub_params = params[1].split("_")
             for sub_param in sub_params:
-                if '-' not in sub_param:
+                if "-" not in sub_param:
                     continue
 
-                sub_param_key, sub_param_value = sub_param.split('-')
-                if sub_param_key == 'r' or sub_param_key == 'referral':
+                sub_param_key, sub_param_value = sub_param.split("-")
+                if sub_param_key == "r" or sub_param_key == "referral":
                     referred_by = sub_param_value
                     referred_by_user = await get_user(referred_by)
-                    referred_by_user_language_code = await get_user_language(referred_by, state.storage)
+                    referred_by_user_language_code = await get_user_language(
+                        referred_by, state.storage
+                    )
 
                     if referred_by_user:
-                        count_of_referred_users = await get_count_of_users_by_referral(referred_by_user.id)
+                        count_of_referred_users = await get_count_of_users_by_referral(
+                            referred_by_user.id
+                        )
                         if count_of_referred_users > 40:
-                            tasks.append(message.bot.send_message(
-                                chat_id=referred_by_user.telegram_chat_id,
-                                text=get_localization(referred_by_user_language_code).BONUS_REFERRAL_LIMIT_ERROR,
-                                reply_markup=build_bonus_suggestion_keyboard(referred_by_user_language_code),
-                                message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.CONGRATS),
-                                disable_notification=True,
-                            ))
+                            tasks.append(
+                                message.bot.send_message(
+                                    chat_id=referred_by_user.telegram_chat_id,
+                                    text=get_localization(
+                                        referred_by_user_language_code
+                                    ).BONUS_REFERRAL_LIMIT_ERROR,
+                                    reply_markup=build_bonus_suggestion_keyboard(
+                                        referred_by_user_language_code
+                                    ),
+                                    message_effect_id=config.MESSAGE_EFFECTS.get(
+                                        MessageEffect.CONGRATS
+                                    ),
+                                    disable_notification=True,
+                                )
+                            )
                         else:
-                            await update_user(referred_by_user.id, {
-                                'balance': Increment(25),
-                            })
+                            await update_user(
+                                referred_by_user.id,
+                                {
+                                    "balance": Increment(25),
+                                },
+                            )
 
-                            tasks.append(message.bot.send_message(
-                                chat_id=referred_by_user.telegram_chat_id,
-                                text=get_localization(referred_by_user_language_code).BONUS_REFERRAL_SUCCESS,
-                                reply_markup=build_bonus_suggestion_keyboard(referred_by_user_language_code),
-                                message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.CONGRATS),
-                                disable_notification=True,
-                            ))
-                elif sub_param_key == 'c':
+                            tasks.append(
+                                message.bot.send_message(
+                                    chat_id=referred_by_user.telegram_chat_id,
+                                    text=get_localization(
+                                        referred_by_user_language_code
+                                    ).BONUS_REFERRAL_SUCCESS,
+                                    reply_markup=build_bonus_suggestion_keyboard(
+                                        referred_by_user_language_code
+                                    ),
+                                    message_effect_id=config.MESSAGE_EFFECTS.get(
+                                        MessageEffect.CONGRATS
+                                    ),
+                                    disable_notification=True,
+                                )
+                            )
+                elif sub_param_key == "c":
                     campaign_id = sub_param_value
                     campaign = await get_campaign(campaign_id)
                     if not campaign:
                         campaign = await get_campaign_by_name(campaign_id)
 
-                    if campaign_id == 'prompts':
-                        document_path = f'campaigns/prompts.pdf'
+                    if campaign_id == "prompts":
+                        document_path = "campaigns/prompts.pdf"
                         document = await firebase.bucket.get_blob(document_path)
                         document_link = firebase.get_public_url(document.name)
-                        tasks.append(message.bot.send_document(
-                            chat_id=message.from_user.id,
-                            document=URLInputFile(document_link, filename=f'prompts.pdf', timeout=300),
-                            disable_notification=True,
-                        ))
+                        tasks.append(
+                            message.bot.send_document(
+                                chat_id=message.from_user.id,
+                                document=URLInputFile(
+                                    document_link, filename="prompts.pdf", timeout=300
+                                ),
+                                disable_notification=True,
+                            )
+                        )
 
                     if campaign:
                         user_utm = campaign.utm
                         user_discount = campaign.discount
-                elif sub_param_key == 'm' and sub_param_value in [
-                    'chatgpt4omnimini',
-                    'chatgpt4omni',
-                    'chatgpto4mini',
-                    'chatgpto3',
-                    'chatgpt41mini',
-                    'chatgpt41',
-                    'claude3haiku',
-                    'claude3sonnet',
-                    'claude3opus',
-                    'gemini2flash',
-                    'gemini1pro',
-                    'gemini1ultra',
-                    'grok',
-                    'deepseekv3',
-                    'deepseekr1',
-                    'perplexity',
-                    'eightify',
-                    'geminivideo',
-                    'dalle',
-                    'midjourney',
-                    'stablediffusionxl',
-                    'stablediffusion3',
-                    'flux1dev',
-                    'flux1pro',
-                    'lumaphoton',
-                    'recraft',
-                    'faceswap',
-                    'photoshopai',
-                    'musicgen',
-                    'suno',
-                    'kling',
-                    'runway',
-                    'lumaray',
-                    'pika',
+                elif sub_param_key == "m" and sub_param_value in [
+                    "chatgpt4omnimini",
+                    "chatgpt4omni",
+                    "chatgpto4mini",
+                    "chatgpto3",
+                    "chatgpt41mini",
+                    "chatgpt41",
+                    "claude3haiku",
+                    "claude3sonnet",
+                    "claude3opus",
+                    "gemini2flash",
+                    "gemini1pro",
+                    "gemini1ultra",
+                    "grok",
+                    "deepseekv3",
+                    "deepseekr1",
+                    "perplexity",
+                    "eightify",
+                    "geminivideo",
+                    "dalle",
+                    "midjourney",
+                    "stablediffusionxl",
+                    "stablediffusion3",
+                    "flux1dev",
+                    "flux1pro",
+                    "lumaphoton",
+                    "recraft",
+                    "faceswap",
+                    "photoshopai",
+                    "musicgen",
+                    "suno",
+                    "kling",
+                    "runway",
+                    "lumaray",
+                    "pika",
                 ]:
-                    if sub_param_value == 'chatgpt4omnimini':
+                    if sub_param_value == "chatgpt4omnimini":
                         default_quota = Quota.CHAT_GPT4_OMNI_MINI
-                    elif sub_param_value == 'chatgpt4omni':
+                    elif sub_param_value == "chatgpt4omni":
                         default_quota = Quota.CHAT_GPT4_OMNI
-                    elif sub_param_value == 'chatgpto4mini':
+                    elif sub_param_value == "chatgpto4mini":
                         default_quota = Quota.CHAT_GPT_O_4_MINI
-                    elif sub_param_value == 'chatgpto3':
+                    elif sub_param_value == "chatgpto3":
                         default_quota = Quota.CHAT_GPT_O_3
-                    elif sub_param_value == 'chatgpt41mini':
+                    elif sub_param_value == "chatgpt41mini":
                         default_quota = Quota.CHAT_GPT_4_1_MINI
-                    elif sub_param_value == 'chatgpt41':
+                    elif sub_param_value == "chatgpt41":
                         default_quota = Quota.CHAT_GPT_4_1
-                    elif sub_param_value == 'claude3haiku':
+                    elif sub_param_value == "claude3haiku":
                         default_quota = Quota.CLAUDE_3_HAIKU
-                    elif sub_param_value == 'claude3sonnet':
+                    elif sub_param_value == "claude3sonnet":
                         default_quota = Quota.CLAUDE_3_SONNET
-                    elif sub_param_value == 'claude3opus':
+                    elif sub_param_value == "claude3opus":
                         default_quota = Quota.CLAUDE_3_OPUS
-                    elif sub_param_value == 'gemini2flash':
+                    elif sub_param_value == "gemini2flash":
                         default_quota = Quota.GEMINI_2_FLASH
-                    elif sub_param_value == 'gemini2pro':
+                    elif sub_param_value == "gemini2pro":
                         default_quota = Quota.GEMINI_2_PRO
-                    elif sub_param_value == 'gemini1ultra':
+                    elif sub_param_value == "gemini1ultra":
                         default_quota = Quota.GEMINI_1_ULTRA
-                    elif sub_param_value == 'grok':
+                    elif sub_param_value == "grok":
                         default_quota = Quota.GROK_2
-                    elif sub_param_value == 'deepseekv3':
+                    elif sub_param_value == "deepseekv3":
                         default_quota = Quota.DEEP_SEEK_V3
-                    elif sub_param_value == 'deepseekr1':
+                    elif sub_param_value == "deepseekr1":
                         default_quota = Quota.DEEP_SEEK_R1
-                    elif sub_param_value == 'perplexity':
+                    elif sub_param_value == "perplexity":
                         default_quota = Quota.PERPLEXITY
-                    elif sub_param_value == 'eightify':
+                    elif sub_param_value == "eightify":
                         default_quota = Quota.EIGHTIFY
-                    elif sub_param_value == 'geminivideo':
+                    elif sub_param_value == "geminivideo":
                         default_quota = Quota.GEMINI_VIDEO
-                    elif sub_param_value == 'dalle':
+                    elif sub_param_value == "dalle":
                         default_quota = Quota.DALL_E
-                    elif sub_param_value == 'midjourney':
+                    elif sub_param_value == "midjourney":
                         default_quota = Quota.MIDJOURNEY
-                    elif sub_param_value == 'stablediffusionxl':
+                    elif sub_param_value == "stablediffusionxl":
                         default_quota = Quota.STABLE_DIFFUSION_XL
-                    elif sub_param_value == 'stablediffusion3':
+                    elif sub_param_value == "stablediffusion3":
                         default_quota = Quota.STABLE_DIFFUSION_3
-                    elif sub_param_value == 'flux1dev':
+                    elif sub_param_value == "flux1dev":
                         default_quota = Quota.FLUX_1_DEV
-                    elif sub_param_value == 'flux1pro':
+                    elif sub_param_value == "flux1pro":
                         default_quota = Quota.FLUX_1_PRO
-                    elif sub_param_value == 'lumaphoton':
+                    elif sub_param_value == "lumaphoton":
                         default_quota = Quota.LUMA_PHOTON
-                    elif sub_param_value == 'recraft':
+                    elif sub_param_value == "recraft":
                         default_quota = Quota.RECRAFT
-                    elif sub_param_value == 'faceswap':
+                    elif sub_param_value == "faceswap":
                         default_quota = Quota.FACE_SWAP
-                    elif sub_param_value == 'photoshopai':
+                    elif sub_param_value == "photoshopai":
                         default_quota = Quota.PHOTOSHOP_AI
-                    elif sub_param_value == 'suno':
+                    elif sub_param_value == "suno":
                         default_quota = Quota.SUNO
-                    elif sub_param_value == 'musicgen':
+                    elif sub_param_value == "musicgen":
                         default_quota = Quota.MUSIC_GEN
-                    elif sub_param_value == 'kling':
+                    elif sub_param_value == "kling":
                         default_quota = Quota.KLING
-                    elif sub_param_value == 'runway':
+                    elif sub_param_value == "runway":
                         default_quota = Quota.RUNWAY
-                    elif sub_param_value == 'lumaray':
+                    elif sub_param_value == "lumaray":
                         default_quota = Quota.LUMA_RAY
-                    elif sub_param_value == 'pika':
+                    elif sub_param_value == "pika":
                         default_quota = Quota.PIKA
                 elif sub_param_key in utm:
                     user_utm[sub_param_key] = sub_param_value.lower()
 
-        language_code = await set_user_language(user_id, message.from_user.language_code, state.storage)
+        language_code = await set_user_language(
+            user_id, message.from_user.language_code, state.storage
+        )
         await set_commands_for_user(message.bot, user_id, language_code)
 
         chat_title = get_localization(language_code).CHAT_DEFAULT_TITLE
@@ -247,20 +287,23 @@ async def start(message: Message, state: FSMContext):
         )
     elif user and user.is_blocked:
         user.is_blocked = False
-        await update_user(user.id, {
-            'is_blocked': user.is_blocked,
-        })
+        await update_user(
+            user.id,
+            {
+                "is_blocked": user.is_blocked,
+            },
+        )
 
         batch = firebase.db.batch()
         await update_user_daily_limits(message.bot, user, batch, state.storage)
         await batch.commit()
     elif user and len(params) > 1:
-        sub_params = params[1].split('_')
+        sub_params = params[1].split("_")
         for sub_param in sub_params:
-            if '-' not in sub_param:
+            if "-" not in sub_param:
                 continue
 
-            sub_param_key, sub_param_value = sub_param.split('-')
+            sub_param_key, sub_param_value = sub_param.split("-")
             if sub_param_key in utm:
                 user_utm[sub_param_key] = sub_param_value.lower()
 
@@ -281,16 +324,23 @@ async def start(message: Message, state: FSMContext):
     answered_message = await message.answer(
         text=await get_switched_to_ai_model(
             user,
-            get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION]),
+            get_quota_by_model(
+                user.current_model,
+                user.settings[user.current_model][UserSettings.VERSION],
+            ),
             user_language_code,
         ),
-        reply_markup=build_switched_to_ai_keyboard(user_language_code, user.current_model),
+        reply_markup=build_switched_to_ai_keyboard(
+            user_language_code, user.current_model
+        ),
         message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.FIRE),
     )
 
     try:
         await message.bot.unpin_all_chat_messages(user.telegram_chat_id)
-        await message.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
+        await message.bot.pin_chat_message(
+            user.telegram_chat_id, answered_message.message_id
+        )
     except (TelegramBadRequest, TelegramRetryAfter):
         pass
 
@@ -306,16 +356,16 @@ async def start(message: Message, state: FSMContext):
         await asyncio.gather(*tasks)
 
 
-@common_router.callback_query(lambda c: c.data.startswith('start:'))
+@common_router.callback_query(lambda c: c.data.startswith("start:"))
 async def start_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
-    action = callback_query.data.split(':')[1]
+    action = callback_query.data.split(":")[1]
 
     user_id = str(callback_query.from_user.id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    if action == 'quick_guide':
+    if action == "quick_guide":
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).START_QUICK_GUIDE_INFO,
             reply_markup=build_start_chosen_keyboard(user_language_code),
@@ -328,33 +378,35 @@ async def start_selection(callback_query: CallbackQuery, state: FSMContext):
         )
 
 
-@common_router.my_chat_member(
-    ChatMemberUpdatedFilter(member_status_changed=KICKED)
-)
+@common_router.my_chat_member(ChatMemberUpdatedFilter(member_status_changed=KICKED))
 async def user_blocked_bot(event: ChatMemberUpdated):
     user = await get_user(str(event.from_user.id))
     user.is_blocked = True
-    await update_user(user.id, {
-        'is_blocked': user.is_blocked,
-    })
+    await update_user(
+        user.id,
+        {
+            "is_blocked": user.is_blocked,
+        },
+    )
 
 
-@common_router.my_chat_member(
-    ChatMemberUpdatedFilter(member_status_changed=MEMBER)
-)
+@common_router.my_chat_member(ChatMemberUpdatedFilter(member_status_changed=MEMBER))
 async def user_unblocked_bot(event: ChatMemberUpdated, state: FSMContext):
     user = await get_user(str(event.from_user.id))
     user.is_blocked = False
-    await update_user(user.id, {
-        'is_blocked': user.is_blocked,
-    })
+    await update_user(
+        user.id,
+        {
+            "is_blocked": user.is_blocked,
+        },
+    )
 
     batch = firebase.db.batch()
     await update_user_daily_limits(event.bot, user, batch, state.storage)
     await batch.commit()
 
 
-@common_router.message(Command('help'))
+@common_router.message(Command("help"))
 async def handle_help(message: Message, state: FSMContext):
     await state.clear()
 
@@ -367,7 +419,7 @@ async def handle_help(message: Message, state: FSMContext):
     )
 
 
-@common_router.message(Command('terms'))
+@common_router.message(Command("terms"))
 async def terms(message: Message, state: FSMContext):
     await state.clear()
 
@@ -377,52 +429,102 @@ async def terms(message: Message, state: FSMContext):
     await message.answer(text=get_localization(user_language_code).TERMS_LINK)
 
 
-@common_router.callback_query(lambda c: c.data.startswith('continue_generation:'))
-async def handle_continue_generation_choose_selection(callback_query: CallbackQuery, state: FSMContext):
+@common_router.callback_query(lambda c: c.data.startswith("continue_generation:"))
+async def handle_continue_generation_choose_selection(
+    callback_query: CallbackQuery, state: FSMContext
+):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
     user = await get_user(user_id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    action = callback_query.data.split(':')[1]
+    action = callback_query.data.split(":")[1]
 
-    if action == 'continue':
-        await state.update_data(recognized_text=get_localization(user_language_code).MODEL_CONTINUE_GENERATING)
+    if action == "continue":
+        await state.update_data(
+            recognized_text=get_localization(
+                user_language_code
+            ).MODEL_CONTINUE_GENERATING
+        )
 
-        if user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_Omni_Mini:
+        if (
+            user.settings[user.current_model][UserSettings.VERSION]
+            == ChatGPTVersion.V4_Omni_Mini
+        ):
             user_quota = Quota.CHAT_GPT4_OMNI_MINI
-        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_Omni:
+        elif (
+            user.settings[user.current_model][UserSettings.VERSION]
+            == ChatGPTVersion.V4_Omni
+        ):
             user_quota = Quota.CHAT_GPT4_OMNI
-        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_O_Mini:
+        elif (
+            user.settings[user.current_model][UserSettings.VERSION]
+            == ChatGPTVersion.V4_O_Mini
+        ):
             user_quota = Quota.CHAT_GPT_O_4_MINI
-        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V3_O:
+        elif (
+            user.settings[user.current_model][UserSettings.VERSION]
+            == ChatGPTVersion.V3_O
+        ):
             user_quota = Quota.CHAT_GPT_O_3
-        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_1_Mini:
+        elif (
+            user.settings[user.current_model][UserSettings.VERSION]
+            == ChatGPTVersion.V4_1_Mini
+        ):
             user_quota = Quota.CHAT_GPT_4_1_MINI
-        elif user.settings[user.current_model][UserSettings.VERSION] == ChatGPTVersion.V4_1:
+        elif (
+            user.settings[user.current_model][UserSettings.VERSION]
+            == ChatGPTVersion.V4_1
+        ):
             user_quota = Quota.CHAT_GPT_4_1
-        elif user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Haiku:
+        elif (
+            user.settings[user.current_model][UserSettings.VERSION]
+            == ClaudeGPTVersion.V3_Haiku
+        ):
             user_quota = Quota.CLAUDE_3_HAIKU
-        elif user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Sonnet:
+        elif (
+            user.settings[user.current_model][UserSettings.VERSION]
+            == ClaudeGPTVersion.V3_Sonnet
+        ):
             user_quota = Quota.CLAUDE_3_SONNET
-        elif user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Opus:
+        elif (
+            user.settings[user.current_model][UserSettings.VERSION]
+            == ClaudeGPTVersion.V3_Opus
+        ):
             user_quota = Quota.CLAUDE_3_OPUS
-        elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V2_Flash:
+        elif (
+            user.settings[user.current_model][UserSettings.VERSION]
+            == GeminiGPTVersion.V2_Flash
+        ):
             user_quota = Quota.GEMINI_2_FLASH
-        elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V2_Pro:
+        elif (
+            user.settings[user.current_model][UserSettings.VERSION]
+            == GeminiGPTVersion.V2_Pro
+        ):
             user_quota = Quota.GEMINI_2_PRO
-        elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Ultra:
+        elif (
+            user.settings[user.current_model][UserSettings.VERSION]
+            == GeminiGPTVersion.V1_Ultra
+        ):
             user_quota = Quota.GEMINI_1_ULTRA
-        elif user.settings[user.current_model][UserSettings.VERSION] == GrokGPTVersion.V2:
+        elif (
+            user.settings[user.current_model][UserSettings.VERSION] == GrokGPTVersion.V2
+        ):
             user_quota = Quota.GROK_2
-        elif user.settings[user.current_model][UserSettings.VERSION] == DeepSeekVersion.V3:
+        elif (
+            user.settings[user.current_model][UserSettings.VERSION]
+            == DeepSeekVersion.V3
+        ):
             user_quota = Quota.DEEP_SEEK_V3
-        elif user.settings[user.current_model][UserSettings.VERSION] == DeepSeekVersion.R1:
+        elif (
+            user.settings[user.current_model][UserSettings.VERSION]
+            == DeepSeekVersion.R1
+        ):
             user_quota = Quota.DEEP_SEEK_R1
         else:
             raise NotImplementedError(
-                f'AI version is not defined: {user.settings[user.current_model][UserSettings.VERSION]}'
+                f"AI version is not defined: {user.settings[user.current_model][UserSettings.VERSION]}"
             )
 
         if user_quota in [
@@ -458,14 +560,20 @@ async def handle_continue_generation_choose_selection(callback_query: CallbackQu
     await state.clear()
 
 
-@common_router.callback_query(lambda c: c.data.startswith('reaction:'))
+@common_router.callback_query(lambda c: c.data.startswith("reaction:"))
 async def reaction_selection(callback_query: CallbackQuery):
     await callback_query.answer()
 
-    reaction, generation_id = callback_query.data.split(':')[1], callback_query.data.split(':')[2]
-    await update_generation(generation_id, {
-        'reaction': reaction,
-    })
+    reaction, generation_id = (
+        callback_query.data.split(":")[1],
+        callback_query.data.split(":")[2],
+    )
+    await update_generation(
+        generation_id,
+        {
+            "reaction": reaction,
+        },
+    )
 
     if callback_query.message.caption:
         await callback_query.message.edit_reply_markup(
@@ -478,28 +586,36 @@ async def reaction_selection(callback_query: CallbackQuery):
         )
 
 
-@common_router.callback_query(lambda c: c.data.startswith('buy_motivation:'))
+@common_router.callback_query(lambda c: c.data.startswith("buy_motivation:"))
 async def buy_motivation_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
-    action = callback_query.data.split(':')[1]
-    if action == 'open_bonus_info':
-        await handle_bonus(callback_query.message, str(callback_query.from_user.id), state)
-    elif action == 'open_buy_subscriptions_info':
-        await handle_subscribe(callback_query.message, str(callback_query.from_user.id), state)
-    elif action == 'open_buy_packages_info':
-        await handle_package(callback_query.message, str(callback_query.from_user.id), state)
+    action = callback_query.data.split(":")[1]
+    if action == "open_bonus_info":
+        await handle_bonus(
+            callback_query.message, str(callback_query.from_user.id), state
+        )
+    elif action == "open_buy_subscriptions_info":
+        await handle_subscribe(
+            callback_query.message, str(callback_query.from_user.id), state
+        )
+    elif action == "open_buy_packages_info":
+        await handle_package(
+            callback_query.message, str(callback_query.from_user.id), state
+        )
 
 
-@common_router.callback_query(lambda c: c.data.startswith('time_limit_exceeded:'))
-async def time_limit_exceeded_selection(callback_query: CallbackQuery, state: FSMContext):
+@common_router.callback_query(lambda c: c.data.startswith("time_limit_exceeded:"))
+async def time_limit_exceeded_selection(
+    callback_query: CallbackQuery, state: FSMContext
+):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    action = callback_query.data.split(':')[1]
-    if action == 'remove_restriction':
+    action = callback_query.data.split(":")[1]
+    if action == "remove_restriction":
         await callback_query.message.reply(
             text=get_localization(user_language_code).REMOVE_RESTRICTION_INFO,
             reply_markup=build_time_limit_exceeded_chosen_keyboard(user_language_code),
@@ -507,23 +623,25 @@ async def time_limit_exceeded_selection(callback_query: CallbackQuery, state: FS
         )
 
 
-@common_router.callback_query(lambda c: c.data.startswith('notify_about_quota:'))
-async def notify_about_quota_selection(callback_query: CallbackQuery, state: FSMContext):
+@common_router.callback_query(lambda c: c.data.startswith("notify_about_quota:"))
+async def notify_about_quota_selection(
+    callback_query: CallbackQuery, state: FSMContext
+):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
 
-    action = callback_query.data.split(':')[1]
-    if action == 'change_ai':
+    action = callback_query.data.split(":")[1]
+    if action == "change_ai":
         await handle_model(callback_query.message, user_id, state)
-    elif action == 'examples':
+    elif action == "examples":
         await handle_catalog_prompts(
             callback_query.message,
             user_id,
             state,
             False,
         )
-    elif action == 'turn_off':
+    elif action == "turn_off":
         user_language_code = await get_user_language(user_id, state.storage)
 
         await set_notification_stage(
@@ -532,20 +650,24 @@ async def notify_about_quota_selection(callback_query: CallbackQuery, state: FSM
             state.storage,
         )
         await callback_query.message.reply(
-            text=get_localization(user_language_code).NOTIFY_ABOUT_QUOTA_TURN_OFF_SUCCESS,
+            text=get_localization(
+                user_language_code
+            ).NOTIFY_ABOUT_QUOTA_TURN_OFF_SUCCESS,
         )
 
 
-@common_router.callback_query(lambda c: c.data.startswith('suggestions:'))
+@common_router.callback_query(lambda c: c.data.startswith("suggestions:"))
 async def suggestions_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
-    action = callback_query.data.split(':')[1]
-    if action == 'change_ai_model':
-        await handle_model(callback_query.message, str(callback_query.from_user.id), state)
+    action = callback_query.data.split(":")[1]
+    if action == "change_ai_model":
+        await handle_model(
+            callback_query.message, str(callback_query.from_user.id), state
+        )
 
 
-@common_router.callback_query(lambda c: c.data.endswith(':close'))
+@common_router.callback_query(lambda c: c.data.endswith(":close"))
 async def handle_close_selection(callback_query: CallbackQuery):
     await callback_query.answer()
 
@@ -553,7 +675,7 @@ async def handle_close_selection(callback_query: CallbackQuery):
         await callback_query.message.delete()
 
 
-@common_router.callback_query(lambda c: c.data.endswith(':cancel'))
+@common_router.callback_query(lambda c: c.data.endswith(":cancel"))
 async def handle_cancel_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 

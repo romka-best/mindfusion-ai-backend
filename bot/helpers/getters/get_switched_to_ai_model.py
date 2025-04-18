@@ -13,7 +13,9 @@ from bot.locales.main import get_localization
 from bot.locales.types import LanguageCode
 
 
-async def get_switched_to_ai_model(user: User, quota: Quota, language_code: LanguageCode):
+async def get_switched_to_ai_model(
+    user: User, quota: Quota, language_code: LanguageCode
+):
     product = await get_product_by_quota(quota)
 
     role_info = {}
@@ -21,12 +23,17 @@ async def get_switched_to_ai_model(user: User, quota: Quota, language_code: Lang
     if model_type == ModelType.TEXT:
         chat = await get_chat(user.current_chat_id)
         role = await get_role(chat.role_id)
-        role_info = {'role': role.translated_names.get(language_code) or role.translated_names.get(LanguageCode.EN)}
+        role_info = {
+            "role": role.translated_names.get(language_code)
+            or role.translated_names.get(LanguageCode.EN)
+        }
 
     current_date = datetime.now(timezone.utc)
-    training_data = product.details.get('training_data', current_date)
-    formatted_date = format_date(date=training_data, format='LLLL, yyyy', locale=language_code).capitalize()
-    product.details['training_data'] = formatted_date
+    training_data = product.details.get("training_data", current_date)
+    formatted_date = format_date(
+        date=training_data, format="LLLL, yyyy", locale=language_code
+    ).capitalize()
+    product.details["training_data"] = formatted_date
 
     product_info = product.details
     settings_info = user.settings[user.current_model]

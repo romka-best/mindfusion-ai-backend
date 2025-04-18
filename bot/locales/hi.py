@@ -1,27 +1,27 @@
 import random
 from typing import Union
 
-from bot.database.models.product import Product, ProductType, ProductCategory
+from bot.database.models.common import (
+    AspectRatio,
+    Currency,
+    Model,
+    ModelType,
+    Quota,
+    SendType,
+    VideoSummaryAmount,
+    VideoSummaryFocus,
+    VideoSummaryFormat,
+)
+from bot.database.models.product import Product, ProductCategory, ProductType
 from bot.database.models.prompt import Prompt
+from bot.database.models.subscription import SubscriptionStatus
+from bot.database.models.user import UserSettings
 from bot.database.operations.product.getters import get_product
 from bot.helpers.formatters.format_number import format_number
 from bot.helpers.getters.get_model_version import get_model_version
 from bot.helpers.getters.get_time_until_limit_update import get_time_until_limit_update
 from bot.helpers.getters.get_user_discount import get_user_discount
 from bot.locales.texts import Texts
-from bot.database.models.common import (
-    Currency,
-    Quota,
-    Model,
-    ModelType,
-    VideoSummaryFocus,
-    VideoSummaryFormat,
-    VideoSummaryAmount,
-    AspectRatio,
-    SendType,
-)
-from bot.database.models.subscription import SubscriptionStatus
-from bot.database.models.user import UserSettings
 from bot.locales.types import LanguageCode
 
 
@@ -69,7 +69,9 @@ class Hindi(Texts):
     BONUS_SPEND = "➖ खर्च करें"
 
     @staticmethod
-    def bonus_info_earn(user_id: str, referred_count: int, feedback_count: int, play_count: int):
+    def bonus_info_earn(
+        user_id: str, referred_count: int, feedback_count: int, play_count: int
+    ):
         return f"""
 ➕ <b>क्रेडिट कैसे कमाएं</b>
 
@@ -233,13 +235,17 @@ class Hindi(Texts):
 
     @staticmethod
     def catalog_prompts_choose_prompt(prompts: list[Prompt]):
-        prompt_info = ''
+        prompt_info = ""
         for index, prompt in enumerate(prompts):
             is_last = index == len(prompts) - 1
-            left_part = '┣' if not is_last else '┗'
-            right_part = '\n' if not is_last else ''
-            prompt_name = prompt.names.get(LanguageCode.HI) or prompt.names.get(LanguageCode.EN)
-            prompt_info += f'    {left_part} <b>{index + 1}</b>: {prompt_name}{right_part}'
+            left_part = "┣" if not is_last else "┗"
+            right_part = "\n" if not is_last else ""
+            prompt_name = prompt.names.get(LanguageCode.HI) or prompt.names.get(
+                LanguageCode.EN
+            )
+            prompt_info += (
+                f"    {left_part} <b>{index + 1}</b>: {prompt_name}{right_part}"
+            )
 
         return f"""
 📚 <b>संकेत सूची</b>
@@ -252,13 +258,15 @@ class Hindi(Texts):
 
     @staticmethod
     def catalog_prompts_info_prompt(prompt: Prompt, products: list[Product]):
-        model_info = ''
+        model_info = ""
         for index, product in enumerate(products):
             is_last = index == len(products) - 1
-            left_part = '┣' if not is_last else '┗'
-            right_part = '\n' if not is_last else ''
-            product_name = product.names.get(LanguageCode.HI) or product.names.get(LanguageCode.EN)
-            model_info += f'    {left_part} <b>{product_name}</b>{right_part}'
+            left_part = "┣" if not is_last else "┗"
+            right_part = "\n" if not is_last else ""
+            product_name = product.names.get(LanguageCode.HI) or product.names.get(
+                LanguageCode.EN
+            )
+            model_info += f"    {left_part} <b>{product_name}</b>{right_part}"
 
         return f"""
 📚 <b>संकेत सूची</b>
@@ -273,14 +281,16 @@ class Hindi(Texts):
 
     @staticmethod
     def catalog_prompts_examples(products: list[Product]):
-        prompt_examples_info = ''
+        prompt_examples_info = ""
         for index, product in enumerate(products):
             is_last = index == len(products) - 1
             is_first = index == 0
-            left_part = '┣' if not is_last else '┗'
-            right_part = '\n' if not is_last else ''
-            product_name = product.names.get(LanguageCode.HI) or product.names.get(LanguageCode.EN)
-            prompt_examples_info += f'{left_part if not is_first else "┏"} <b>{index + 1}</b>: {product_name}{right_part}'
+            left_part = "┣" if not is_last else "┗"
+            right_part = "\n" if not is_last else ""
+            product_name = product.names.get(LanguageCode.HI) or product.names.get(
+                LanguageCode.EN
+            )
+            prompt_examples_info += f"{left_part if not is_first else '┏'} <b>{index + 1}</b>: {product_name}{right_part}"
 
         return prompt_examples_info
 
@@ -552,9 +562,15 @@ class Hindi(Texts):
 """
 
     @staticmethod
-    def face_swap_choose_package(name: str, available_images: int, total_images: int, used_images: int) -> str:
+    def face_swap_choose_package(
+        name: str, available_images: int, total_images: int, used_images: int
+    ) -> str:
         remain_images = total_images - used_images
-        footer_text = f'<b>टाइप करें कि आप कितने फेस स्वैप करना चाहते हैं, या नीचे दिए गए त्वरित चयन बटन में से एक चुनें</b> 👇' if remain_images > 0 else ''
+        footer_text = (
+            "<b>टाइप करें कि आप कितने फेस स्वैप करना चाहते हैं, या नीचे दिए गए त्वरित चयन बटन में से एक चुनें</b> 👇"
+            if remain_images > 0
+            else ""
+        )
 
         return f"""
 <b>{name}</b>
@@ -778,11 +794,21 @@ class Hindi(Texts):
 
     # Info
     INFO = "🤖 <b>उन मॉडल्स का प्रकार चुनें, जिनके बारे में आप जानकारी प्राप्त करना चाहते हैं:</b>"
-    INFO_TEXT_MODELS = "🤖 <b>उस टेक्स्ट मॉडल का चयन करें, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:</b>"
-    INFO_IMAGE_MODELS = "🤖 <b>उस ग्राफिक्स मॉडल का चयन करें, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:</b>"
-    INFO_MUSIC_MODELS = "🤖 <b>उस म्यूज़िक मॉडल का चयन करें, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:</b>"
-    INFO_VIDEO_MODELS = "🤖 <b>उस वीडियो मॉडल का चयन करें, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:</b>"
-    INFO_CHAT_GPT = "🤖 <b>ChatGPT मॉडल का चयन करें</b>, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:"
+    INFO_TEXT_MODELS = (
+        "🤖 <b>उस टेक्स्ट मॉडल का चयन करें, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:</b>"
+    )
+    INFO_IMAGE_MODELS = (
+        "🤖 <b>उस ग्राफिक्स मॉडल का चयन करें, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:</b>"
+    )
+    INFO_MUSIC_MODELS = (
+        "🤖 <b>उस म्यूज़िक मॉडल का चयन करें, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:</b>"
+    )
+    INFO_VIDEO_MODELS = (
+        "🤖 <b>उस वीडियो मॉडल का चयन करें, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:</b>"
+    )
+    INFO_CHAT_GPT = (
+        "🤖 <b>ChatGPT मॉडल का चयन करें</b>, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:"
+    )
     INFO_CHAT_GPT_4_OMNI_MINI = f"""
 <b>{Texts.CHAT_GPT_4_OMNI_MINI}</b>
 
@@ -901,7 +927,9 @@ class Hindi(Texts):
 
 <b>निर्माता:</b> OpenAI
 """
-    INFO_CLAUDE = "🤖 <b>Claude मॉडल का चयन करें</b>, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:"
+    INFO_CLAUDE = (
+        "🤖 <b>Claude मॉडल का चयन करें</b>, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:"
+    )
     INFO_CLAUDE_3_HAIKU = f"""
 <b>{Texts.CLAUDE_3_HAIKU}</b>
 
@@ -1002,7 +1030,9 @@ class Hindi(Texts):
 • MMMU: 59.4%
 • MathVista: 50.5%
 """
-    INFO_GEMINI = "🤖 <b>Gemini मॉडल का चयन करें</b>, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:"
+    INFO_GEMINI = (
+        "🤖 <b>Gemini मॉडल का चयन करें</b>, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:"
+    )
     INFO_GEMINI_2_FLASH = f"""
 <b>{Texts.GEMINI_2_FLASH}</b>
 
@@ -1126,7 +1156,9 @@ class Hindi(Texts):
 • MMMU: 66.1%
 • MathVista: 69.0%
 """
-    INFO_DEEP_SEEK = "🤖 <b>DeepSeek मॉडल का चयन करें</b>, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:"
+    INFO_DEEP_SEEK = (
+        "🤖 <b>DeepSeek मॉडल का चयन करें</b>, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:"
+    )
     INFO_DEEP_SEEK_V3 = f"""
 <b>{Texts.DEEP_SEEK_V3}</b>
 
@@ -1230,7 +1262,9 @@ class Hindi(Texts):
 • <i>आंतरिक डिज़ाइन</i>: पारंपरिक से आधुनिक प्रवृत्तियों तक के आंतरिक समाधान की दृश्य प्रस्तुति
 • <i>फैशन और स्टाइल</i>: फैशनेबल लुक्स और एक्सेसरीज़ बनाना, रंगों और रूपों के साथ प्रयोग करना
 """
-    INFO_STABLE_DIFFUSION = "🤖 <b>Stable Diffusion मॉडल चुनें</b>, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:"
+    INFO_STABLE_DIFFUSION = (
+        "🤖 <b>Stable Diffusion मॉडल चुनें</b>, जिसके बारे में आप जानकारी प्राप्त करना चाहते हैं:"
+    )
     INFO_STABLE_DIFFUSION_XL = f"""
 <b>{Texts.STABLE_DIFFUSION_XL}</b>
 
@@ -1378,16 +1412,24 @@ class Hindi(Texts):
 <b>U</b> — चित्र को बड़ा करना
 <b>V</b> — चित्र के समान विकल्प
 """
-    MIDJOURNEY_ALREADY_CHOSE_UPSCALE = "आपने पहले ही इस चित्र का चयन किया है, कृपया एक नया आज़माएँ 🙂"
+    MIDJOURNEY_ALREADY_CHOSE_UPSCALE = (
+        "आपने पहले ही इस चित्र का चयन किया है, कृपया एक नया आज़माएँ 🙂"
+    )
 
     # Model
     MODEL = "यदि आप <b>मॉडल बदलना</b> चाहते हैं, तो नीचे दिए गए बटन पर क्लिक करें 👇"
     MODEL_CHANGE_AI = "🤖 AI मॉडल बदलें"
-    MODEL_CHOOSE_CHAT_GPT = "<b>ChatGPT 💭</b> मॉडल चुनने के लिए नीचे दिए गए बटन पर क्लिक करें 👇"
+    MODEL_CHOOSE_CHAT_GPT = (
+        "<b>ChatGPT 💭</b> मॉडल चुनने के लिए नीचे दिए गए बटन पर क्लिक करें 👇"
+    )
     MODEL_CHOOSE_CLAUDE = "<b>Claude 📄</b> मॉडल चुनने के लिए नीचे दिए गए बटन पर क्लिक करें 👇"
     MODEL_CHOOSE_GEMINI = "<b>Gemini ✨</b> मॉडल चुनने के लिए नीचे दिए गए बटन पर क्लिक करें 👇"
-    MODEL_CHOOSE_DEEP_SEEK = "<b>DeepSeek 🐳</b> मॉडल चुनने के लिए नीचे दिए गए बटन पर क्लिक करें 👇"
-    MODEL_CHOOSE_STABLE_DIFFUSION = "<b>Stable Diffusion 🎆</b> मॉडल चुनने के लिए नीचे दिए गए बटन पर क्लिक करें 👇"
+    MODEL_CHOOSE_DEEP_SEEK = (
+        "<b>DeepSeek 🐳</b> मॉडल चुनने के लिए नीचे दिए गए बटन पर क्लिक करें 👇"
+    )
+    MODEL_CHOOSE_STABLE_DIFFUSION = (
+        "<b>Stable Diffusion 🎆</b> मॉडल चुनने के लिए नीचे दिए गए बटन पर क्लिक करें 👇"
+    )
     MODEL_CHOOSE_FLUX = "<b>Flux 🫐</b> मॉडल चुनने के लिए नीचे दिए गए बटन पर क्लिक करें 👇"
     MODEL_CONTINUE_GENERATING = "जेनरेशन जारी रखें"
     MODEL_ALREADY_MAKE_REQUEST = "⚠️ आपने पहले ही एक अनुरोध किया है। कृपया प्रतीक्षा करें"
@@ -1407,65 +1449,91 @@ class Hindi(Texts):
     @staticmethod
     def model_switched(model_name: str, model_type: ModelType, model_info: dict):
         if model_type == ModelType.TEXT:
-            model_role = model_info.get('role').split(' ')
-            model_role = ' '.join(model_role[1:] + [model_role[0]])
+            model_role = model_info.get("role").split(" ")
+            model_role = " ".join(model_role[1:] + [model_role[0]])
             facts = f"""<b>तथ्य और सेटिंग्स:</b>
-📅 जानकारी उपलब्धता: {model_info.get('training_data')}
-📷 फोटो के साथ काम: {'हां ✅' if model_info.get('support_photos', False) else 'नहीं ❌'}
-{Hindi.VOICE_MESSAGES}: {'चालू ✅' if model_info.get(UserSettings.TURN_ON_VOICE_MESSAGES, False) else 'बंद ❌'}
+📅 जानकारी उपलब्धता: {model_info.get("training_data")}
+📷 फोटो के साथ काम: {"हां ✅" if model_info.get("support_photos", False) else "नहीं ❌"}
+{Hindi.VOICE_MESSAGES}: {"चालू ✅" if model_info.get(UserSettings.TURN_ON_VOICE_MESSAGES, False) else "बंद ❌"}
 🎭 भूमिका: {model_role}"""
         elif model_type == ModelType.SUMMARY:
-            model_focus = model_info.get(UserSettings.FOCUS, VideoSummaryFocus.INSIGHTFUL)
+            model_focus = model_info.get(
+                UserSettings.FOCUS, VideoSummaryFocus.INSIGHTFUL
+            )
             if model_focus == VideoSummaryFocus.INSIGHTFUL:
-                model_focus = ' '.join(reversed(Hindi.VIDEO_SUMMARY_FOCUS_INSIGHTFUL.split(' ', 1)))
+                model_focus = " ".join(
+                    reversed(Hindi.VIDEO_SUMMARY_FOCUS_INSIGHTFUL.split(" ", 1))
+                )
             elif model_focus == VideoSummaryFocus.FUNNY:
-                model_focus = ' '.join(reversed(Hindi.VIDEO_SUMMARY_FOCUS_FUNNY.split(' ', 1)))
+                model_focus = " ".join(
+                    reversed(Hindi.VIDEO_SUMMARY_FOCUS_FUNNY.split(" ", 1))
+                )
             elif model_focus == VideoSummaryFocus.ACTIONABLE:
-                model_focus = ' '.join(reversed(Hindi.VIDEO_SUMMARY_FOCUS_ACTIONABLE.split(' ', 1)))
+                model_focus = " ".join(
+                    reversed(Hindi.VIDEO_SUMMARY_FOCUS_ACTIONABLE.split(" ", 1))
+                )
             elif model_focus == VideoSummaryFocus.CONTROVERSIAL:
-                model_focus = ' '.join(reversed(Hindi.VIDEO_SUMMARY_FOCUS_CONTROVERSIAL.split(' ', 1)))
+                model_focus = " ".join(
+                    reversed(Hindi.VIDEO_SUMMARY_FOCUS_CONTROVERSIAL.split(" ", 1))
+                )
 
             model_format = model_info.get(UserSettings.FORMAT, VideoSummaryFormat.LIST)
             if model_format == VideoSummaryFormat.LIST:
-                model_format = ' '.join(reversed(Hindi.VIDEO_SUMMARY_FORMAT_LIST.split(' ', 1)))
+                model_format = " ".join(
+                    reversed(Hindi.VIDEO_SUMMARY_FORMAT_LIST.split(" ", 1))
+                )
             elif model_format == VideoSummaryFormat.FAQ:
-                model_format = ' '.join(reversed(Hindi.VIDEO_SUMMARY_FORMAT_FAQ.split(' ', 1)))
+                model_format = " ".join(
+                    reversed(Hindi.VIDEO_SUMMARY_FORMAT_FAQ.split(" ", 1))
+                )
 
             model_amount = model_info.get(UserSettings.AMOUNT, VideoSummaryAmount.AUTO)
             if model_amount == VideoSummaryAmount.AUTO:
-                model_amount = ' '.join(reversed(Hindi.VIDEO_SUMMARY_AMOUNT_AUTO.split(' ', 1)))
+                model_amount = " ".join(
+                    reversed(Hindi.VIDEO_SUMMARY_AMOUNT_AUTO.split(" ", 1))
+                )
             elif model_amount == VideoSummaryAmount.SHORT:
-                model_amount = ' '.join(reversed(Hindi.VIDEO_SUMMARY_AMOUNT_SHORT.split(' ', 1)))
+                model_amount = " ".join(
+                    reversed(Hindi.VIDEO_SUMMARY_AMOUNT_SHORT.split(" ", 1))
+                )
             elif model_amount == VideoSummaryAmount.DETAILED:
-                model_amount = ' '.join(reversed(Hindi.VIDEO_SUMMARY_AMOUNT_DETAILED.split(' ', 1)))
+                model_amount = " ".join(
+                    reversed(Hindi.VIDEO_SUMMARY_AMOUNT_DETAILED.split(" ", 1))
+                )
 
             facts = f"""<b>तथ्य और सेटिंग्स:</b>
 {Hindi.SETTINGS_FOCUS}: {model_focus}
 {Hindi.SETTINGS_FORMAT}: {model_format}
 {Hindi.SETTINGS_AMOUNT}: {model_amount}
-{Hindi.VOICE_MESSAGES}: {'चालू ✅' if model_info.get(UserSettings.TURN_ON_VOICE_MESSAGES, False) else 'बंद ❌'}"""
+{Hindi.VOICE_MESSAGES}: {"चालू ✅" if model_info.get(UserSettings.TURN_ON_VOICE_MESSAGES, False) else "बंद ❌"}"""
         elif model_type == ModelType.IMAGE:
             model_version = get_model_version(model_info)
-            model_version_info = f'\n{Hindi.SETTINGS_VERSION}: {model_version}' if model_version else ''
+            model_version_info = (
+                f"\n{Hindi.SETTINGS_VERSION}: {model_version}" if model_version else ""
+            )
             facts = f"""<b>तथ्य और सेटिंग्स:</b>{model_version_info}
-📷 फोटो के साथ काम: {'हां ✅' if model_info.get('support_photos', False) else 'नहीं ❌'}
-{Hindi.SETTINGS_ASPECT_RATIO}: {'स्वनिर्धारित' if model_info.get(UserSettings.ASPECT_RATIO, AspectRatio.CUSTOM) == AspectRatio.CUSTOM else model_info.get(UserSettings.ASPECT_RATIO)}
-{Hindi.SETTINGS_SEND_TYPE}: {'दस्तावेज़ 📄' if model_info.get(UserSettings.SEND_TYPE, SendType.IMAGE) == SendType.DOCUMENT else 'छवि 🖼'}"""
+📷 फोटो के साथ काम: {"हां ✅" if model_info.get("support_photos", False) else "नहीं ❌"}
+{Hindi.SETTINGS_ASPECT_RATIO}: {"स्वनिर्धारित" if model_info.get(UserSettings.ASPECT_RATIO, AspectRatio.CUSTOM) == AspectRatio.CUSTOM else model_info.get(UserSettings.ASPECT_RATIO)}
+{Hindi.SETTINGS_SEND_TYPE}: {"दस्तावेज़ 📄" if model_info.get(UserSettings.SEND_TYPE, SendType.IMAGE) == SendType.DOCUMENT else "छवि 🖼"}"""
         elif model_type == ModelType.MUSIC:
             model_version = get_model_version(model_info)
-            model_version_info = f'\n{Hindi.SETTINGS_VERSION}: {model_version}' if model_version else ''
+            model_version_info = (
+                f"\n{Hindi.SETTINGS_VERSION}: {model_version}" if model_version else ""
+            )
             facts = f"""<b>तथ्य और सेटिंग्स:</b>{model_version_info}
-{Hindi.SETTINGS_SEND_TYPE}: {'वीडियो 📺' if model_info.get(UserSettings.SEND_TYPE, SendType.AUDIO) == SendType.VIDEO else 'ऑडियो 🎤'}"""
+{Hindi.SETTINGS_SEND_TYPE}: {"वीडियो 📺" if model_info.get(UserSettings.SEND_TYPE, SendType.AUDIO) == SendType.VIDEO else "ऑडियो 🎤"}"""
         elif model_type == ModelType.VIDEO:
             model_version = get_model_version(model_info)
-            model_version_info = f'\n{Hindi.SETTINGS_VERSION}: {model_version}' if model_version else ''
+            model_version_info = (
+                f"\n{Hindi.SETTINGS_VERSION}: {model_version}" if model_version else ""
+            )
             facts = f"""<b>तथ्य और सेटिंग्स:</b>{model_version_info}
-📷 फोटो के साथ काम: {'हां ✅' if model_info.get('support_photos', False) else 'नहीं ❌'}
-{Hindi.SETTINGS_ASPECT_RATIO}: {'स्वनिर्धारित' if model_info.get(UserSettings.ASPECT_RATIO, AspectRatio.CUSTOM) == AspectRatio.CUSTOM else model_info.get(UserSettings.ASPECT_RATIO)}
+📷 फोटो के साथ काम: {"हां ✅" if model_info.get("support_photos", False) else "नहीं ❌"}
+{Hindi.SETTINGS_ASPECT_RATIO}: {"स्वनिर्धारित" if model_info.get(UserSettings.ASPECT_RATIO, AspectRatio.CUSTOM) == AspectRatio.CUSTOM else model_info.get(UserSettings.ASPECT_RATIO)}
 {Hindi.SETTINGS_DURATION}: {model_info.get(UserSettings.DURATION, 5)} सेकंड
-{Hindi.SETTINGS_SEND_TYPE}: {'दस्तावेज़ 📄' if model_info.get(UserSettings.SEND_TYPE, SendType.VIDEO) == SendType.DOCUMENT else 'वीडियो 📺'}"""
+{Hindi.SETTINGS_SEND_TYPE}: {"दस्तावेज़ 📄" if model_info.get(UserSettings.SEND_TYPE, SendType.VIDEO) == SendType.DOCUMENT else "वीडियो 📺"}"""
         else:
-            facts = f"<b>तथ्य और सेटिंग्स:</b> जल्द ही 🔜"
+            facts = "<b>तथ्य और सेटिंग्स:</b> जल्द ही 🔜"
 
         return f"""
 <b>{model_name}</b>
@@ -1654,7 +1722,7 @@ class Hindi(Texts):
 
     @staticmethod
     def model_text_info():
-        return f"""
+        return """
 📕 <b>निर्देश</b>
 
 <b>मेरी क्षमताएँ:</b>
@@ -1675,7 +1743,7 @@ class Hindi(Texts):
 
     @staticmethod
     def model_image_info():
-        return f"""
+        return """
 📕 <b>निर्देश</b>
 
 <b>मेरी क्षमताएँ:</b>
@@ -1696,7 +1764,7 @@ class Hindi(Texts):
 
     @staticmethod
     def model_video_info():
-        return f"""
+        return """
 📕 <b>निर्देश</b>
 
 <b>मेरी क्षमताएँ:</b>
@@ -1859,7 +1927,9 @@ class Hindi(Texts):
 """
 
     @staticmethod
-    def package_info(currency: Currency, cost: str, gift_packages: list[Product]) -> str:
+    def package_info(
+        currency: Currency, cost: str, gift_packages: list[Product]
+    ) -> str:
         if currency == Currency.USD:
             cost = f"{Currency.SYMBOLS[currency]}{cost}"
             gift_packages_sum = f"{Currency.SYMBOLS[currency]}4"
@@ -1874,7 +1944,7 @@ class Hindi(Texts):
         return f"""
 🛍 <b>पैकेज</b>
 
-<b>1 सिक्का 🪙 = {cost}</b>{gift_packages_info if len(gift_packages) > 0 else ''}
+<b>1 सिक्का 🪙 = {cost}</b>{gift_packages_info if len(gift_packages) > 0 else ""}
 
 पैकेज चुनने के लिए, नीचे दिए गए बटन पर क्लिक करें:
 """
@@ -1888,13 +1958,19 @@ class Hindi(Texts):
 """
 
     @staticmethod
-    def package_confirmation(package_name: str, package_quantity: int, currency: Currency, price: str) -> str:
-        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
-        right_price_part = '' if currency == Currency.USD else Currency.SYMBOLS[currency]
+    def package_confirmation(
+        package_name: str, package_quantity: int, currency: Currency, price: str
+    ) -> str:
+        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ""
+        right_price_part = (
+            "" if currency == Currency.USD else Currency.SYMBOLS[currency]
+        )
         return f"आप <b>{package_name}</b> के {package_quantity} पैकेज {left_price_part}{price}{right_price_part} में खरीदने वाले हैं।"
 
     @staticmethod
-    def payment_package_description(user_id: str, package_name: str, package_quantity: int):
+    def payment_package_description(
+        user_id: str, package_name: str, package_quantity: int
+    ):
         return f"उपयोगकर्ता: {user_id} के लिए {package_name} के {package_quantity} पैकेज का भुगतान"
 
     PACKAGES = "🛍 पैकेज"
@@ -1951,8 +2027,10 @@ class Hindi(Texts):
 
     @staticmethod
     def payment_purchase_minimal_price(currency: Currency, current_price: str):
-        left_part_price = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
-        right_part_price = '' if currency == Currency.USD else Currency.SYMBOLS[currency]
+        left_part_price = Currency.SYMBOLS[currency] if currency == Currency.USD else ""
+        right_part_price = (
+            "" if currency == Currency.USD else Currency.SYMBOLS[currency]
+        )
         return f"""
 <b>😕 ओह-ओह...</b>
 
@@ -2021,9 +2099,11 @@ class Hindi(Texts):
         renewal_date,
     ) -> str:
         if subscription_status == SubscriptionStatus.CANCELED:
-            subscription_info = f"📫 <b>सदस्यता की स्थिति:</b> रद्द की गई। {renewal_date} तक सक्रिय"
+            subscription_info = (
+                f"📫 <b>सदस्यता की स्थिति:</b> रद्द की गई। {renewal_date} तक सक्रिय"
+            )
         elif subscription_status == SubscriptionStatus.TRIAL:
-            subscription_info = f"📫 <b>सदस्यता की स्थिति:</b> निःशुल्क परीक्षण अवधि"
+            subscription_info = "📫 <b>सदस्यता की स्थिति:</b> निःशुल्क परीक्षण अवधि"
         else:
             subscription_info = "📫 <b>सदस्यता की स्थिति:</b> सक्रिय"
 
@@ -2035,7 +2115,7 @@ class Hindi(Texts):
 🤖 <b>वर्तमान मॉडल: {current_model}</b>
 
 💳 <b>सदस्यता प्रकार:</b> {subscription_name}
-🗓 <b>सदस्यता नवीनीकरण की तिथि:</b> {f'{renewal_date}' if subscription_name != '🆓' else 'N/A'}
+🗓 <b>सदस्यता नवीनीकरण की तिथि:</b> {f"{renewal_date}" if subscription_name != "🆓" else "N/A"}
 {subscription_info}
 
 ─────────────
@@ -2058,77 +2138,77 @@ class Hindi(Texts):
 
 🔤 <b>पाठ्य मॉडल</b>:
 <b>मूलभूत</b>:
-    ┣ ✉️ ChatGPT 4.0 Omni Mini{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI] > 0 else ''}
-    ┣ 👽 ChatGPT 4.1 Mini{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_4_1_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_4_1_MINI] > 0 else ''}
-    ┣ 📜 Claude 3.5 Haiku{f': अतिरिक्त {additional_usage_quota[Quota.CLAUDE_3_HAIKU]}' if additional_usage_quota[Quota.CLAUDE_3_HAIKU] > 0 else ''}
-    ┣ 🏎 Gemini 2.0 Flash{f': अतिरिक्त {additional_usage_quota[Quota.GEMINI_2_FLASH]}' if additional_usage_quota[Quota.GEMINI_2_FLASH] > 0 else ''}
+    ┣ ✉️ ChatGPT 4.0 Omni Mini{f": अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI]}" if additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI] > 0 else ""}
+    ┣ 👽 ChatGPT 4.1 Mini{f": अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_4_1_MINI]}" if additional_usage_quota[Quota.CHAT_GPT_4_1_MINI] > 0 else ""}
+    ┣ 📜 Claude 3.5 Haiku{f": अतिरिक्त {additional_usage_quota[Quota.CLAUDE_3_HAIKU]}" if additional_usage_quota[Quota.CLAUDE_3_HAIKU] > 0 else ""}
+    ┣ 🏎 Gemini 2.0 Flash{f": अतिरिक्त {additional_usage_quota[Quota.GEMINI_2_FLASH]}" if additional_usage_quota[Quota.GEMINI_2_FLASH] > 0 else ""}
     ┗ दैनिक सीमा: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI_MINI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI_MINI])}
 
 <b>उन्नत</b>:
-    ┣ 💥 ChatGPT 4.0 Omni{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
-    ┣ 🛸 ChatGPT 4.1{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_4_1]}' if additional_usage_quota[Quota.CHAT_GPT_4_1] > 0 else ''}
-    ┣ 🧩 ChatGPT o4-mini{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ''}
-    ┣ 💫 Claude 3.7 Sonnet{f': अतिरिक्त {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
-    ┣ 💼 Gemini 2.5 Pro{f': अतिरिक्त {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
-    ┣ 🐦 Grok 2.0{f': अतिरिक्त {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
-    ┣ 🌐 Perplexity{f': अतिरिक्त {additional_usage_quota[Quota.PERPLEXITY]}' if additional_usage_quota[Quota.PERPLEXITY] > 0 else ''}
+    ┣ 💥 ChatGPT 4.0 Omni{f": अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}" if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ""}
+    ┣ 🛸 ChatGPT 4.1{f": अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_4_1]}" if additional_usage_quota[Quota.CHAT_GPT_4_1] > 0 else ""}
+    ┣ 🧩 ChatGPT o4-mini{f": अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}" if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ""}
+    ┣ 💫 Claude 3.7 Sonnet{f": अतिरिक्त {additional_usage_quota[Quota.CLAUDE_3_SONNET]}" if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ""}
+    ┣ 💼 Gemini 2.5 Pro{f": अतिरिक्त {additional_usage_quota[Quota.GEMINI_2_PRO]}" if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ""}
+    ┣ 🐦 Grok 2.0{f": अतिरिक्त {additional_usage_quota[Quota.GROK_2]}" if additional_usage_quota[Quota.GROK_2] > 0 else ""}
+    ┣ 🌐 Perplexity{f": अतिरिक्त {additional_usage_quota[Quota.PERPLEXITY]}" if additional_usage_quota[Quota.PERPLEXITY] > 0 else ""}
     ┗ दैनिक सीमा: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}
 
 <b>फ्लैगशिप</b>:
-    ┣ 🧪 ChatGPT o3{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_O_3]}' if additional_usage_quota[Quota.CHAT_GPT_O_3] > 0 else ''}
-    ┣ 🚀 Claude 3.0 Opus{f': अतिरिक्त {additional_usage_quota[Quota.CLAUDE_3_OPUS]}' if additional_usage_quota[Quota.CLAUDE_3_OPUS] > 0 else ''}
-    ┣ 🛡️ Gemini 1.0 Ultra{f': अतिरिक्त {additional_usage_quota[Quota.GEMINI_1_ULTRA]}' if additional_usage_quota[Quota.GEMINI_1_ULTRA] > 0 else ''}
+    ┣ 🧪 ChatGPT o3{f": अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_O_3]}" if additional_usage_quota[Quota.CHAT_GPT_O_3] > 0 else ""}
+    ┣ 🚀 Claude 3.0 Opus{f": अतिरिक्त {additional_usage_quota[Quota.CLAUDE_3_OPUS]}" if additional_usage_quota[Quota.CLAUDE_3_OPUS] > 0 else ""}
+    ┣ 🛡️ Gemini 1.0 Ultra{f": अतिरिक्त {additional_usage_quota[Quota.GEMINI_1_ULTRA]}" if additional_usage_quota[Quota.GEMINI_1_ULTRA] > 0 else ""}
     ┗ दैनिक सीमा: {format_number(daily_limits[Quota.CHAT_GPT_O_3])}/{format_number(subscription_limits[Quota.CHAT_GPT_O_3])}
 
 ─────────────
 
 📝 <b>सारांश मॉडल</b>:
-    ┣ 👀 YouTube{f': अतिरिक्त {additional_usage_quota[Quota.EIGHTIFY]}' if additional_usage_quota[Quota.EIGHTIFY] > 0 else ''}
-    ┣ 📼 वीडियो{f': अतिरिक्त {additional_usage_quota[Quota.GEMINI_VIDEO]}' if additional_usage_quota[Quota.GEMINI_VIDEO] > 0 else ''}
+    ┣ 👀 YouTube{f": अतिरिक्त {additional_usage_quota[Quota.EIGHTIFY]}" if additional_usage_quota[Quota.EIGHTIFY] > 0 else ""}
+    ┣ 📼 वीडियो{f": अतिरिक्त {additional_usage_quota[Quota.GEMINI_VIDEO]}" if additional_usage_quota[Quota.GEMINI_VIDEO] > 0 else ""}
     ┗ दैनिक सीमा: {format_number(daily_limits[Quota.EIGHTIFY])}/{format_number(subscription_limits[Quota.EIGHTIFY])}
 
 ─────────────
 
 🖼 <b>ग्राफिक मॉडल</b>:
 <b>मूलभूत</b>:
-    ┣ 🦄 Stable Diffusion XL{f': доп. {additional_usage_quota[Quota.STABLE_DIFFUSION_XL]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_XL] > 0 else ''}
-    ┣ 🌲 Flux 1.0 Dev{f': доп. {additional_usage_quota[Quota.FLUX_1_DEV]}' if additional_usage_quota[Quota.FLUX_1_DEV] > 0 else ''}
-    ┣ 🌌 Luma Photon{f': доп. {additional_usage_quota[Quota.LUMA_PHOTON]}' if additional_usage_quota[Quota.LUMA_PHOTON] > 0 else ''}
+    ┣ 🦄 Stable Diffusion XL{f": доп. {additional_usage_quota[Quota.STABLE_DIFFUSION_XL]}" if additional_usage_quota[Quota.STABLE_DIFFUSION_XL] > 0 else ""}
+    ┣ 🌲 Flux 1.0 Dev{f": доп. {additional_usage_quota[Quota.FLUX_1_DEV]}" if additional_usage_quota[Quota.FLUX_1_DEV] > 0 else ""}
+    ┣ 🌌 Luma Photon{f": доп. {additional_usage_quota[Quota.LUMA_PHOTON]}" if additional_usage_quota[Quota.LUMA_PHOTON] > 0 else ""}
     ┗ दैनिक सीमा: {format_number(daily_limits[Quota.STABLE_DIFFUSION_XL])}/{format_number(subscription_limits[Quota.STABLE_DIFFUSION_XL])}
 
 <b>उन्नत</b>:
-    ┣ 👨‍🎨 DALL-E 3{f': अतिरिक्त {additional_usage_quota[Quota.DALL_E]}' if additional_usage_quota[Quota.DALL_E] > 0 else ''}
-    ┣ 🎨 Midjourney 7{f': अतिरिक्त {additional_usage_quota[Quota.MIDJOURNEY]}' if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ''}
-    ┣ 🧑‍🚀 Stable Diffusion 3.5{f': अतिरिक्त {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ''}
-    ┣ 🏔 Flux 1.1 Pro{f': अतिरिक्त {additional_usage_quota[Quota.FLUX_1_PRO]}' if additional_usage_quota[Quota.FLUX_1_PRO] > 0 else ''}
-    ┣ 🐼 Recraft 3{f': अतिरिक्त {additional_usage_quota[Quota.RECRAFT]}' if additional_usage_quota[Quota.RECRAFT] > 0 else ''}
-    ┣ 🌌 Luma Photon{f': अतिरिक्त {additional_usage_quota[Quota.LUMA_PHOTON]}' if additional_usage_quota[Quota.LUMA_PHOTON] > 0 else ''}
-    ┣ 📷 FaceSwap{f': अतिरिक्त {additional_usage_quota[Quota.FACE_SWAP]}' if additional_usage_quota[Quota.FACE_SWAP] > 0 else ''}
-    ┣ 🪄 Photoshop AI{f': अतिरिक्त {additional_usage_quota[Quota.PHOTOSHOP_AI]}' if additional_usage_quota[Quota.PHOTOSHOP_AI] > 0 else ''}
+    ┣ 👨‍🎨 DALL-E 3{f": अतिरिक्त {additional_usage_quota[Quota.DALL_E]}" if additional_usage_quota[Quota.DALL_E] > 0 else ""}
+    ┣ 🎨 Midjourney 7{f": अतिरिक्त {additional_usage_quota[Quota.MIDJOURNEY]}" if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ""}
+    ┣ 🧑‍🚀 Stable Diffusion 3.5{f": अतिरिक्त {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}" if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ""}
+    ┣ 🏔 Flux 1.1 Pro{f": अतिरिक्त {additional_usage_quota[Quota.FLUX_1_PRO]}" if additional_usage_quota[Quota.FLUX_1_PRO] > 0 else ""}
+    ┣ 🐼 Recraft 3{f": अतिरिक्त {additional_usage_quota[Quota.RECRAFT]}" if additional_usage_quota[Quota.RECRAFT] > 0 else ""}
+    ┣ 🌌 Luma Photon{f": अतिरिक्त {additional_usage_quota[Quota.LUMA_PHOTON]}" if additional_usage_quota[Quota.LUMA_PHOTON] > 0 else ""}
+    ┣ 📷 FaceSwap{f": अतिरिक्त {additional_usage_quota[Quota.FACE_SWAP]}" if additional_usage_quota[Quota.FACE_SWAP] > 0 else ""}
+    ┣ 🪄 Photoshop AI{f": अतिरिक्त {additional_usage_quota[Quota.PHOTOSHOP_AI]}" if additional_usage_quota[Quota.PHOTOSHOP_AI] > 0 else ""}
     ┗ दैनिक सीमा: {format_number(daily_limits[Quota.DALL_E])}/{format_number(subscription_limits[Quota.DALL_E])}
 
 ─────────────
 
 🎵 <b>संगीत मॉडल</b>:
-    ┣ 🎺 MusicGen{f': अतिरिक्त {additional_usage_quota[Quota.MUSIC_GEN]}' if additional_usage_quota[Quota.MUSIC_GEN] > 0 else ''}
-    ┣ 🎸 Suno{f': अतिरिक्त {additional_usage_quota[Quota.SUNO]}' if additional_usage_quota[Quota.SUNO] > 0 else ''}
+    ┣ 🎺 MusicGen{f": अतिरिक्त {additional_usage_quota[Quota.MUSIC_GEN]}" if additional_usage_quota[Quota.MUSIC_GEN] > 0 else ""}
+    ┣ 🎸 Suno{f": अतिरिक्त {additional_usage_quota[Quota.SUNO]}" if additional_usage_quota[Quota.SUNO] > 0 else ""}
     ┗ दैनिक सीमा: {format_number(daily_limits[Quota.SUNO])}/{format_number(subscription_limits[Quota.SUNO])}
 
 ─────────────
 
 📹 <b>वीडियो मॉडल</b>:
-    ┣ 🎬 Kling{f': अतिरिक्त {additional_usage_quota[Quota.KLING]}' if additional_usage_quota[Quota.KLING] > 0 else ''}
-    ┣ 🎥 Runway{f': अतिरिक्त {additional_usage_quota[Quota.RUNWAY]}' if additional_usage_quota[Quota.RUNWAY] > 0 else ''}
-    ┣ 🔆 Luma Ray{f': अतिरिक्त {additional_usage_quota[Quota.LUMA_RAY]}' if additional_usage_quota[Quota.LUMA_RAY] > 0 else ''}
-    ┣ 🐇 Pika{f': अतिरिक्त {additional_usage_quota[Quota.PIKA]}' if additional_usage_quota[Quota.PIKA] > 0 else ''}
+    ┣ 🎬 Kling{f": अतिरिक्त {additional_usage_quota[Quota.KLING]}" if additional_usage_quota[Quota.KLING] > 0 else ""}
+    ┣ 🎥 Runway{f": अतिरिक्त {additional_usage_quota[Quota.RUNWAY]}" if additional_usage_quota[Quota.RUNWAY] > 0 else ""}
+    ┣ 🔆 Luma Ray{f": अतिरिक्त {additional_usage_quota[Quota.LUMA_RAY]}" if additional_usage_quota[Quota.LUMA_RAY] > 0 else ""}
+    ┣ 🐇 Pika{f": अतिरिक्त {additional_usage_quota[Quota.PIKA]}" if additional_usage_quota[Quota.PIKA] > 0 else ""}
     ┗ दैनिक सीमा: {format_number(daily_limits[Quota.KLING])}/{format_number(subscription_limits[Quota.KLING])}
 
 ─────────────
 
-📷 <b>फोटो/दस्तावेज़ के साथ काम</b>: {'✅' if daily_limits[Quota.WORK_WITH_FILES] or additional_usage_quota[Quota.WORK_WITH_FILES] else '❌'}
-🎭 <b>डिजिटल कर्मचारी कैटलॉग तक पहुंच</b>: {'✅' if daily_limits[Quota.ACCESS_TO_CATALOG] or additional_usage_quota[Quota.ACCESS_TO_CATALOG] else '❌'}
-🎙 <b>वॉयस मैसेज</b>: {'✅' if daily_limits[Quota.VOICE_MESSAGES] or additional_usage_quota[Quota.VOICE_MESSAGES] else '❌'}
-⚡ <b>फास्ट मैसेज</b>: {'✅' if daily_limits[Quota.FAST_MESSAGES] or additional_usage_quota[Quota.FAST_MESSAGES] else '❌'}
+📷 <b>फोटो/दस्तावेज़ के साथ काम</b>: {"✅" if daily_limits[Quota.WORK_WITH_FILES] or additional_usage_quota[Quota.WORK_WITH_FILES] else "❌"}
+🎭 <b>डिजिटल कर्मचारी कैटलॉग तक पहुंच</b>: {"✅" if daily_limits[Quota.ACCESS_TO_CATALOG] or additional_usage_quota[Quota.ACCESS_TO_CATALOG] else "❌"}
+🎙 <b>वॉयस मैसेज</b>: {"✅" if daily_limits[Quota.VOICE_MESSAGES] or additional_usage_quota[Quota.VOICE_MESSAGES] else "❌"}
+⚡ <b>फास्ट मैसेज</b>: {"✅" if daily_limits[Quota.FAST_MESSAGES] or additional_usage_quota[Quota.FAST_MESSAGES] else "❌"}
 
 ─────────────
 
@@ -2165,7 +2245,9 @@ class Hindi(Texts):
     PROFILE_RENEW_SUBSCRIPTION = "♻️ सदस्यता नवीनीकरण करें"
     PROFILE_RENEW_SUBSCRIPTION_SUCCESS = "✅ सदस्यता का नवीनीकरण सफल रहा"
     PROFILE_CANCEL_SUBSCRIPTION = "❌ सदस्यता रद्द करें"
-    PROFILE_CANCEL_SUBSCRIPTION_CONFIRMATION = "❗ क्या आप वाकई अपनी सदस्यता रद्द करना चाहते हैं?"
+    PROFILE_CANCEL_SUBSCRIPTION_CONFIRMATION = (
+        "❗ क्या आप वाकई अपनी सदस्यता रद्द करना चाहते हैं?"
+    )
     PROFILE_CANCEL_SUBSCRIPTION_SUCCESS = "💸 सदस्यता रद्द करना सफल रहा"
     PROFILE_NO_ACTIVE_SUBSCRIPTION = "💸 आपके पास कोई सक्रिय सदस्यता नहीं है"
 
@@ -2214,9 +2296,17 @@ class Hindi(Texts):
     @staticmethod
     def settings_info(human_model: str, current_model: Model, generation_cost=1) -> str:
         if current_model == Model.DALL_E or current_model == Model.MIDJOURNEY:
-            additional_text = f"\nवर्तमान सेटिंग्स पर 1 अनुरोध की कीमत है: {generation_cost} 🖼"
-        elif current_model == Model.KLING or current_model == Model.RUNWAY or current_model == Model.LUMA_RAY:
-            additional_text = f"\nवर्तमान सेटिंग्स पर 1 अनुरोध की कीमत है: {generation_cost} 📹"
+            additional_text = (
+                f"\nवर्तमान सेटिंग्स पर 1 अनुरोध की कीमत है: {generation_cost} 🖼"
+            )
+        elif (
+            current_model == Model.KLING
+            or current_model == Model.RUNWAY
+            or current_model == Model.LUMA_RAY
+        ):
+            additional_text = (
+                f"\nवर्तमान सेटिंग्स पर 1 अनुरोध की कीमत है: {generation_cost} 📹"
+            )
         else:
             additional_text = ""
 
@@ -2289,19 +2379,26 @@ class Hindi(Texts):
     SHOPPING_CART_CLEAR = "🗑 कार्ट साफ करें"
 
     @staticmethod
-    async def shopping_cart_info(currency: Currency, cart_items: list[dict], discount: int):
+    async def shopping_cart_info(
+        currency: Currency, cart_items: list[dict], discount: int
+    ):
         text = ""
         total_sum = 0
-        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
-        right_price_part = '' if currency == Currency.USD else Currency.SYMBOLS[currency]
+        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ""
+        right_price_part = (
+            "" if currency == Currency.USD else Currency.SYMBOLS[currency]
+        )
 
         for index, cart_item in enumerate(cart_items):
-            product_id, product_quantity = cart_item.get("product_id", ''), cart_item.get("quantity", 0)
+            product_id, product_quantity = (
+                cart_item.get("product_id", ""),
+                cart_item.get("quantity", 0),
+            )
 
             product = await get_product(product_id)
 
             is_last = index == len(cart_items) - 1
-            right_part = '\n' if not is_last else ''
+            right_part = "\n" if not is_last else ""
             price = Product.get_discount_price(
                 ProductType.PACKAGE,
                 product_quantity,
@@ -2324,10 +2421,15 @@ class Hindi(Texts):
 """
 
     @staticmethod
-    async def shopping_cart_confirmation(cart_items: list[dict], currency: Currency, price: float) -> str:
+    async def shopping_cart_confirmation(
+        cart_items: list[dict], currency: Currency, price: float
+    ) -> str:
         text = ""
         for index, cart_item in enumerate(cart_items):
-            product_id, product_quantity = cart_item.get("product_id", ''), cart_item.get("quantity", 0)
+            product_id, product_quantity = (
+                cart_item.get("product_id", ""),
+                cart_item.get("quantity", 0),
+            )
 
             product = await get_product(product_id)
 
@@ -2489,24 +2591,34 @@ class Hindi(Texts):
         user_discount: int,
         is_trial=False,
     ) -> str:
-        text_subscriptions = ''
+        text_subscriptions = ""
         for subscription in subscriptions:
             subscription_name = subscription.names.get(LanguageCode.HI)
             subscription_price = subscription.prices.get(currency)
-            subscription_has_trial = is_trial and subscription.details.get('has_trial', False)
+            subscription_has_trial = is_trial and subscription.details.get(
+                "has_trial", False
+            )
 
-            left_part_price = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
-            right_part_price = Currency.SYMBOLS[currency] if currency != Currency.USD else ''
+            left_part_price = (
+                Currency.SYMBOLS[currency] if currency == Currency.USD else ""
+            )
+            right_part_price = (
+                Currency.SYMBOLS[currency] if currency != Currency.USD else ""
+            )
             if subscription_name and subscription_price:
-                is_trial_info = ''
+                is_trial_info = ""
 
                 if subscription_has_trial and currency == Currency.RUB:
-                    is_trial_info = 'पहले 3 दिन 1₽, फिर '
+                    is_trial_info = "पहले 3 दिन 1₽, फिर "
                 elif subscription_has_trial and currency == Currency.USD:
-                    is_trial_info = 'पहले 3 दिन मुफ्त, फिर '
+                    is_trial_info = "पहले 3 दिन मुफ्त, फिर "
 
-                text_subscriptions += f'<b>{subscription_name}</b>: '
-                per_period = 'प्रति महीना' if subscription.category == ProductCategory.MONTHLY else 'प्रति वर्ष'
+                text_subscriptions += f"<b>{subscription_name}</b>: "
+                per_period = (
+                    "प्रति महीना"
+                    if subscription.category == ProductCategory.MONTHLY
+                    else "प्रति वर्ष"
+                )
 
                 discount = get_user_discount(user_discount, 0, subscription.discount)
                 if discount:
@@ -2517,9 +2629,9 @@ class Hindi(Texts):
                         currency,
                         discount,
                     )
-                    text_subscriptions += f'{is_trial_info}<s>{left_part_price}{subscription_price}{right_part_price}</s> {left_part_price}{discount_price}{right_part_price} {per_period}\n'
+                    text_subscriptions += f"{is_trial_info}<s>{left_part_price}{subscription_price}{right_part_price}</s> {left_part_price}{discount_price}{right_part_price} {per_period}\n"
                 else:
-                    text_subscriptions += f'{is_trial_info}{left_part_price}{subscription_price}{right_part_price} {per_period}\n'
+                    text_subscriptions += f"{is_trial_info}{left_part_price}{subscription_price}{right_part_price} {per_period}\n"
 
         return f"""
 💳 <b>सदस्यताएँ</b>
@@ -2536,13 +2648,15 @@ class Hindi(Texts):
         price: Union[str, int, float],
         is_trial: bool,
     ) -> str:
-        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ''
-        right_price_part = '' if currency == Currency.USD else Currency.SYMBOLS[currency]
-        period = 'महीना' if category == ProductCategory.MONTHLY else 'वर्ष'
+        left_price_part = Currency.SYMBOLS[currency] if currency == Currency.USD else ""
+        right_price_part = (
+            "" if currency == Currency.USD else Currency.SYMBOLS[currency]
+        )
+        period = "महीना" if category == ProductCategory.MONTHLY else "वर्ष"
 
-        trial_info = ''
+        trial_info = ""
         if is_trial:
-            trial_info = ' पहले 3 दिन के परीक्षण अवधि के साथ'
+            trial_info = " पहले 3 दिन के परीक्षण अवधि के साथ"
 
         return f"""
 आप {name} सदस्यता को {left_price_part}{price}{right_price_part}/{period}{trial_info} में सक्रिय करने जा रहे हैं।

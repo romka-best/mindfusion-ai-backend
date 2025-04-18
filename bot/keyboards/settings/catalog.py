@@ -1,6 +1,6 @@
 from typing import Optional
 
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CopyTextButton
+from aiogram.types import CopyTextButton, InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.database.models.common import Model, ModelType
 from bot.database.models.prompt import Prompt, PromptCategory, PromptSubCategory
@@ -14,12 +14,12 @@ def build_catalog_keyboard(language_code: LanguageCode):
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).CATALOG_DIGITAL_EMPLOYEES,
-                callback_data=f'catalog:digital_employees'
+                callback_data="catalog:digital_employees",
             ),
             InlineKeyboardButton(
                 text=get_localization(language_code).CATALOG_PROMPTS,
-                callback_data=f'catalog:prompts'
-            )
+                callback_data="catalog:prompts",
+            ),
         ],
     ]
 
@@ -38,19 +38,22 @@ def build_catalog_digital_employees_keyboard(
         buttons.append(
             [
                 InlineKeyboardButton(
-                    text=role.translated_names.get(language_code) + (
-                        ' ✅' if current_role_id == role.id else ''
-                    ),
-                    callback_data=f'catalog_digital_employees:{role.id}'
+                    text=role.translated_names.get(language_code)
+                    + (" ✅" if current_role_id == role.id else ""),
+                    callback_data=f"catalog_digital_employees:{role.id}",
                 )
             ],
         )
-    buttons.append([
-        InlineKeyboardButton(
-            text=get_localization(language_code).ACTION_BACK,
-            callback_data=f'catalog_digital_employees:back:{from_settings}:{model}' if model else f'catalog_digital_employees:back:{from_settings}'
-        )
-    ])
+    buttons.append(
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).ACTION_BACK,
+                callback_data=f"catalog_digital_employees:back:{from_settings}:{model}"
+                if model
+                else f"catalog_digital_employees:back:{from_settings}",
+            )
+        ]
+    )
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -62,25 +65,25 @@ def build_catalog_prompts_model_type_keyboard(
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).MODELS_TEXT,
-                callback_data=f'catalog_prompts_model_type:{ModelType.TEXT}'
+                callback_data=f"catalog_prompts_model_type:{ModelType.TEXT}",
             ),
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).MODELS_IMAGE,
-                callback_data=f'catalog_prompts_model_type:{ModelType.IMAGE}'
+                callback_data=f"catalog_prompts_model_type:{ModelType.IMAGE}",
             ),
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).MODELS_MUSIC,
-                callback_data=f'catalog_prompts_model_type:{ModelType.MUSIC}'
+                callback_data=f"catalog_prompts_model_type:{ModelType.MUSIC}",
             ),
         ],
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).ACTION_BACK,
-                callback_data=f'catalog_prompts_model_type:back'
+                callback_data="catalog_prompts_model_type:back",
             )
         ],
     ]
@@ -99,25 +102,29 @@ def build_catalog_prompt_categories_keyboard(
             [
                 InlineKeyboardButton(
                     text=category.names.get(language_code),
-                    callback_data=f'catalog_prompt_category:{category.id}'
+                    callback_data=f"catalog_prompt_category:{category.id}",
                 )
             ],
         )
 
     if has_close_button:
-        buttons.append([
-            InlineKeyboardButton(
-                text=get_localization(language_code).ACTION_CLOSE,
-                callback_data=f'catalog_prompt_category:close'
-            )
-        ])
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).ACTION_CLOSE,
+                    callback_data="catalog_prompt_category:close",
+                )
+            ]
+        )
     else:
-        buttons.append([
-            InlineKeyboardButton(
-                text=get_localization(language_code).ACTION_BACK,
-                callback_data=f'catalog_prompt_category:back'
-            )
-        ])
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).ACTION_BACK,
+                    callback_data="catalog_prompt_category:back",
+                )
+            ]
+        )
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -132,16 +139,18 @@ def build_catalog_prompt_subcategories_keyboard(
             [
                 InlineKeyboardButton(
                     text=subcategory.names.get(language_code),
-                    callback_data=f'catalog_prompt_subcategory:{subcategory.id}'
+                    callback_data=f"catalog_prompt_subcategory:{subcategory.id}",
                 )
             ],
         )
-    buttons.append([
-        InlineKeyboardButton(
-            text=get_localization(language_code).ACTION_BACK,
-            callback_data=f'catalog_prompt_subcategory:back'
-        )
-    ])
+    buttons.append(
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).ACTION_BACK,
+                callback_data="catalog_prompt_subcategory:back",
+            )
+        ]
+    )
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -153,11 +162,10 @@ def build_prompts_catalog_keyboard(
     buttons = []
     buttons_row = []
     for index, prompt in enumerate(prompts):
-        emoji_number = ''.join(f'{digit}\uFE0F\u20E3' for digit in str(index + 1))
+        emoji_number = "".join(f"{digit}\ufe0f\u20e3" for digit in str(index + 1))
         buttons_row.append(
             InlineKeyboardButton(
-                text=emoji_number,
-                callback_data=f'catalog_prompt:{prompt.id}'
+                text=emoji_number, callback_data=f"catalog_prompt:{prompt.id}"
             )
         )
 
@@ -168,12 +176,14 @@ def build_prompts_catalog_keyboard(
     if buttons_row:
         buttons.append(buttons_row)
 
-    buttons.append([
-        InlineKeyboardButton(
-            text=get_localization(language_code).ACTION_BACK,
-            callback_data=f'catalog_prompt:back'
-        )
-    ])
+    buttons.append(
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).ACTION_BACK,
+                callback_data="catalog_prompt:back",
+            )
+        ]
+    )
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -185,33 +195,45 @@ def build_prompts_catalog_chosen_keyboard(
     buttons = []
 
     if prompt.short_prompts.get(language_code):
-        buttons.append([
-            InlineKeyboardButton(
-                text=get_localization(language_code).CATALOG_PROMPTS_GET_SHORT_PROMPT,
-                callback_data=f'catalog_prompt_chosen:short:{prompt.id}'
-            )
-        ])
-    if prompt.long_prompts.get(language_code):
-        buttons.append([
-            InlineKeyboardButton(
-                text=get_localization(language_code).CATALOG_PROMPTS_GET_LONG_PROMPT,
-                callback_data=f'catalog_prompt_chosen:long:{prompt.id}'
-            )
-        ])
-    if prompt.has_examples:
-        buttons.append([
-            InlineKeyboardButton(
-                text=get_localization(language_code).CATALOG_PROMPTS_GET_EXAMPLES,
-                callback_data=f'catalog_prompt_chosen:examples:{prompt.id}'
-            )
-        ])
-
-    buttons.append([
-        InlineKeyboardButton(
-            text=get_localization(language_code).ACTION_BACK,
-            callback_data=f'catalog_prompt_chosen:back'
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text=get_localization(
+                        language_code
+                    ).CATALOG_PROMPTS_GET_SHORT_PROMPT,
+                    callback_data=f"catalog_prompt_chosen:short:{prompt.id}",
+                )
+            ]
         )
-    ])
+    if prompt.long_prompts.get(language_code):
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text=get_localization(
+                        language_code
+                    ).CATALOG_PROMPTS_GET_LONG_PROMPT,
+                    callback_data=f"catalog_prompt_chosen:long:{prompt.id}",
+                )
+            ]
+        )
+    if prompt.has_examples:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).CATALOG_PROMPTS_GET_EXAMPLES,
+                    callback_data=f"catalog_prompt_chosen:examples:{prompt.id}",
+                )
+            ]
+        )
+
+    buttons.append(
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).ACTION_BACK,
+                callback_data="catalog_prompt_chosen:back",
+            )
+        ]
+    )
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -223,20 +245,24 @@ def build_prompts_catalog_copy_keyboard(
     buttons = []
 
     if len(prompt_text) < 256:
-        buttons.append([
-            InlineKeyboardButton(
-                text=get_localization(language_code).CATALOG_PROMPTS_COPY,
-                copy_text=CopyTextButton(
-                    text=prompt_text,
-                ),
-            )
-        ])
-
-    buttons.append([
-        InlineKeyboardButton(
-            text=get_localization(language_code).ACTION_BACK,
-            callback_data=f'catalog_prompt_info_chosen:back'
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).CATALOG_PROMPTS_COPY,
+                    copy_text=CopyTextButton(
+                        text=prompt_text,
+                    ),
+                )
+            ]
         )
-    ])
+
+    buttons.append(
+        [
+            InlineKeyboardButton(
+                text=get_localization(language_code).ACTION_BACK,
+                callback_data="catalog_prompt_info_chosen:back",
+            )
+        ]
+    )
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)

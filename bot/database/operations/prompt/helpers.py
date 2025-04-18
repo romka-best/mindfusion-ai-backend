@@ -28,7 +28,9 @@ async def create_prompt_category_object(
     model_type: ModelType,
     names: dict[LanguageCode, str],
 ) -> PromptCategory:
-    prompt_category_ref = firebase.db.collection(PromptCategory.COLLECTION_NAME).document()
+    prompt_category_ref = firebase.db.collection(
+        PromptCategory.COLLECTION_NAME
+    ).document()
     return PromptCategory(
         id=prompt_category_ref.id,
         type=model_type,
@@ -40,7 +42,9 @@ async def create_prompt_subcategory_object(
     category_ids: list[str],
     names: dict[LanguageCode, str],
 ) -> PromptSubCategory:
-    prompt_subcategory_ref = firebase.db.collection(PromptSubCategory.COLLECTION_NAME).document()
+    prompt_subcategory_ref = firebase.db.collection(
+        PromptSubCategory.COLLECTION_NAME
+    ).document()
     return PromptSubCategory(
         id=prompt_subcategory_ref.id,
         category_ids=category_ids,

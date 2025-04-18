@@ -33,6 +33,10 @@ async def write_package(
         provider_payment_charge_id,
         until_at,
     )
-    await firebase.db.collection(Package.COLLECTION_NAME).document(package.id).set(package.to_dict())
+    await (
+        firebase.db.collection(Package.COLLECTION_NAME)
+        .document(package.id)
+        .set(package.to_dict())
+    )
 
     return package

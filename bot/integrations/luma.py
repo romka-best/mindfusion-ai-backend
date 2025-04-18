@@ -1,14 +1,14 @@
 from typing import Optional
 
-from lumaai import AsyncLumaAI, NOT_GIVEN
+from lumaai import NOT_GIVEN, AsyncLumaAI
 
 from bot.config import config
 from bot.database.models.common import (
     AspectRatio,
     LumaPhotonVersion,
-    LumaRayVersion,
     LumaRayDuration,
     LumaRayQuality,
+    LumaRayVersion,
 )
 
 WEBHOOK_LUMA_URL = config.WEBHOOK_URL + config.WEBHOOK_LUMA_PATH
@@ -37,9 +37,11 @@ async def get_response_image(
         prompt=prompt_text,
         aspect_ratio=aspect_ratio,
         callback_url=WEBHOOK_LUMA_URL,
-        modify_image_ref=NOT_GIVEN if not prompt_image else {
-            'url': prompt_image,
-            'weight': 0.5,
+        modify_image_ref=NOT_GIVEN
+        if not prompt_image
+        else {
+            "url": prompt_image,
+            "weight": 0.5,
         },
     )
 
@@ -58,13 +60,15 @@ async def get_response_video(
         prompt=prompt_text,
         model=version,
         resolution=quality,
-        duration=f'{duration}s',
+        duration=f"{duration}s",
         aspect_ratio=aspect_ratio,
         callback_url=WEBHOOK_LUMA_URL,
-        keyframes=NOT_GIVEN if not prompt_image else {
-            'frame0': {
-                'type': 'image',
-                'url': prompt_image,
+        keyframes=NOT_GIVEN
+        if not prompt_image
+        else {
+            "frame0": {
+                "type": "image",
+                "url": prompt_image,
             }
         },
     )

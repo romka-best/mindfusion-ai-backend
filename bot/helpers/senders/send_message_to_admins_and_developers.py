@@ -3,7 +3,12 @@ import logging
 import traceback
 
 from aiogram import Bot
-from aiogram.exceptions import TelegramRetryAfter, TelegramBadRequest, TelegramForbiddenError, TelegramNetworkError
+from aiogram.exceptions import (
+    TelegramBadRequest,
+    TelegramForbiddenError,
+    TelegramNetworkError,
+    TelegramRetryAfter,
+)
 from aiohttp import ClientOSError
 from redis.exceptions import ConnectionError
 
@@ -29,19 +34,35 @@ async def delayed_send_message_to_admins_and_developers(
         logging.error(error)
     except TelegramRetryAfter as e:
         asyncio.create_task(
-            delayed_send_message_to_admins_and_developers(bot, chat_id, text, parse_mode, e.retry_after + 30)
+            delayed_send_message_to_admins_and_developers(
+                bot, chat_id, text, parse_mode, e.retry_after + 30
+            )
         )
-    except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramNetworkError):
+    except (
+        ConnectionResetError,
+        OSError,
+        ClientOSError,
+        ConnectionError,
+        TelegramNetworkError,
+    ):
         asyncio.create_task(
-            delayed_send_message_to_admins_and_developers(bot, chat_id, text, parse_mode, 60)
+            delayed_send_message_to_admins_and_developers(
+                bot, chat_id, text, parse_mode, 60
+            )
         )
     except Exception:
         error_trace = traceback.format_exc()
-        logging.exception(f'Error in delayed_send_message_to_admins_and_developers: {error_trace}')
+        logging.exception(
+            f"Error in delayed_send_message_to_admins_and_developers: {error_trace}"
+        )
 
 
-async def send_message_to_admins_and_developers(bot: Bot, message: str, parse_mode='HTML'):
-    for chat_id in list(set(id for ids in [config.ADMIN_IDS, config.DEVELOPER_IDS] for id in ids)):
+async def send_message_to_admins_and_developers(
+    bot: Bot, message: str, parse_mode="HTML"
+):
+    for chat_id in {
+        id_ for ids in [config.ADMIN_IDS, config.DEVELOPER_IDS] for id_ in ids
+    }:
         try:
             await bot.send_message(
                 chat_id=chat_id,
@@ -52,12 +73,24 @@ async def send_message_to_admins_and_developers(bot: Bot, message: str, parse_mo
             logging.error(error)
         except TelegramRetryAfter as e:
             asyncio.create_task(
-                delayed_send_message_to_admins_and_developers(bot, chat_id, message, parse_mode, e.retry_after + 30)
+                delayed_send_message_to_admins_and_developers(
+                    bot, chat_id, message, parse_mode, e.retry_after + 30
+                )
             )
-        except (ConnectionResetError, OSError, ClientOSError, ConnectionError, TelegramNetworkError):
+        except (
+            ConnectionResetError,
+            OSError,
+            ClientOSError,
+            ConnectionError,
+            TelegramNetworkError,
+        ):
             asyncio.create_task(
-                delayed_send_message_to_admins_and_developers(bot, chat_id, message, parse_mode, 60)
+                delayed_send_message_to_admins_and_developers(
+                    bot, chat_id, message, parse_mode, 60
+                )
             )
         except Exception:
             error_trace = traceback.format_exc()
-            logging.exception(f'Error in send_message_to_admins_and_developers: {error_trace}')
+            logging.exception(
+                f"Error in send_message_to_admins_and_developers: {error_trace}"
+            )

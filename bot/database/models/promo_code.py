@@ -3,13 +3,13 @@ from enum import StrEnum
 
 
 class PromoCodeType(StrEnum):
-    SUBSCRIPTION = 'SUBSCRIPTION'
-    PACKAGE = 'PACKAGE'
-    DISCOUNT = 'DISCOUNT'
+    SUBSCRIPTION = "SUBSCRIPTION"
+    PACKAGE = "PACKAGE"
+    DISCOUNT = "DISCOUNT"
 
 
 class PromoCode:
-    COLLECTION_NAME = 'promo_codes'
+    COLLECTION_NAME = "promo_codes"
 
     id: str
     created_by_user_id: str
@@ -48,7 +48,7 @@ class PromoCode:
 
 
 class UsedPromoCode:
-    COLLECTION_NAME = 'used_promo_codes'
+    COLLECTION_NAME = "used_promo_codes"
 
     id: str
     user_id: str

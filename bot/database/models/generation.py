@@ -3,18 +3,18 @@ from enum import StrEnum
 
 
 class GenerationStatus(StrEnum):
-    STARTED = 'STARTED'
-    FINISHED = 'FINISHED'
+    STARTED = "STARTED"
+    FINISHED = "FINISHED"
 
 
 class GenerationReaction(StrEnum):
-    NONE = 'NONE'
-    LIKED = 'LIKED'
-    DISLIKED = 'DISLIKED'
+    NONE = "NONE"
+    LIKED = "LIKED"
+    DISLIKED = "DISLIKED"
 
 
 class Generation:
-    COLLECTION_NAME = 'generations'
+    COLLECTION_NAME = "generations"
 
     id: str
     request_id: str
@@ -33,7 +33,7 @@ class Generation:
         id: str,
         request_id: str,
         product_id: str,
-        result='',
+        result="",
         has_error=False,
         status=GenerationStatus.STARTED,
         reaction=GenerationReaction.NONE,
@@ -63,7 +63,7 @@ class Generation:
     @staticmethod
     def get_reaction_emojis():
         return {
-            GenerationReaction.NONE: '',
-            GenerationReaction.LIKED: '👍',
-            GenerationReaction.DISLIKED: '👎',
+            GenerationReaction.NONE: "",
+            GenerationReaction.LIKED: "👍",
+            GenerationReaction.DISLIKED: "👎",
         }

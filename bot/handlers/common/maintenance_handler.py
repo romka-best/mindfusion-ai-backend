@@ -1,7 +1,7 @@
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.filters import MagicData
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 
 from bot.locales.main import get_localization, get_user_language
 
