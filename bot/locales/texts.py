@@ -1,4 +1,4 @@
-from typing import Protocol, Union
+from typing import Protocol, Union, Optional
 
 from bot.database.models.common import (
     Model,
@@ -186,7 +186,7 @@ class Texts(Protocol):
     def error_aspect_ratio_invalid(
         min_ratio: str,
         max_ratio: str,
-        actual_ratio: str,
+        actual_ratio: Optional[str],
     ):
         raise NotImplementedError
 

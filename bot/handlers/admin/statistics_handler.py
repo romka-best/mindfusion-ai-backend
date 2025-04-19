@@ -104,7 +104,7 @@ async def get_statistics_by_transactions_query(
 
     count_income_money_total = 0
     count_income_money = {
-        product.id: {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, "net": 0} for product in products
+        product.id: {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, 'net': 0} for product in products
         if product.id not in {
             ServiceType.SERVER,
             ServiceType.DATABASE,
@@ -201,7 +201,7 @@ async def get_statistics_by_transactions_query(
                     transaction_net *= 2
 
                 count_income_money[transaction.product_id][transaction.currency] += transaction.clear_amount
-                count_income_money[transaction.product_id]["net"] += transaction_net
+                count_income_money[transaction.product_id]['net'] += transaction_net
                 if transaction.product_id in service_subscriptions:
                     count_income_money['SUBSCRIPTION_ALL'] += transaction_net
                 elif transaction.product_id in service_packages:

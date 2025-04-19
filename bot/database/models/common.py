@@ -242,6 +242,7 @@ class SunoMode:
 
 class KlingVersion:
     V1 = '1.6'
+    V2 = '2.0'
 
 
 class KlingMode:

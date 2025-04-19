@@ -19,7 +19,7 @@ from bot.database.models.common import (
     RunwayResolution,
     RunwayDuration,
     LumaRayQuality,
-    LumaRayDuration,
+    LumaRayDuration, KlingVersion,
 )
 from bot.database.models.user import UserSettings, UserGender
 from bot.locales.main import get_localization
@@ -1189,6 +1189,26 @@ def build_settings_keyboard(
                         ' ✅' if settings[model][UserSettings.SEND_TYPE] == SendType.DOCUMENT else ''
                     ),
                     callback_data=f'setting:{SendType.DOCUMENT}:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=get_localization(language_code).SETTINGS_VERSION.upper(),
+                    callback_data=f'setting:nothing:{model}'
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=KlingVersion.V1 + (
+                        ' ✅' if settings[model][UserSettings.VERSION] == KlingVersion.V1 else ''
+                    ),
+                    callback_data=f'setting:{KlingVersion.V1}:{model}'
+                ),
+                InlineKeyboardButton(
+                    text=KlingVersion.V2 + (
+                        ' ✅' if settings[model][UserSettings.VERSION] == KlingVersion.V2 else ''
+                    ),
+                    callback_data=f'setting:{KlingVersion.V2}:{model}'
                 ),
             ],
             [

@@ -31,7 +31,7 @@ from bot.database.models.common import (
     RunwayResolution,
     RunwayDuration,
     LumaRayQuality,
-    LumaRayDuration,
+    LumaRayDuration, KlingVersion,
 )
 from bot.database.models.user import UserSettings, UserGender
 from bot.database.operations.chat.deleters import delete_chat, reset_chat
@@ -96,6 +96,7 @@ async def handle_settings(message: Message, user_id: str, state: FSMContext, adv
             )
         elif user.current_model == Model.KLING:
             generation_cost = Kling.get_cost_for_video(
+                user.settings[Model.KLING][UserSettings.VERSION],
                 user.settings[Model.KLING][UserSettings.MODE],
                 user.settings[Model.KLING][UserSettings.DURATION],
             )
@@ -271,6 +272,7 @@ async def handle_settings_choose_video_model_selection(callback_query: CallbackQ
         return
     elif chosen_model == Model.KLING:
         generation_cost = Kling.get_cost_for_video(
+            user.settings[Model.KLING][UserSettings.VERSION],
             user.settings[Model.KLING][UserSettings.MODE],
             user.settings[Model.KLING][UserSettings.DURATION],
         )
@@ -429,6 +431,9 @@ async def handle_setting_selection(callback_query: CallbackQuery, state: FSMCont
     elif chosen_setting == SunoVersion.V3 or chosen_setting == SunoVersion.V4:
         user.settings[Model.SUNO][UserSettings.VERSION] = chosen_setting
         what_changed = UserSettings.VERSION
+    elif chosen_setting == KlingVersion.V1 or chosen_setting == KlingVersion.V2:
+        user.settings[Model.KLING][UserSettings.VERSION] = chosen_setting
+        what_changed = UserSettings.VERSION
     elif chosen_setting == KlingMode.STANDARD or chosen_setting == KlingMode.PRO:
         user.settings[Model.KLING][UserSettings.MODE] = chosen_setting
         what_changed = UserSettings.MODE
@@ -457,6 +462,8 @@ async def handle_setting_selection(callback_query: CallbackQuery, state: FSMCont
                     callback_data == MidjourneyVersion.V5 or callback_data == MidjourneyVersion.V6 or callback_data == MidjourneyVersion.V7
                 ) or (
                     callback_data == SunoVersion.V3 or callback_data == SunoVersion.V4
+                ) or (
+                    callback_data == KlingVersion.V1 or callback_data == KlingVersion.V2
                 ):
                     text = text.replace(' ✅', '')
             elif what_changed == UserSettings.FOCUS:
@@ -607,6 +614,7 @@ async def handle_setting_selection(callback_query: CallbackQuery, state: FSMCont
             )
         elif chosen_model == Model.KLING:
             generation_cost = Kling.get_cost_for_video(
+                user.settings[Model.KLING][UserSettings.VERSION],
                 user.settings[Model.KLING][UserSettings.MODE],
                 user.settings[Model.KLING][UserSettings.DURATION],
             )
