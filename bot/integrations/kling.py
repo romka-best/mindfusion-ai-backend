@@ -33,8 +33,12 @@ class Kling:
             return await response.json()
 
     @staticmethod
-    def get_cost_for_video(mode: KlingMode, duration: KlingDuration):
-        if mode == KlingMode.PRO and duration == KlingDuration.SECONDS_10:
+    def get_cost_for_video(version: KlingVersion, mode: KlingMode, duration: KlingDuration):
+        if version == KlingVersion.V2 and duration == KlingDuration.SECONDS_10:
+            return 4
+        elif version == KlingVersion.V2 and duration == KlingDuration.SECONDS_5:
+            return 3
+        elif mode == KlingMode.PRO and duration == KlingDuration.SECONDS_10:
             return 3
         elif mode == KlingMode.PRO or duration == KlingDuration.SECONDS_10:
             return 2
@@ -42,8 +46,12 @@ class Kling:
         return 1
 
     @staticmethod
-    def get_price_for_video(mode: KlingMode, duration: KlingDuration):
-        if mode == KlingMode.PRO and duration == KlingDuration.SECONDS_10:
+    def get_price_for_video(version: KlingVersion, mode: KlingMode, duration: KlingDuration):
+        if version == KlingVersion.V2 and duration == KlingDuration.SECONDS_10:
+            return 1.92
+        elif version == KlingVersion.V2 and duration == KlingDuration.SECONDS_5:
+            return 0.96
+        elif mode == KlingMode.PRO and duration == KlingDuration.SECONDS_10:
             return 0.92
         elif mode == KlingMode.PRO and duration == KlingDuration.SECONDS_5:
             return 0.46
@@ -80,7 +88,7 @@ class Videos(APIResource):
             'input': {
                 'prompt': prompt,
                 'version': version,
-                'mode': mode,
+                'mode': KlingMode.PRO if version == KlingVersion.V2 else mode,
                 'duration': duration,
                 'aspect_ratio': aspect_ratio,
                 'image_url': image_url,
@@ -89,7 +97,7 @@ class Videos(APIResource):
             'config': {
                 'webhook_config': {
                     'endpoint': WEBHOOK_KLING_URL,
-                }
+                },
             },
         }
         data = await self.request('POST', url, json=payload)

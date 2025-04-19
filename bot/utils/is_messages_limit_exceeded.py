@@ -30,6 +30,7 @@ async def is_messages_limit_exceeded(message: Message, state: FSMContext, user: 
         )
     elif user.current_model == Model.KLING:
         generation_cost = Kling.get_cost_for_video(
+            user.settings[Model.KLING][UserSettings.VERSION],
             user.settings[Model.KLING][UserSettings.MODE],
             user.settings[Model.KLING][UserSettings.DURATION],
         )
