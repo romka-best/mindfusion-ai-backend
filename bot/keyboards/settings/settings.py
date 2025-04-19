@@ -14,12 +14,13 @@ from bot.database.models.common import (
     MidjourneyVersion,
     FluxSafetyTolerance,
     SunoVersion,
+    KlingVersion,
     KlingDuration,
     KlingMode,
     RunwayResolution,
     RunwayDuration,
     LumaRayQuality,
-    LumaRayDuration, KlingVersion,
+    LumaRayDuration,
 )
 from bot.database.models.user import UserSettings, UserGender
 from bot.locales.main import get_localization

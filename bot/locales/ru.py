@@ -3715,7 +3715,7 @@ class Russian(Texts):
         for index, (package_product_id, package_product_name) in enumerate(package_products.items()):
             is_last = index == len(package_products) - 1
             right_part = '\n' if not is_last else ''
-            package_info += f"    ┣ {package_product_name}: {round(count_income_money[package_product_id][Currency.RUB], 2)}₽ {round(count_income_money[package_product_id][Currency.USD], 2)}💰 {round(count_income_money[package_product_id][Currency.XTR], 2)}⭐ {calculate_percentage_difference(is_all_time, count_income_money[package_product_id]['net'], count_income_money_before[package_product_id]['net'])}{right_part}"
+            package_info += f"    ┣ {package_product_name}: {round(count_income_money[package_product_id][Currency.RUB], 2)}₽ | ${round(count_income_money[package_product_id][Currency.USD], 2)} | {round(count_income_money[package_product_id][Currency.XTR], 2)}⭐ {calculate_percentage_difference(is_all_time, count_income_money[package_product_id]['net'], count_income_money_before[package_product_id]['net'])}{right_part}"
         return f"""
 #statistics #incomes
 
