@@ -82,8 +82,8 @@ async def handle_kling_webhook(bot: Bot, dp: Dispatcher, body: dict):
 
             min_ratio, max_ratio = matches.groupdict().values()
 
-            min_width, min_height = map(float, min_ratio.split(":"))
-            max_width, max_height = map(float, max_ratio.split(":"))
+            min_width, min_height = map(float, min_ratio.split(':'))
+            max_width, max_height = map(float, max_ratio.split(':'))
 
             min_ratio = round(min_width / min_height, 2)
             max_ratio = round(max_width / max_height, 2)

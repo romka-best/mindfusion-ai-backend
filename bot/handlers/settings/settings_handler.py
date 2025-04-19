@@ -32,7 +32,7 @@ from bot.database.models.common import (
     RunwayResolution,
     RunwayDuration,
     LumaRayQuality,
-    LumaRayDuration,
+    LumaRayDuration, KlingVersion,
 )
 from bot.database.models.user import UserSettings, UserGender
 from bot.database.operations.chat.deleters import delete_chat, reset_chat
