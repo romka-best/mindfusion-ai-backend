@@ -20,7 +20,7 @@ from bot.database.models.common import (
     RunwayResolution,
     RunwayDuration,
     LumaRayQuality,
-    LumaRayDuration,
+    LumaRayDuration, KlingVersion,
 )
 from bot.database.models.user import UserSettings, UserGender
 from bot.locales.main import get_localization
