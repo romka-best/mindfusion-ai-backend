@@ -3705,17 +3705,31 @@ class Russian(Texts):
 
             is_last = index == len(subscription_products) - 1
             right_part = '\n' if not is_last else ''
-            current_income_money = 0
-            current_income_money_before = 0
+            current_income_money = {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, 'net': 0}
+            current_income_money_before = {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, 'net': 0}
             for subscription_product_id in subscription_product_ids:
-                current_income_money += count_income_money[subscription_product_id]["net"]
-                current_income_money_before += count_income_money_before[subscription_product_id]["net"]
-            subscription_info += f"    ┣ {subscription_product_name}: {round(count_income_money[subscription_product_id][Currency.RUB], 2)}₽ | ${round(count_income_money[subscription_product_id][Currency.USD], 2)} | {round(count_income_money[subscription_product_id][Currency.XTR], 2)}⭐ {calculate_percentage_difference(is_all_time, current_income_money, current_income_money_before)}{right_part}"
+                current_income_money[Currency.RUB] += \
+                    count_income_money[subscription_product_id][Currency.RUB]
+                current_income_money_before[Currency.RUB] += \
+                    count_income_money_before[subscription_product_id][Currency.RUB]
+                current_income_money[Currency.USD] += \
+                    count_income_money[subscription_product_id][Currency.USD]
+                current_income_money_before[Currency.USD] += \
+                    count_income_money_before[subscription_product_id][Currency.USD]
+                current_income_money[Currency.XTR] += \
+                    count_income_money[subscription_product_id][Currency.XTR]
+                current_income_money_before[Currency.XTR] += \
+                    count_income_money_before[subscription_product_id][Currency.XTR]
+                current_income_money['net'] += \
+                    count_income_money[subscription_product_id]['net']
+                current_income_money_before['net'] += \
+                    count_income_money_before[subscription_product_id]['net']
+            subscription_info += f"    ┣ {subscription_product_name}: {round(current_income_money[Currency.RUB], 2)}₽ | ${round(current_income_money[Currency.USD], 2)} | {round(current_income_money[Currency.XTR], 2)}⭐ | {round(current_income_money['net'], 2)}₽ {calculate_percentage_difference(is_all_time, current_income_money['net'], current_income_money['net'])}{right_part}"
         package_info = ''
         for index, (package_product_id, package_product_name) in enumerate(package_products.items()):
             is_last = index == len(package_products) - 1
             right_part = '\n' if not is_last else ''
-            package_info += f"    ┣ {package_product_name}: {round(count_income_money[package_product_id][Currency.RUB], 2)}₽ | ${round(count_income_money[package_product_id][Currency.USD], 2)} | {round(count_income_money[package_product_id][Currency.XTR], 2)}⭐ {calculate_percentage_difference(is_all_time, count_income_money[package_product_id]['net'], count_income_money_before[package_product_id]['net'])}{right_part}"
+            package_info += f"    ┣ {package_product_name}: {round(count_income_money[package_product_id][Currency.RUB], 2)}₽ | ${round(count_income_money[package_product_id][Currency.USD], 2)} | {round(count_income_money[package_product_id][Currency.XTR], 2)}⭐ | {round(count_income_money[package_product_id]['net'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money[package_product_id]['net'], count_income_money_before[package_product_id]['net'])}{right_part}"
         return f"""
 #statistics #incomes
 
@@ -3725,14 +3739,14 @@ class Russian(Texts):
 
 1️⃣ <b>Подписки:</b>
 {subscription_info}
-    ┗ Всего: {round(count_income_money['SUBSCRIPTION_ALL'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['SUBSCRIPTION_ALL'], count_income_money_before['SUBSCRIPTION_ALL'])}
+    ┗ Всего: {round(count_income_money['SUBSCRIPTION_ALL'][Currency.RUB], 2)}₽ | ${round(count_income_money['SUBSCRIPTION_ALL'][Currency.USD], 2)} | {round(count_income_money['SUBSCRIPTION_ALL'][Currency.XTR], 2)}⭐ | {round(count_income_money['SUBSCRIPTION_ALL']['net'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['SUBSCRIPTION_ALL']['net'], count_income_money_before['SUBSCRIPTION_ALL']['net'])}
 2️⃣ <b>Пакеты:</b>
 {package_info}
-    ┗ Всего: {round(count_income_money['PACKAGES_ALL'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['PACKAGES_ALL'], count_income_money_before['PACKAGES_ALL'])}
+    ┗ Всего: {round(count_income_money['PACKAGES_ALL'][Currency.RUB], 2)}₽ | ${round(count_income_money['PACKAGES_ALL'][Currency.USD], 2)} | {round(count_income_money['PACKAGES_ALL'][Currency.XTR], 2)}⭐ | {round(count_income_money['PACKAGES_ALL']['net'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['PACKAGES_ALL']['net'], count_income_money_before['PACKAGES_ALL']['net'])}
 
-<b>Средний чек:</b> {round(count_income_money['AVERAGE_PRICE'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['AVERAGE_PRICE'], count_income_money_before['AVERAGE_PRICE'])}
-<b>Всего:</b> {round(count_income_money['ALL'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['ALL'], count_income_money_before['ALL'])}
-<b>Вал:</b> {round(count_income_money['VAL'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['VAL'], count_income_money_before['VAL'])}
+<b>Средний чек:</b> {round(count_income_money['AVERAGE_PRICE'][Currency.RUB], 2)}₽ | ${round(count_income_money['AVERAGE_PRICE'][Currency.USD], 2)} | {round(count_income_money['AVERAGE_PRICE'][Currency.XTR], 2)}⭐ | {round(count_income_money['AVERAGE_PRICE']['net'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['AVERAGE_PRICE']['net'], count_income_money_before['AVERAGE_PRICE']['net'])}
+<b>Всего:</b> {round(count_income_money['ALL'][Currency.RUB], 2)}₽ | ${round(count_income_money['ALL'][Currency.USD], 2)} | {round(count_income_money['ALL'][Currency.XTR], 2)}⭐ | {round(count_income_money['ALL']['net'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['ALL']['net'], count_income_money_before['ALL']['net'])}
+<b>Вал:</b> {round(count_income_money['VAL']['net'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['VAL']['net'], count_income_money_before['VAL']['net'])}
 """
 
     @staticmethod

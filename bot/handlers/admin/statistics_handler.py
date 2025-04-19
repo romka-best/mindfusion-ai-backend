@@ -111,13 +111,13 @@ async def get_statistics_by_transactions_query(
         }
     }
     count_income_money.update({
-        ServiceType.FREE: 0,
-        ServiceType.OTHER: 0,
-        'SUBSCRIPTION_ALL': 0,
-        'PACKAGES_ALL': 0,
-        'AVERAGE_PRICE': 0,
-        'ALL': 0,
-        'VAL': 0,
+        ServiceType.FREE: {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, 'net': 0},
+        ServiceType.OTHER: {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, 'net': 0},
+        'SUBSCRIPTION_ALL': {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, 'net': 0},
+        'PACKAGES_ALL': {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, 'net': 0},
+        'AVERAGE_PRICE': {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, 'net': 0},
+        'ALL': {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, 'net': 0},
+        'VAL': {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, 'net': 0},
     })
 
     default_expense_money_nested_dict = {
@@ -203,10 +203,13 @@ async def get_statistics_by_transactions_query(
                 count_income_money[transaction.product_id][transaction.currency] += transaction.clear_amount
                 count_income_money[transaction.product_id]['net'] += transaction_net
                 if transaction.product_id in service_subscriptions:
-                    count_income_money['SUBSCRIPTION_ALL'] += transaction_net
+                    count_income_money['SUBSCRIPTION_ALL'][transaction.currency] += transaction.clear_amount
+                    count_income_money['SUBSCRIPTION_ALL']['net'] += transaction_net
                 elif transaction.product_id in service_packages:
-                    count_income_money['PACKAGES_ALL'] += transaction_net
-                count_income_money['ALL'] += transaction_net
+                    count_income_money['PACKAGES_ALL'][transaction.currency] += transaction.clear_amount
+                    count_income_money['PACKAGES_ALL']['net'] += transaction_net
+                count_income_money['ALL'][transaction.currency] += transaction.clear_amount
+                count_income_money['ALL']['net'] += transaction_net
 
                 count_all_transactions[transaction.product_id]['BONUS'] += 1 \
                     if transaction.details.get('is_bonus', False) \
@@ -823,14 +826,33 @@ async def handle_get_statistics(language_code: LanguageCode, period: str):
         count_credits_before['PLAY_GAMES']
     )
 
-    count_income_money['AVERAGE_PRICE'] = (
-        count_income_money['ALL'] / count_income_money_total
+    count_income_money['AVERAGE_PRICE'][Currency.RUB] = (
+        count_income_money['ALL'][Currency.RUB] / count_income_money_total
     ) if count_income_money_total else 0
-    count_income_money_before['AVERAGE_PRICE'] = (
-        count_income_money_before['ALL'] / count_income_money_total_before
+    count_income_money['AVERAGE_PRICE'][Currency.USD] = (
+        count_income_money['ALL'][Currency.USD] / count_income_money_total
+    ) if count_income_money_total else 0
+    count_income_money['AVERAGE_PRICE'][Currency.XTR] = (
+        count_income_money['ALL'][Currency.XTR] / count_income_money_total
+    ) if count_income_money_total else 0
+    count_income_money['AVERAGE_PRICE']['net'] = (
+        count_income_money['ALL']['net'] / count_income_money_total
+    ) if count_income_money_total else 0
+    count_income_money_before['AVERAGE_PRICE'][Currency.RUB] = (
+        count_income_money_before['ALL'][Currency.RUB] / count_income_money_total_before
     ) if count_income_money_total_before else 0
-    count_income_money['VAL'] = count_income_money['ALL'] - count_expense_money['ALL'] * 100
-    count_income_money_before['VAL'] = count_income_money_before['ALL'] - count_expense_money_before['ALL'] * 100
+    count_income_money_before['AVERAGE_PRICE'][Currency.USD] = (
+        count_income_money_before['ALL'][Currency.USD] / count_income_money_total_before
+    ) if count_income_money_total_before else 0
+    count_income_money_before['AVERAGE_PRICE'][Currency.XTR] = (
+        count_income_money_before['ALL'][Currency.XTR] / count_income_money_total_before
+    ) if count_income_money_total_before else 0
+    count_income_money_before['AVERAGE_PRICE']['net'] = (
+        count_income_money_before['ALL']['net'] / count_income_money_total_before
+    ) if count_income_money_total_before else 0
+    count_income_money['VAL']['net'] = count_income_money['ALL']['net'] - count_expense_money['ALL'] * 100
+    count_income_money_before['VAL']['net'] = count_income_money_before['ALL']['net'] - \
+                                              count_expense_money_before['ALL'] * 100
 
     texts = {
         'users': get_localization(language_code).admin_statistics_users(
