@@ -366,17 +366,20 @@ async def handle_payment_method_subscription_selection(callback_query: CallbackQ
             raise NotImplementedError(f'Payment method is not recognized: {payment_method}')
 
         await callback_query.message.edit_caption(
-            caption=get_localization(user_language_code).subscribe_confirmation(
+            reply_markup=build_payment_keyboard(
+                user_language_code,
+                payment_url,
+            ),
+        )
+        await callback_query.message.answer(
+            text=get_localization(user_language_code).subscribe_confirmation(
+                subscription,
                 subscription_name,
                 subscription.category,
                 currency,
                 amount,
                 is_trial,
-            ),
-            reply_markup=build_payment_keyboard(
-                user_language_code,
-                payment_url,
-            ),
+            )
         )
 
         if payment_method != PaymentMethod.TELEGRAM_STARS:

@@ -2523,6 +2523,7 @@ To subscribe, pick your potion and hit the button below:
 
     @staticmethod
     def subscribe_confirmation(
+        subscription: Product,
         name: str,
         category: ProductCategory,
         currency: Currency,
@@ -2539,6 +2540,63 @@ To subscribe, pick your potion and hit the button below:
 
         return f"""
 You're about to activate subscription <b>{name} for {left_price_part}{price}{right_price_part}/{period}{trial_info}</b>
+
+🔤 <b>Text Models</b>:
+<b>Basic</b>:
+    ┣ ✉️ ChatGPT 4.0 Omni Mini {format_number(subscription.details['limits'][Quota.CHAT_GPT4_OMNI_MINI])}
+    ┣ 👽 ChatGPT 4.1 Mini {format_number(subscription.details['limits'][Quota.CHAT_GPT_4_1_MINI])}
+    ┣ 📜 Claude 3.5 Haiku {format_number(subscription.details['limits'][Quota.CLAUDE_3_HAIKU])}
+    ┣ 🏎 Gemini 2.0 Flash {format_number(subscription.details['limits'][Quota.GEMINI_2_FLASH])}
+    ┣ 🐬 DeepSeek V3 {format_number(subscription.details['limits'][Quota.DEEP_SEEK_V3])}
+
+<b>Advanced</b>:
+    ┣ 💥 ChatGPT 4.0 Omni {format_number(subscription.details['limits'][Quota.CHAT_GPT4_OMNI])}
+    ┣ 🛸 ChatGPT 4.1 {format_number(subscription.details['limits'][Quota.CHAT_GPT_4_1])}
+    ┣ 🧩 ChatGPT o4-mini {format_number(subscription.details['limits'][Quota.CHAT_GPT_O_4_MINI])}
+    ┣ 💫 Claude 3.7 Sonnet {format_number(subscription.details['limits'][Quota.CLAUDE_3_SONNET])}
+    ┣ 💼 Gemini 2.5 Pro {format_number(subscription.details['limits'][Quota.GEMINI_2_PRO])}
+    ┣ 🐦 Grok 2.0 {format_number(subscription.details['limits'][Quota.GROK_2])}
+    ┣ 🐋 DeepSeek R1 {format_number(subscription.details['limits'][Quota.DEEP_SEEK_R1])}
+    ┣ 🌐 Perplexity {format_number(subscription.details['limits'][Quota.PERPLEXITY])}
+
+<b>Flagship</b>:
+    ┣ 🧪 ChatGPT o3 {format_number(subscription.details['limits'][Quota.CHAT_GPT_O_3])}
+    ┣ 🚀 Claude 3.0 Opus {format_number(subscription.details['limits'][Quota.CLAUDE_3_OPUS])}
+    ┣ 🛡️ Gemini 1.0 Ultra {format_number(subscription.details['limits'][Quota.GEMINI_1_ULTRA])}
+
+📝 <b>Summary Models</b>:
+    ┣ 👀 YouTube {format_number(subscription.details['limits'][Quota.EIGHTIFY])}
+    ┣ 📼 Видео {format_number(subscription.details['limits'][Quota.GEMINI_VIDEO])}
+
+🖼 <b>Image Models</b>:
+<b>Basic</b>:
+    ┣ 🦄 Stable Diffusion XL {format_number(subscription.details['limits'][Quota.STABLE_DIFFUSION_XL])}
+    ┣ 🌲 Flux 1.0 Dev {format_number(subscription.details['limits'][Quota.FLUX_1_DEV])}
+    ┣ 🌌 Luma Photon {format_number(subscription.details['limits'][Quota.LUMA_PHOTON])}
+
+<b>Advanced</b>:
+    ┣ 👨‍🎨 DALL-E 3 {format_number(subscription.details['limits'][Quota.DALL_E])}
+    ┣ 🎨 Midjourney 7 {format_number(subscription.details['limits'][Quota.MIDJOURNEY])}
+    ┣ 🧑‍🚀 Stable Diffusion 3.5 {format_number(subscription.details['limits'][Quota.STABLE_DIFFUSION_3])}
+    ┣ 🏔 Flux 1.1 Pro {format_number(subscription.details['limits'][Quota.FLUX_1_PRO])}
+    ┣ 🐼 Recraft 3 {format_number(subscription.details['limits']['recraft_3'])}
+    ┣ 📷 FaceSwap {format_number(subscription.details['limits'][Quota.FACE_SWAP])}
+    ┣ 🪄 Photoshop AI {format_number(subscription.details['limits'][Quota.PHOTOSHOP_AI])}
+
+🎵 <b>Music Models</b>:
+    ┣ 🎺 MusicGen {format_number(subscription.details['limits'][Quota.MUSIC_GEN])}
+    ┣ 🎸 Suno {format_number(subscription.details['limits'][Quota.SUNO])}
+
+📹 <b>Video Models</b>:
+    ┣ 🎬 Kling {format_number(subscription.details['limits'][Quota.KLING])}
+    ┣ 🎥 Runway {format_number(subscription.details['limits'][Quota.RUNWAY])}
+    ┣ 🔆 Luma Ray {format_number(subscription.details['limits'][Quota.LUMA_RAY])}
+    ┣ 🐇 Pika {format_number(subscription.details['limits'][Quota.PIKA])}
+
+📷 <b>Support Photos/Documents</b>: {'✅' if subscription.details['limits'][Quota.WORK_WITH_FILES] else '❌'}
+🎭 <b>Access to a Roles Catalog</b>: {'✅' if subscription.details['limits'][Quota.ACCESS_TO_CATALOG] else '❌'}
+🎙 <b>Voice Messages</b>: {'✅' if subscription.details['limits'][Quota.VOICE_MESSAGES] else '❌'}
+⚡️ <b>Fast Answers</b>: {'✅' if subscription.details['limits'][Quota.FAST_MESSAGES] else '❌'}
 
 ❗️You can cancel your subscription at any time in <b>Profile 👤</b>
 """
