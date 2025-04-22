@@ -31,8 +31,10 @@ class SubscriptionStatus(StrEnum):
 SUBSCRIPTION_FREE_LIMITS = {
     Quota.CHAT_GPT4_OMNI_MINI: 10,
     Quota.CHAT_GPT4_OMNI: 0,
-    Quota.CHAT_GPT_O_3_MINI: 0,
-    Quota.CHAT_GPT_O_1: 0,
+    Quota.CHAT_GPT_O_4_MINI: 0,
+    Quota.CHAT_GPT_O_3: 0,
+    Quota.CHAT_GPT_4_1_MINI: 10,
+    Quota.CHAT_GPT_4_1: 0,
     Quota.CLAUDE_3_HAIKU: 10,
     Quota.CLAUDE_3_SONNET: 0,
     Quota.CLAUDE_3_OPUS: 0,

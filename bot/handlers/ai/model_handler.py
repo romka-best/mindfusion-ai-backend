@@ -269,6 +269,7 @@ async def handle_switched_to_ai_selection(callback_query: CallbackQuery, state: 
             )
         elif model == Model.KLING:
             generation_cost = Kling.get_cost_for_video(
+                user.settings[Model.KLING][UserSettings.VERSION],
                 user.settings[Model.KLING][UserSettings.MODE],
                 user.settings[Model.KLING][UserSettings.DURATION],
             )

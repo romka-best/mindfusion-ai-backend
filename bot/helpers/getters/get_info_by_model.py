@@ -27,10 +27,14 @@ def get_info_by_model(
             info = get_localization(language_code).INFO_CHAT_GPT_4_OMNI_MINI
         elif model_version == ChatGPTVersion.V4_Omni:
             info = get_localization(language_code).INFO_CHAT_GPT_4_OMNI
-        elif model_version == ChatGPTVersion.V3_O_Mini:
-            info = get_localization(language_code).INFO_CHAT_GPT_O_3_MINI
-        elif model_version == ChatGPTVersion.V1_O:
-            info = get_localization(language_code).INFO_CHAT_GPT_O_1
+        elif model_version == ChatGPTVersion.V4_O_Mini:
+            info = get_localization(language_code).INFO_CHAT_GPT_O_4_MINI
+        elif model_version == ChatGPTVersion.V3_O:
+            info = get_localization(language_code).INFO_CHAT_GPT_O_3
+        elif model_version == ChatGPTVersion.V4_1_Mini:
+            info = get_localization(language_code).INFO_CHAT_GPT_4_1_MINI
+        elif model_version == ChatGPTVersion.V4_1:
+            info = get_localization(language_code).INFO_CHAT_GPT_4_1
     elif model == Model.CLAUDE:
         if model_version == ClaudeGPTVersion.V3_Haiku:
             info = get_localization(language_code).INFO_CLAUDE_3_HAIKU

@@ -4,13 +4,15 @@ from bot.database.operations.user.updaters import update_user, update_user_in_tr
 
 TEXT_SIMPLE_QUOTA = [
     Quota.CHAT_GPT4_OMNI_MINI,
+    Quota.CHAT_GPT_4_1_MINI,
     Quota.CLAUDE_3_HAIKU,
     Quota.GEMINI_2_FLASH,
     Quota.DEEP_SEEK_V3,
 ]
 TEXT_ADVANCED_QUOTA = [
     Quota.CHAT_GPT4_OMNI,
-    Quota.CHAT_GPT_O_3_MINI,
+    Quota.CHAT_GPT_O_4_MINI,
+    Quota.CHAT_GPT_4_1,
     Quota.CLAUDE_3_SONNET,
     Quota.GEMINI_2_PRO,
     Quota.GROK_2,
@@ -18,7 +20,7 @@ TEXT_ADVANCED_QUOTA = [
     Quota.PERPLEXITY,
 ]
 TEXT_SUPER_ADVANCED_QUOTA = [
-    Quota.CHAT_GPT_O_1,
+    Quota.CHAT_GPT_O_3,
     Quota.CLAUDE_3_OPUS,
     Quota.GEMINI_1_ULTRA,
 ]

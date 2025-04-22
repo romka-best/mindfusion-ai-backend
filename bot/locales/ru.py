@@ -1,6 +1,6 @@
 import random
 from datetime import datetime, timezone
-from typing import Union
+from typing import Union, Optional
 
 import pymorphy3
 
@@ -418,7 +418,10 @@ class Russian(Texts):
 🔤 <b>Текстовые Модели</b>:
     ┣ ChatGPT 4.0 Omni Mini ✉️
     ┣ ChatGPT 4.0 Omni 💥
-    ┣ ChatGPT o1 🧪
+    ┣ ChatGPT 4.1 Mini 👽
+    ┣ ChatGPT 4.1 🛸
+    ┣ ChatGPT o4-mini 🧩
+    ┣ ChatGPT o3 🧪
     ┣ Claude 3.7 Sonnet 💫
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 2.0 Flash 🏎
@@ -479,16 +482,17 @@ class Russian(Texts):
     def error_aspect_ratio_invalid(
         min_ratio: str,
         max_ratio: str,
-        actual_ratio: str,
+        actual_ratio: Optional[str] = None,
     ) -> str:
-        return f"""
-⚠️ <b>Недопустимое соотношение сторон изображения</b>
+        text = f"""⚠️ <b>Недопустимое соотношение сторон изображения</b>
 
 Соотношение ширины и высоты изображения должно быть между {min_ratio} и {max_ratio}.
-Соотношение сторон вашего изображения — {actual_ratio}.
-
-Повторите, пожалуйста, запрос с другим изображением 😉
 """
+        if actual_ratio:
+            text += f"\n\nСоотношение сторон вашего изображения — {actual_ratio}."
+
+        text += "\n\nПовторите, пожалуйста, запрос с другим изображением 😉"
+        return text
 
     @staticmethod
     def error_internal_ai_model(ai_model_name) -> str:
@@ -877,34 +881,8 @@ class Russian(Texts):
 • MMMU: 69.1%
 • MathVista: 63.8%
 """
-    INFO_CHAT_GPT_O_3_MINI = f"""
-<b>{Texts.CHAT_GPT_O_3_MINI}</b>
-
-<b>Создатель:</b> OpenAI
-
-💡<b>Варианты использования:</b>
-• Генерация контента
-• Объяснение сложных концепций
-• Ответы на вопросы
-• Перевод с одного языка на другой
-• Помощь в обучении
-• Помощь в решении задач
-• Работа с текстом
-• Работа с кодом
-
-🚦 <b>Оценки:</b>
-• Работа с изображениями: Нет 🔴
-• Качество ответов: Высокое 🟢
-• Скорость ответа: Средняя 🟡
-
-📊 <b>Тесты:</b>
-• MMLU: 86.9%
-• GPQA: 79.7%
-• MATH: 97.9%
-• HumanEval: 92.4%
-"""
-    INFO_CHAT_GPT_O_1 = f"""
-<b>{Texts.CHAT_GPT_O_1}</b>
+    INFO_CHAT_GPT_O_4_MINI = f"""
+<b>{Texts.CHAT_GPT_O_4_MINI}</b>
 
 <b>Создатель:</b> OpenAI
 
@@ -922,15 +900,36 @@ class Russian(Texts):
 • Работа с изображениями: Да 🟢
 • Качество ответов: Высокое 🟢
 • Скорость ответа: Средняя 🟡
+"""
+    INFO_CHAT_GPT_O_3 = f"""
+<b>{Texts.CHAT_GPT_O_3}</b>
 
-📊 <b>Тесты:</b>
-• MMLU: 92.3%
-• GPQA: 75.7%
-• MGSM: 89.3%
-• MATH: 96.4%
-• HumanEval: 92.4%
-• MMMU: 78.2%
-• MathVista: 73.9%
+<b>Создатель:</b> OpenAI
+
+💡<b>Варианты использования:</b>
+• Генерация контента
+• Объяснение сложных концепций
+• Ответы на вопросы
+• Перевод с одного языка на другой
+• Помощь в обучении
+• Помощь в решении задач
+• Работа с текстом
+• Работа с кодом
+
+🚦 <b>Оценки:</b>
+• Работа с изображениями: Да 🟢
+• Качество ответов: Высокое 🟢
+• Скорость ответа: Средняя 🟡
+"""
+    INFO_CHAT_GPT_4_1_MINI = f"""
+<b>{Texts.CHAT_GPT_4_1_MINI}</b>
+
+<b>Создатель:</b> OpenAI
+"""
+    INFO_CHAT_GPT_4_1 = f"""
+<b>{Texts.CHAT_GPT_4_1}</b>
+
+<b>Создатель:</b> OpenAI
 """
     INFO_CLAUDE = "🤖 <b>Выберите Claude модель</b>, про которую вы хотите получить информацию:"
     INFO_CLAUDE_3_HAIKU = f"""
@@ -2101,6 +2100,7 @@ class Russian(Texts):
 🔤 <b>Текстовые Модели</b>:
 <b>Базовые</b>:
     ┣ ✉️ ChatGPT 4.0 Omni Mini{f': доп. {additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI_MINI] > 0 else ''}
+    ┣ 👽 ChatGPT 4.1 Mini{f': доп. {additional_usage_quota[Quota.CHAT_GPT_4_1_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_4_1_MINI] > 0 else ''}
     ┣ 📜 Claude 3.5 Haiku{f': доп. {additional_usage_quota[Quota.CLAUDE_3_HAIKU]}' if additional_usage_quota[Quota.CLAUDE_3_HAIKU] > 0 else ''}
     ┣ 🏎 Gemini 2.0 Flash{f': доп. {additional_usage_quota[Quota.GEMINI_2_FLASH]}' if additional_usage_quota[Quota.GEMINI_2_FLASH] > 0 else ''}
     ┣ 🐬 DeepSeek V3{f': доп. {additional_usage_quota[Quota.DEEP_SEEK_V3]}' if additional_usage_quota[Quota.DEEP_SEEK_V3] > 0 else ''}
@@ -2108,7 +2108,8 @@ class Russian(Texts):
 
 <b>Продвинутые</b>:
     ┣ 💥 ChatGPT 4.0 Omni{f': доп. {additional_usage_quota[Quota.CHAT_GPT4_OMNI]}' if additional_usage_quota[Quota.CHAT_GPT4_OMNI] > 0 else ''}
-    ┣ 🧩 ChatGPT o3-mini{f': доп. {additional_usage_quota[Quota.CHAT_GPT_O_3_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_3_MINI] > 0 else ''}
+    ┣ 🛸 ChatGPT 4.1{f': доп. {additional_usage_quota[Quota.CHAT_GPT_4_1]}' if additional_usage_quota[Quota.CHAT_GPT_4_1] > 0 else ''}
+    ┣ 🧩 ChatGPT o4-mini{f': доп. {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ''}
     ┣ 💫 Claude 3.7 Sonnet{f': доп. {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 2.5 Pro{f': доп. {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
     ┣ 🐦 Grok 2.0{f': доп. {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
@@ -2117,10 +2118,10 @@ class Russian(Texts):
     ┗ Дневной лимит: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}
 
 <b>Флагманские</b>:
-    ┣ 🧪 ChatGPT o1{f': доп. {additional_usage_quota[Quota.CHAT_GPT_O_1]}' if additional_usage_quota[Quota.CHAT_GPT_O_1] > 0 else ''}
+    ┣ 🧪 ChatGPT o3{f': доп. {additional_usage_quota[Quota.CHAT_GPT_O_3]}' if additional_usage_quota[Quota.CHAT_GPT_O_3] > 0 else ''}
     ┣ 🚀 Claude 3.0 Opus{f': доп. {additional_usage_quota[Quota.CLAUDE_3_OPUS]}' if additional_usage_quota[Quota.CLAUDE_3_OPUS] > 0 else ''}
     ┣ 🛡️ Gemini 1.0 Ultra{f': доп. {additional_usage_quota[Quota.GEMINI_1_ULTRA]}' if additional_usage_quota[Quota.GEMINI_1_ULTRA] > 0 else ''}
-    ┗ Дневной лимит: {format_number(daily_limits[Quota.CHAT_GPT_O_1])}/{format_number(subscription_limits[Quota.CHAT_GPT_O_1])}
+    ┗ Дневной лимит: {format_number(daily_limits[Quota.CHAT_GPT_O_3])}/{format_number(subscription_limits[Quota.CHAT_GPT_O_3])}
 
 ─────────────
 
@@ -3708,18 +3709,31 @@ class Russian(Texts):
 
             is_last = index == len(subscription_products) - 1
             right_part = '\n' if not is_last else ''
-            current_income_money = 0
-            current_income_money_before = 0
+            current_income_money = {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, 'net': 0}
+            current_income_money_before = {Currency.RUB: 0, Currency.USD: 0, Currency.XTR: 0, 'net': 0}
             for subscription_product_id in subscription_product_ids:
-                current_income_money += count_income_money[subscription_product_id]
-                current_income_money_before += count_income_money_before[subscription_product_id]
-            subscription_info += f"    ┣ {subscription_product_name}: {round(current_income_money, 2)}₽ {calculate_percentage_difference(is_all_time, current_income_money, current_income_money_before)}{right_part}"
+                current_income_money[Currency.RUB] += \
+                    count_income_money[subscription_product_id][Currency.RUB]
+                current_income_money_before[Currency.RUB] += \
+                    count_income_money_before[subscription_product_id][Currency.RUB]
+                current_income_money[Currency.USD] += \
+                    count_income_money[subscription_product_id][Currency.USD]
+                current_income_money_before[Currency.USD] += \
+                    count_income_money_before[subscription_product_id][Currency.USD]
+                current_income_money[Currency.XTR] += \
+                    count_income_money[subscription_product_id][Currency.XTR]
+                current_income_money_before[Currency.XTR] += \
+                    count_income_money_before[subscription_product_id][Currency.XTR]
+                current_income_money['net'] += \
+                    count_income_money[subscription_product_id]['net']
+                current_income_money_before['net'] += \
+                    count_income_money_before[subscription_product_id]['net']
+            subscription_info += f"    ┣ {subscription_product_name}: {round(current_income_money[Currency.RUB], 2)}₽ | ${round(current_income_money[Currency.USD], 2)} | {round(current_income_money[Currency.XTR], 2)}⭐ | {round(current_income_money['net'], 2)}₽ {calculate_percentage_difference(is_all_time, current_income_money['net'], current_income_money['net'])}{right_part}"
         package_info = ''
         for index, (package_product_id, package_product_name) in enumerate(package_products.items()):
             is_last = index == len(package_products) - 1
             right_part = '\n' if not is_last else ''
-            package_info += f"    ┣ {package_product_name}: {round(count_income_money[package_product_id], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money[package_product_id], count_income_money_before[package_product_id])}{right_part}"
-
+            package_info += f"    ┣ {package_product_name}: {round(count_income_money[package_product_id][Currency.RUB], 2)}₽ | ${round(count_income_money[package_product_id][Currency.USD], 2)} | {round(count_income_money[package_product_id][Currency.XTR], 2)}⭐ | {round(count_income_money[package_product_id]['net'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money[package_product_id]['net'], count_income_money_before[package_product_id]['net'])}{right_part}"
         return f"""
 #statistics #incomes
 
@@ -3729,14 +3743,14 @@ class Russian(Texts):
 
 1️⃣ <b>Подписки:</b>
 {subscription_info}
-    ┗ Всего: {round(count_income_money['SUBSCRIPTION_ALL'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['SUBSCRIPTION_ALL'], count_income_money_before['SUBSCRIPTION_ALL'])}
+    ┗ Всего: {round(count_income_money['SUBSCRIPTION_ALL'][Currency.RUB], 2)}₽ | ${round(count_income_money['SUBSCRIPTION_ALL'][Currency.USD], 2)} | {round(count_income_money['SUBSCRIPTION_ALL'][Currency.XTR], 2)}⭐ | {round(count_income_money['SUBSCRIPTION_ALL']['net'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['SUBSCRIPTION_ALL']['net'], count_income_money_before['SUBSCRIPTION_ALL']['net'])}
 2️⃣ <b>Пакеты:</b>
 {package_info}
-    ┗ Всего: {round(count_income_money['PACKAGES_ALL'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['PACKAGES_ALL'], count_income_money_before['PACKAGES_ALL'])}
+    ┗ Всего: {round(count_income_money['PACKAGES_ALL'][Currency.RUB], 2)}₽ | ${round(count_income_money['PACKAGES_ALL'][Currency.USD], 2)} | {round(count_income_money['PACKAGES_ALL'][Currency.XTR], 2)}⭐ | {round(count_income_money['PACKAGES_ALL']['net'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['PACKAGES_ALL']['net'], count_income_money_before['PACKAGES_ALL']['net'])}
 
-<b>Средний чек:</b> {round(count_income_money['AVERAGE_PRICE'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['AVERAGE_PRICE'], count_income_money_before['AVERAGE_PRICE'])}
-<b>Всего:</b> {round(count_income_money['ALL'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['ALL'], count_income_money_before['ALL'])}
-<b>Вал:</b> {round(count_income_money['VAL'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['VAL'], count_income_money_before['VAL'])}
+<b>Средний чек:</b> {round(count_income_money['AVERAGE_PRICE'][Currency.RUB], 2)}₽ | ${round(count_income_money['AVERAGE_PRICE'][Currency.USD], 2)} | {round(count_income_money['AVERAGE_PRICE'][Currency.XTR], 2)}⭐ | {round(count_income_money['AVERAGE_PRICE']['net'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['AVERAGE_PRICE']['net'], count_income_money_before['AVERAGE_PRICE']['net'])}
+<b>Всего:</b> {round(count_income_money['ALL'][Currency.RUB], 2)}₽ | ${round(count_income_money['ALL'][Currency.USD], 2)} | {round(count_income_money['ALL'][Currency.XTR], 2)}⭐ | {round(count_income_money['ALL']['net'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['ALL']['net'], count_income_money_before['ALL']['net'])}
+<b>Вал:</b> {round(count_income_money['VAL']['net'], 2)}₽ {calculate_percentage_difference(is_all_time, count_income_money['VAL']['net'], count_income_money_before['VAL']['net'])}
 """
 
     @staticmethod

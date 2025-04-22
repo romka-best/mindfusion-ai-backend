@@ -1,4 +1,4 @@
-from typing import Protocol, Union
+from typing import Protocol, Union, Optional
 
 from bot.database.models.common import (
     Model,
@@ -141,8 +141,10 @@ class Texts(Protocol):
     CHAT_GPT_4_OMNI_MINI = '✉️ ChatGPT 4.0 Omni Mini'
     CHAT_GPT_4_TURBO = '🧠 ChatGPT 4.0 Turbo'
     CHAT_GPT_4_OMNI = '💥 ChatGPT 4.0 Omni'
-    CHAT_GPT_O_3_MINI = '🧩 ChatGPT o3-mini'
-    CHAT_GPT_O_1 = '🧪 ChatGPT o1'
+    CHAT_GPT_O_4_MINI = '🧩 ChatGPT o4-mini'
+    CHAT_GPT_O_3 = '🧪 ChatGPT o3'
+    CHAT_GPT_4_1_MINI = '👽 ChatGPT 4.1 Mini'
+    CHAT_GPT_4_1 = '🛸 ChatGPT 4.1'
 
     # Claude
     CLAUDE = '📄 Claude'
@@ -184,7 +186,7 @@ class Texts(Protocol):
     def error_aspect_ratio_invalid(
         min_ratio: str,
         max_ratio: str,
-        actual_ratio: str,
+        actual_ratio: Optional[str],
     ):
         raise NotImplementedError
 
@@ -282,8 +284,10 @@ class Texts(Protocol):
     INFO_CHAT_GPT: str
     INFO_CHAT_GPT_4_OMNI_MINI: str
     INFO_CHAT_GPT_4_OMNI: str
-    INFO_CHAT_GPT_O_3_MINI: str
-    INFO_CHAT_GPT_O_1: str
+    INFO_CHAT_GPT_O_4_MINI: str
+    INFO_CHAT_GPT_O_3: str
+    INFO_CHAT_GPT_4_1_MINI: str
+    INFO_CHAT_GPT_4_1: str
     INFO_CLAUDE: str
     INFO_CLAUDE_3_HAIKU: str
     INFO_CLAUDE_3_SONNET: str

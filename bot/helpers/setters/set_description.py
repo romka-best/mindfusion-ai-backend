@@ -18,13 +18,15 @@ Access to AI:
 🔤 Text
 • ChatGPT 4 Omni Mini
 • ChatGPT 4 Omni
-• ChatGPT o3-mini
-• ChatGPT o1
+• ChatGPT 4.1 Mini
+• ChatGPT 4.1
+• ChatGPT o4-mini
+• ChatGPT o3
 • Claude 3.5 Haiku
 • Claude 3.7 Sonnet
 • Claude 3 Opus
 • Gemini 2 Flash
-• Gemini 2 Pro
+• Gemini 2.5 Pro
 • Gemini 1 Ultra
 • Grok 2
 • DeepSeek V3
@@ -62,13 +64,15 @@ Access to AI:
 🔤 Текстовые
 • ChatGPT 4 Omni Mini
 • ChatGPT 4 Omni
-• ChatGPT o3-mini
-• ChatGPT o1
+• ChatGPT 4.1 Mini
+• ChatGPT 4.1
+• ChatGPT o4-mini
+• ChatGPT o3
 • Claude 3.5 Haiku
 • Claude 3.7 Sonnet
 • Claude 3 Opus
 • Gemini 2 Flash
-• Gemini 2 Pro
+• Gemini 2.5 Pro
 • Gemini 1 Ultra
 • Grok 2
 • DeepSeek V3
@@ -107,13 +111,15 @@ Acceso a redes neuronales:
 🔤 Texto
 • ChatGPT 4 Omni Mini
 • ChatGPT 4 Omni
-• ChatGPT o3-mini
-• ChatGPT o1
+• ChatGPT 4.1 Mini
+• ChatGPT 4.1
+• ChatGPT o4-mini
+• ChatGPT o3
 • Claude 3.5 Haiku
 • Claude 3.7 Sonnet
 • Claude 3 Opus
 • Gemini 2 Flash
-• Gemini 2 Pro
+• Gemini 2.5 Pro
 • Gemini 1 Ultra
 • Grok 2
 • DeepSeek V3
@@ -152,13 +158,15 @@ AI मॉडल्स तक पहुंच:
 🔤 टेक्स्ट जनरेशन
 • ChatGPT 4 Omni Mini
 • ChatGPT 4 Omni
-• ChatGPT o3-mini
-• ChatGPT o1
+• ChatGPT 4.1 Mini
+• ChatGPT 4.1
+• ChatGPT o4-mini
+• ChatGPT o3
 • Claude 3.5 Haiku
 • Claude 3.7 Sonnet
 • Claude 3 Opus
 • Gemini 2 Flash
-• Gemini 2 Pro
+• Gemini 2.5 Pro
 • Gemini 1 Ultra
 • Grok 2
 • DeepSeek V3

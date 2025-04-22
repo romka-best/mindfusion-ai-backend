@@ -21,6 +21,7 @@ def get_model_version(model_settings: dict):
     elif (
         model_settings[UserSettings.VERSION] == MidjourneyVersion.V5 or
         model_settings[UserSettings.VERSION] == MidjourneyVersion.V6 or
+        model_settings[UserSettings.VERSION] == MidjourneyVersion.V7 or
         model_settings[UserSettings.VERSION] == KlingVersion.V1 or
         model_settings[UserSettings.VERSION] == PikaVersion.V2
     ):
