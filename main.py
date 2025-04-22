@@ -28,7 +28,7 @@ from aiogram.fsm.strategy import FSMStrategy
 from redis.backoff import FullJitterBackoff
 from redis.retry import Retry
 from redis.exceptions import ConnectionError
-breakpoint()
+
 from bot.config import config
 from bot.database.main import firebase
 from bot.handlers.admin.admin_handler import admin_router
