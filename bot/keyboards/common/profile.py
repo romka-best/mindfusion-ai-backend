@@ -49,6 +49,13 @@ def build_profile_keyboard(
                 callback_data=f'profile:open_buy_packages_info'
             ),
         ],
+        [
+            InlineKeyboardButton(
+                text="Управление фотографиями",
+                callback_data=f'photo_bundles:show'
+            ),
+        ],
+
     ]
 
     if has_active_subscription:
