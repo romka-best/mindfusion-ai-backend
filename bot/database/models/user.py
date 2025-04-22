@@ -103,6 +103,7 @@ class User:
     utm: dict
     created_at: datetime
     edited_at: datetime
+    face_swap_lora_version: str
 
     DEFAULT_ADDITIONAL_USAGE_QUOTA = {
         Quota.CHAT_GPT4_OMNI_MINI: 0,
@@ -355,6 +356,7 @@ class User:
         utm=None,
         created_at=None,
         edited_at=None,
+        face_swap_lora_version="",
         **kwargs,
     ):
         self.id = str(id)
@@ -387,6 +389,10 @@ class User:
             if last_subscription_limit_update is not None else current_time
         self.created_at = created_at if created_at is not None else current_time
         self.edited_at = edited_at if edited_at is not None else current_time
+        self.face_swap_lora_version = face_swap_lora_version
 
     def to_dict(self):
         return vars(self)
+
+    def is_face_swap_lora_trained(self):
+        return self.face_swap_lora_version != ""

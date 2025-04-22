@@ -497,6 +497,12 @@ class Russian(Texts):
     @staticmethod
     def error_internal_ai_model(ai_model_name) -> str:
         return f"⚠️ Ошибка на стороне модели {ai_model_name}. Попробуйте снова чуть позже."
+    def error_photo_bundle_empty():
+        return "⚠️ В вашем профиле отсутствуют фотографии, загрузите хотя бы одну фотографию и повторите запрос."
+    
+    @staticmethod
+    def error_internal_ai_model(ai_model_name) -> str:
+        return f"⚠️ Ошибка на стороне модели {ai_model_name}. Попробуйте снова чуть позже."
 
     # Examples
     EXAMPLE_INFO = "Чтобы получить доступ к этой нейросети нажмите кнопку ниже:"
@@ -608,6 +614,10 @@ class Russian(Texts):
 
 💡 <b>Совет</b>: Попробуйте число поменьше, или воспользуйтесь /buy для неограниченных возможностей!
 """
+
+    @staticmethod
+    def wait_for_lora_train():
+        return "🤖 Обучаю свою нейросеть, чтобы предоставлять вам лучшие ответы — это нужно сделать только один раз. Обычно это занимает 10 минут."
 
     # Feedback
     FEEDBACK_INFO = """
@@ -4133,3 +4143,60 @@ class Russian(Texts):
 
 @roman_danilov, посмотришь? 🤨
 """
+
+    @staticmethod
+    def menu_bundle_photo_managment():
+        return "🖼 Управление фотографиями"
+
+    @staticmethod
+    def photo_bundle_delete_all_confirm():
+        return "⚠️ Вы уверены, что хотите удалить ВСЕ фотографии?"
+
+    @staticmethod
+    def menu_photo_bundle_show():
+        return "🖼 Здесь вы можете загрузить до 10 фотографий, которые будут использоваться для замены лица (Face Swap).\
+ Ниже — кнопки для добавления, удаления и замены фото."
+
+    @staticmethod
+    def menu_photo_bundle_show_upload():
+        return "⬆️ Загрузить"
+
+    @staticmethod
+    def menu_photo_bundle_show_edit():
+        return "🔁 Заменить одну"
+
+    @staticmethod
+    def menu_photo_bundle_delete_one():
+        return "❌ Удалить одну"
+
+    @staticmethod
+    def menu_photo_bundle_delete_all():
+        return "🗑 Удалить все"
+
+    @staticmethod
+    def menu_photo_bundle_back_to_profile():
+        return "👤 Назад в профиль"
+
+    @staticmethod
+    def menu_photo_bundle_delete_mode():
+        return "🔢 Выберите порядковый номер фотографии, которую хотите удалить."
+
+    @staticmethod
+    def menu_photo_bundle_back_to_photos():
+        return "📂 Назад к фотографиям"
+
+    @staticmethod
+    def menu_photo_bundle_edit_mode():
+        return "🔢 Выберите порядковый номер фотографии, которую хотите заменить."
+
+    @staticmethod
+    def menu_photo_bundle_upload_limit_reached():
+        return "🚫 Лимит фотографий достигнут, данные фото не загружены. Вы можете удалить или заменить существующие."
+
+    @staticmethod
+    def menu_photo_bundle_new():
+        return "📥 Отправьте одну или несколько фотографий."
+
+    @staticmethod
+    def menu_photo_bundle_edit():
+        return "📥 Отправьте новую фотографию для замены."
