@@ -102,16 +102,16 @@ async def handle_model(message: Message, user_id: str, state: FSMContext, is_edi
     else:
         limits = SUBSCRIPTION_FREE_LIMITS
 
-    quotes = get_localization(user_language_code).profile_quota(limits, user.daily_limits, user.additional_usage_quota)
+    quotes = get_localization(user_language_code).profile_quota(limits, user.daily_limits, user.additional_usage_quota).split("─────────────")
 
     if is_edit:
         await message.edit_text(
-            text=f"{quotes}\n\n{get_localization(user_language_code).MODEL}",
+            text=f"{quotes[page + 1]}{get_localization(user_language_code).MODEL}",
             reply_markup=reply_markup,
         )
     else:
         await message.answer(
-            text=f"{quotes}\n\n{get_localization(user_language_code).MODEL}",
+            text=f"{quotes[page + 1]}{get_localization(user_language_code).MODEL}",
             reply_markup=reply_markup,
         )
 
