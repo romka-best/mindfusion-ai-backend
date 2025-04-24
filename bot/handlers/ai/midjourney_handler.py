@@ -371,3 +371,5 @@ async def handle_midjourney_example(user: User, user_language_code: LanguageCode
                         'has_error': generation.has_error,
                     },
                 )
+
+
