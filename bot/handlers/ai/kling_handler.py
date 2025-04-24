@@ -1,5 +1,6 @@
 from typing import Optional
 
+import aiohttp
 from aiogram import Router
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
@@ -30,6 +31,8 @@ from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
+from replicate.exceptions import ReplicateError
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 kling_router = Router()
 
@@ -145,6 +148,11 @@ async def handle_kling(
                     'video_first_frame_link': video_frame_link,
                 }
             )
+        except aiohttp.ClientResponseError as e:
+            if e.status == 500:
+                await send_internal_ai_model_error(
+                    user_language_code, message, Model.KLING
+                )
         except Exception as e:
             if 'the prompt contains sensitive words' in str(e).lower():
                 await message.answer_sticker(

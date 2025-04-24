@@ -64,6 +64,8 @@ from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
 from bot.states.ai.face_swap import FaceSwap
 from bot.states.common.profile import Profile
+from replicate.exceptions import ReplicateError
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 face_swap_router = Router()
 
@@ -314,6 +316,11 @@ async def handle_face_swap_prompt(
 
             await processing_sticker.delete()
             await processing_message.delete()
+        except ReplicateError as e:
+            if e.status == 500:
+                await send_internal_ai_model_error(
+                    user_language_code, message, Model.FLUX
+                )
         except Exception as e:
             await message.answer_sticker(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
@@ -759,6 +766,11 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
                 await asyncio.gather(*tasks)
 
                 await state.update_data(maximum_quantity=face_swap_package_quantity - quantity)
+            except ReplicateError as e:
+                if e.status == 500:
+                    await send_internal_ai_model_error(
+                        user_language_code, message, Model.FACE_SWAP
+                    )
             except Exception as e:
                 await message.answer_sticker(
                     sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),

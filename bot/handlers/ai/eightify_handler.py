@@ -26,6 +26,7 @@ from bot.integrations.eightify import generate_summary
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard, build_model_limit_exceeded_keyboard
 from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 eightify_router = Router()
 
@@ -77,6 +78,7 @@ async def handle_eightify(message: Message, state: FSMContext, user: User):
     user_language_code = await get_user_language(str(user.id), state.storage)
 
     link = message.text
+    breakpoint()
     if link is None:
         await message.reply(
             text=get_localization(user_language_code).EIGHTIFY_VALUE_ERROR,
@@ -171,14 +173,18 @@ async def handle_eightify(message: Message, state: FSMContext, user: User):
                     )
 
                 await update_user_usage_quota(user, Quota.EIGHTIFY, 1)
-        except aiohttp.ClientResponseError:
-            await message.answer_sticker(
-                sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
-            )
+        except aiohttp.ClientResponseError as e:
+            if e.status == 500:
+                await send_internal_ai_model_error(user_language_code, message, Model.EIGHTIFY)
+            else:
+                await message.answer_sticker(
+                    sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
+                )
 
-            await message.answer(
-                text=get_localization(user_language_code).EIGHTIFY_VIDEO_ERROR,
-            )
+                await message.answer(
+                    text=get_localization(user_language_code).EIGHTIFY_VIDEO_ERROR,
+                )
+
         except Exception as e:
             await message.answer_sticker(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),

@@ -60,6 +60,8 @@ from bot.states.common.profile import Profile
 from bot.utils.is_already_processing import is_already_processing
 from bot.utils.is_messages_limit_exceeded import is_messages_limit_exceeded
 from bot.utils.is_time_limit_exceeded import is_time_limit_exceeded
+from replicate.exceptions import ReplicateError
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 photo_router = Router()
 photo_router.message.middleware(AlbumMiddleware())
@@ -212,28 +214,34 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
             photo_link = firebase.get_public_url(photo_path)
             photo_photoshop = firebase.bucket.new_blob(photo_path)
             await photo_photoshop.upload(photo_data)
+            try:
+                result = await create_photoshop_ai_image(photoshop_ai_action_name, photo_link)
+                request = await write_request(
+                    user_id=user_id,
+                    processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
+                    product_id=product.id,
+                    requested=1,
+                    details={
+                        'type': photoshop_ai_action_name,
+                    },
+                )
+                await write_generation(
+                    id=result,
+                    request_id=request.id,
+                    product_id=product.id,
+                    has_error=result is None,
+                    details={
+                        'type': photoshop_ai_action_name,
+                    }
+                )
 
-            result = await create_photoshop_ai_image(photoshop_ai_action_name, photo_link)
-            request = await write_request(
-                user_id=user_id,
-                processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
-                product_id=product.id,
-                requested=1,
-                details={
-                    'type': photoshop_ai_action_name,
-                },
-            )
-            await write_generation(
-                id=result,
-                request_id=request.id,
-                product_id=product.id,
-                has_error=result is None,
-                details={
-                    'type': photoshop_ai_action_name,
-                }
-            )
+                await state.clear()
+            except ReplicateError as e:
+                if e.status == 500:
+                    await send_internal_ai_model_error(
+                        user_language_code, message, Model.PHOTOSHOP_AI
+                    )
 
-            await state.clear()
     elif (
         user.current_model == Model.CHAT_GPT or
         user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Sonnet or
@@ -405,11 +413,13 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
                     photo_link = firebase.get_public_url(example_photo.name)
 
                     await message.answer_photo(
-                        photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
-                        caption=get_localization(user_language_code).PROFILE_SEND_ME_YOUR_PICTURE,
-                        reply_markup=build_cancel_keyboard(user_language_code)
                     )
                     await state.set_state(Profile.waiting_for_photo)
+                except ReplicateError as e:
+                    if e.status == 500:
+                        await send_internal_ai_model_error(
+                            user_language_code, message, Model.FACE_SWAP
+                        )
     elif (
         user.current_model == Model.KLING or
         user.current_model == Model.RUNWAY or

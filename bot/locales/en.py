@@ -469,6 +469,10 @@ The image's width-to-height ratio must be between {min_ratio} and {max_ratio}.
         text += "\n\n Please try again with a different image 😉"
         return text
 
+    @staticmethod
+    def error_internal_ai_model(ai_model_name) -> str:
+        return f"⚠️ An error occurred on the {ai_model_name} side. Please try again later."
+
     # Examples
     EXAMPLE_INFO = "To gain access to this AI model, click the button below:"
 

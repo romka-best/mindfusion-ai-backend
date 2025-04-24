@@ -494,6 +494,10 @@ class Russian(Texts):
         text += "\n\nПовторите, пожалуйста, запрос с другим изображением 😉"
         return text
 
+    @staticmethod
+    def error_internal_ai_model(ai_model_name) -> str:
+        return f"⚠️ Ошибка на стороне модели {ai_model_name}. Попробуйте снова чуть позже."
+
     # Examples
     EXAMPLE_INFO = "Чтобы получить доступ к этой нейросети нажмите кнопку ниже:"
 

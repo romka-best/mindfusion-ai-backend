@@ -476,6 +476,10 @@ class Hindi(Texts):
         text += "\n\nकृपया किसी अन्य चित्र के साथ पुनः प्रयास करें 😉"
         return text
 
+    @staticmethod
+    def error_internal_ai_model(ai_model_name) -> str:
+        return f"⚠️ मॉडल {ai_model_name} में एक त्रुटि हुई है। कृपया बाद में पुनः प्रयास करें।"
+
     # Examples
     EXAMPLE_INFO = "यहाँ वह है जो आप इस न्यूरल नेटवर्क तक पहुँचने के लिए कर सकते हैं:"
 
