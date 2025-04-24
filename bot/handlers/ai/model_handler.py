@@ -34,6 +34,9 @@ from bot.keyboards.ai.model import (
 )
 from bot.keyboards.settings.settings import build_settings_keyboard
 from bot.locales.main import get_localization, get_user_language
+from bot.database.models.subscription import SUBSCRIPTION_FREE_LIMITS
+from bot.database.operations.subscription.getters import get_subscription
+from bot.database.operations.product.getters import get_product
 
 model_router = Router()
 
@@ -92,14 +95,23 @@ async def handle_model(message: Message, user_id: str, state: FSMContext, is_edi
         chosen_model,
     )
 
+    if user.subscription_id:
+        user_subscription = await get_subscription(user.subscription_id)
+        product_subscription = await get_product(user_subscription.product_id)
+        limits = product_subscription.details.get('limits', SUBSCRIPTION_FREE_LIMITS)
+    else:
+        limits = SUBSCRIPTION_FREE_LIMITS
+
+    quotes = get_localization(user_language_code).profile_quota(limits, user.daily_limits, user.additional_usage_quota).split("─────────────")
+
     if is_edit:
         await message.edit_text(
-            text=get_localization(user_language_code).MODEL,
+            text=f"{quotes[page + 1]}{get_localization(user_language_code).MODEL}",
             reply_markup=reply_markup,
         )
     else:
         await message.answer(
-            text=get_localization(user_language_code).MODEL,
+            text=f"{quotes[page + 1]}{get_localization(user_language_code).MODEL}",
             reply_markup=reply_markup,
         )
 
