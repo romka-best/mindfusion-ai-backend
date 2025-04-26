@@ -476,6 +476,10 @@ class Hindi(Texts):
         text += "\n\nकृपया किसी अन्य चित्र के साथ पुनः प्रयास करें 😉"
         return text
 
+    @staticmethod
+    def error_photo_bundle_empty():
+        return "⚠️ आपकी प्रोफ़ाइल में कोई फ़ोटो नहीं है। कृपया कम से कम एक फ़ोटो अपलोड करें और पुनः प्रयास करें।"
+
     # Examples
     EXAMPLE_INFO = "यहाँ वह है जो आप इस न्यूरल नेटवर्क तक पहुँचने के लिए कर सकते हैं:"
 
@@ -581,6 +585,10 @@ class Hindi(Texts):
 
 💡 <b>सुझाव:</b> एक छोटा नंबर आज़माएं, या असीमित संभावनाओं के लिए /buy का उपयोग करें!
 """
+
+    @staticmethod
+    def wait_for_lora_train():
+        return "🤖 मैं अपने न्यूरल नेटवर्क को बेहतर उत्तर देने के लिए प्रशिक्षित कर रहा हूँ — यह केवल एक बार करना होता है। आमतौर पर इसमें 10 मिनट लगते हैं।"
 
     # Feedback
     FEEDBACK_INFO = """
@@ -2642,3 +2650,60 @@ class Hindi(Texts):
 
 आप नीचे दिए गए बटन पर क्लिक करके पहुंच प्राप्त कर सकते हैं:
 """
+
+    @staticmethod
+    def menu_bundle_photo_managment():
+        return "🖼 फ़ोटो प्रबंधन"
+
+    @staticmethod
+    def photo_bundle_delete_all_confirm():
+        return "⚠️ क्या आप वाकई में सभी फ़ोटो हटाना चाहते हैं?"
+
+    @staticmethod
+    def menu_photo_bundle_show():
+        return "🖼 आप यहां Face Swap के लिए इस्तेमाल करने हेतु अधिकतम 10 फ़ोटो अपलोड कर सकते हैं।\
+ नीचे दिए गए बटन का उपयोग करके फ़ोटो जोड़ें, हटाएं या बदलें।"
+
+    @staticmethod
+    def menu_photo_bundle_show_upload():
+        return "⬆️ अपलोड करें"
+
+    @staticmethod
+    def menu_photo_bundle_show_edit():
+        return "🔁 एक को बदलें"
+
+    @staticmethod
+    def menu_photo_bundle_delete_one():
+        return "❌ एक को हटाएं"
+
+    @staticmethod
+    def menu_photo_bundle_delete_all():
+        return "🗑 सभी हटाएं"
+
+    @staticmethod
+    def menu_photo_bundle_back_to_profile():
+        return "👤 प्रोफ़ाइल पर वापस जाएं"
+
+    @staticmethod
+    def menu_photo_bundle_delete_mode():
+        return "🔢 जिस फ़ोटो को हटाना है, उसका क्रमांक चुनें।"
+
+    @staticmethod
+    def menu_photo_bundle_back_to_photos():
+        return "📂 फ़ोटो पर वापस जाएं"
+
+    @staticmethod
+    def menu_photo_bundle_edit_mode():
+        return "🔢 जिस फ़ोटो को बदलना है, उसका क्रमांक चुनें।"
+
+    @staticmethod
+    def menu_photo_bundle_upload_limit_reached():
+        return "🚫 फ़ोटो की सीमा पूरी हो गई है, ये फ़ोटो अपलोड नहीं की गईं। आप मौजूदा फ़ोटो को हटा या बदल सकते हैं।"
+
+    @staticmethod
+    def menu_photo_bundle_new():
+        return "📥 एक या एक से अधिक फ़ोटो भेजें।"
+
+    @staticmethod
+    def menu_photo_bundle_edit():
+        return "📥 बदलने के लिए एक नई फ़ोटो भेजें।"

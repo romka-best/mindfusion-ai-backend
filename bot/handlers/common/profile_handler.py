@@ -30,7 +30,6 @@ from bot.keyboards.common.profile import (
     build_profile_quota_keyboard,
 )
 from bot.locales.main import get_localization, get_user_language
-from bot.locales.types import LanguageCode
 from bot.states.common.profile import Profile
 
 profile_router = Router()

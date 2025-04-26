@@ -1,82 +1,56 @@
-from aiogram.exceptions import TelegramBadRequest
-
-
 class BaseHandler:
-    def __init__(self, message, state, callback_query=None):
+    def __init__(
+        self,
+        message,
+        state,
+        lang_code,
+        user_id,
+        callback_query=None,
+        delete_prev_msgs_num=0,
+    ):
         self.message = message
         self.state = state
         self.callback_query = callback_query
+        self.lang_code = lang_code
+        self.user_id = user_id
+        self.delete_prev_msgs_num = delete_prev_msgs_num
 
     @classmethod
     async def create_instance(
         cls,
         message,
         state,
+        lang_code,
+        user_id,
         callback_query=None,
-        delete_prev_msg=True,
-        delete_prev_media=False,
-        prev_media_num=None,
-        prev_media_offset=1,
+        delete_prev_msgs_num=0,
+        delete_prev_msgs_auto=True,
     ):
-        instance = cls(message, state, callback_query)
+        instance = cls(
+            message, state, lang_code, user_id, callback_query, delete_prev_msgs_num
+        )
+        if callback_query:
+            await callback_query.answer()
 
-        if delete_prev_msg:
-            await instance._delete_prev_msg()
-        if delete_prev_media:
-            await instance._delete_prev_media(prev_media_num, prev_media_offset)
+        if delete_prev_msgs_auto and delete_prev_msgs_num:
+            await instance._delete_prev_msgs()
 
         return instance
 
-    async def _delete_prev_msg(self):
-        await self.message.delete()
-
-    async def _delete_prev_media(self, prev_media_num=None, prev_media_offset=1):
-        bot = self.message.bot
-
-        if prev_media_num:
-            delete_msg_ids = [
-                self.message.message_id - i
-                for i in range(prev_media_offset, prev_media_offset + prev_media_num)
-            ]
-            await bot.delete_messages(self.message.chat.id, delete_msg_ids)
+    # start_msg_id useful when we handle album
+    # because in case when we handle album self.message is FIRST uploaded by User
+    # in album case, calculation prev msg ids must start from LAST uploaded photo by User
+    async def _delete_prev_msgs(self, start_msg_id=None):
+        if start_msg_id:
+            message_id = start_msg_id
         else:
-            try:
-                temp_msg = await bot.send_message(
-                    chat_id=self.message.chat.id,
-                    text=".",
-                    reply_to_message_id=self.message.message_id - prev_media_offset,
-                )
-            except TelegramBadRequest:
-                return
+            message_id = self.message.message_id
 
-            media_msg = temp_msg.reply_to_message
-            await temp_msg.delete()
-            if media_msg.photo:
-                await media_msg.delete()
-                if media_msg.media_group_id:
-                    prev_media_offset += 1
-
-                    while True:
-                        bot.delete_messages(
-                            self.message.chat.id,
-                            [self.message.message_id - prev_media_offset],
-                        )
-
-                        try:
-                            temp_msg = await bot.send_message(
-                                chat_id=self.message.chat.id,
-                                text=".",
-                                reply_to_message_id=self.message.message_id
-                                - prev_media_offset,
-                            )
-                        except TelegramBadRequest:
-                            break
-
-                        media_msg = temp_msg.reply_to_message
-
-                        if not media_msg.media_group_id:
-                            break
-
-                        await temp_msg.delete()
-                        await media_msg.delete()
-                        prev_media_offset += 1
+        await self.message.bot.delete_messages(
+            self.message.chat.id,
+            [
+                message_id - offset
+                for offset in range(0, self.delete_prev_msgs_num)
+            ],
+        )
+        self.delete_prev_msgs_num = 0
