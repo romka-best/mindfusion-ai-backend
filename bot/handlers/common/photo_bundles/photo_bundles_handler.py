@@ -1,5 +1,5 @@
 from bot.database.operations.photo_bundle.photo_bundle import PhotoBundleGateway
-from .base_handler import BaseHandler
+from ..base_handler import BaseHandler
 from bot.keyboards import photo_bundles
 from bot.helpers.photo_bundles.photo_bundle_grid import PhotoBundleGrid
 

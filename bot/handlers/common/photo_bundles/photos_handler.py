@@ -1,5 +1,5 @@
 from bot.keyboards.photo_bundles.photos.delete_all_confirm import DeleteAllConfirm
-from .base_handler import BaseHandler
+from ..base_handler import BaseHandler
 from bot.database.operations.photo_bundle.photo_bundle import PhotoBundleGateway
 from bot.keyboards import photo_bundles
 from bot.states.common.photos_bundle import PhotoBundleState
