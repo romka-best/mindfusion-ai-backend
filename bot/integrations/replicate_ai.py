@@ -1,5 +1,6 @@
 import asyncio
 import os
+import base64
 from typing import Optional
 
 import replicate
@@ -59,6 +60,92 @@ async def create_flux_face_swap_image(
 
     return prediction.id
 
+async def create_model(owner: str, name: str, hardware: str = "cpu", visibility="private"):
+    model = await replicate.models.async_create(
+        owner=owner,
+        name=name,
+        visibility=visibility,
+        hardware=hardware
+    )
+
+    return model
+
+async def create_flux_dev_lora_trainer(
+    destination: str, trigger_word: str, input_images, is_zip: bool = False
+):
+    if is_zip:
+        data = base64.b64encode(input_images)
+        data = data.decode('utf-8')
+        input_images = f"data:application/zip;base64,{data}"
+        del data # For GC clean up
+
+    training_task = await replicate.trainings.async_create(
+        model="ostris/flux-dev-lora-trainer",
+        version="c6e78d2501e8088876e99ef21e4460d0dc121af7a4b786b9a4c2d75c620e300d",
+        destination=destination,
+        input={
+            "steps": 3, # TODO specify steps
+            "lora_rank": 16,
+            "optimizer": "adamw8bit",
+            "batch_size": 1,
+            "resolution": "512,768,1024",
+            "autocaption": True,
+            "input_images": input_images,
+            "trigger_word": trigger_word,
+            "learning_rate": 0.0004,
+            "caption_dropout_rate": 0.05,
+            "cache_latents_to_disk": False,
+            "gradient_checkpointing": False,
+        },
+    )
+    del input_images # For GC clean up
+
+    training_status = training_task.status
+    training_seconds_spend = 0
+    request_error_counter = 0 # if reach streak of 10 failed requests smth wrong
+
+    await asyncio.sleep(120) # Approximately model startup
+    pull_interval = 10 # TODO specify pull_interval
+
+    while training_status not in ["succeeded", "failed", "canceled"]:
+        await asyncio.sleep(pull_interval)
+        training_seconds_spend += pull_interval
+
+        try:
+            training_task = await replicate.trainings.async_get(training_task.id)
+            request_error_counter = 0
+        except replicate.exceptions.ReplicateError:
+            request_error_counter += 1
+
+        training_status = training_task.status
+
+        if request_error_counter == 10:
+            raise Exception("training_failed", training_task)
+
+    if training_status != "succeeded":
+        raise Exception("training_failed", training_task)
+
+    return training_task
+
+async def create_flux_dev_lora(
+    prompt, lora_weights, aspect_ratio="4:3", output_format="jpg"
+) -> Optional[str]:
+    model_name = "black-forest-labs/flux-dev-lora"
+    input_parameters = {
+        "prompt": prompt,
+        "lora_weights": lora_weights,
+        "aspect_ratio": aspect_ratio, # TODO choose aspect_ratio
+        "output_format": output_format
+    }
+
+    prediction = await replicate.predictions.async_create(
+        model=model_name,
+        input=input_parameters,
+        webhook=WEBHOOK_REPLICATE_URL,
+        webhook_events_filter=['completed'],
+    )
+
+    return prediction.id
 
 async def create_photoshop_ai_image(action: PhotoshopAIAction, image_url: str) -> Optional[str]:
     if action == PhotoshopAIAction.UPSCALE:

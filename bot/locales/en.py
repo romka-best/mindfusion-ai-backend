@@ -472,6 +472,8 @@ The image's width-to-height ratio must be between {min_ratio} and {max_ratio}.
     @staticmethod
     def error_internal_ai_model(ai_model_name) -> str:
         return f"⚠️ An error occurred on the {ai_model_name} side. Please try again later."
+    def error_photo_bundle_empty():
+        return "⚠️ There are no photos in your profile. Please upload at least one photo and try again."
 
     # Examples
     EXAMPLE_INFO = "To gain access to this AI model, click the button below:"
@@ -578,6 +580,10 @@ You only have <b>{available_images} generations</b> left in your arsenal
 
 💡 <b>Tip:</b> Try a smaller number, or use /buy for unlimited possibilities!
 """
+
+    @staticmethod
+    def wait_for_lora_train():
+        return "🤖 Training my neural network to provide you with better answers — this only needs to be done once. It usually takes 10 minutes."
 
     # Feedback
     FEEDBACK_INFO = """
@@ -3122,3 +3128,61 @@ So, once more: when exactly did this financial miracle occur? 🗓️
         ]
 
         return random.choice(texts)
+
+    @staticmethod
+    def menu_bundle_photo_managment():
+        return "🖼 Photo Management"
+
+    @staticmethod
+    def photo_bundle_delete_all_confirm():
+        return "⚠️ Are you sure you want to delete ALL photos?"
+
+    @staticmethod
+    def menu_photo_bundle_show():
+        return "🖼 You can upload up to 10 photos here to use them for face swap.\
+ Use the buttons below to add, delete, or replace photos."
+
+    @staticmethod
+    def menu_photo_bundle_show_upload():
+        return "⬆️ Upload"
+
+    @staticmethod
+    def menu_photo_bundle_show_edit():
+        return "🔁 Replace one"
+
+    @staticmethod
+    def menu_photo_bundle_delete_one():
+        return "❌ Delete one"
+
+    @staticmethod
+    def menu_photo_bundle_delete_all():
+        return "🗑 Delete all"
+
+    @staticmethod
+    def menu_photo_bundle_back_to_profile():
+        return "👤 Back to profile"
+
+    @staticmethod
+    def menu_photo_bundle_delete_mode():
+        return "🔢 Select the photo number you want to delete."
+
+    @staticmethod
+    def menu_photo_bundle_back_to_photos():
+        return "📂 Back to photos"
+
+    @staticmethod
+    def menu_photo_bundle_edit_mode():
+        return "🔢 Select the photo number you want to replace."
+
+    @staticmethod
+    def menu_photo_bundle_upload_limit_reached():
+        return "🚫 Photo limit reached, these photos were not uploaded. You can delete or replace existing ones."
+
+    @staticmethod
+    def menu_photo_bundle_new():
+        return "📥 Send one or more photos."
+
+    @staticmethod
+    def menu_photo_bundle_edit():
+        return "📥 Send a new photo for replacement."
+

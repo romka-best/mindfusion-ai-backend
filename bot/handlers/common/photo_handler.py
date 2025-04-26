@@ -1,6 +1,7 @@
 import asyncio
 import time
 import uuid
+from pathlib import Path
 
 import aiohttp
 from aiogram import Router, F
@@ -62,6 +63,9 @@ from bot.utils.is_messages_limit_exceeded import is_messages_limit_exceeded
 from bot.utils.is_time_limit_exceeded import is_time_limit_exceeded
 from replicate.exceptions import ReplicateError
 from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
+from bot.database.operations.photo_bundle.photo_bundle import PhotoBundleGateway
+from bot.helpers.senders.send_photo_bundle_empty import send_photo_bundle_empty
+
 
 photo_router = Router()
 photo_router.message.middleware(AlbumMiddleware())
@@ -371,25 +375,30 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
 
             async with ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id):
                 try:
-                    user_photo_blobs = await firebase.bucket.list_blobs(prefix=f'users/avatars/{user_id}.')
-                    if len(user_photo_blobs) > 0:
-                        user_photo_blob = user_photo_blobs[-1]
-                    else:
-                        user_photo_blob = f'users/avatars/{user_id}.jpeg'
-                    user_photo = await firebase.bucket.get_blob(user_photo_blob)
-                    user_photo_link = firebase.get_public_url(user_photo.name)
-                    photo_data_io = await message.bot.download_file(photo_file.file_path, timeout=300)
-                    photo_data = await asyncio.to_thread(photo_data_io.read)
-                    photo_extension = photo_file.file_path.split('.')[-1]
+                    photo_bundle = await PhotoBundleGateway().get_by_user_id(user_id)
 
-                    background_path = f'users/backgrounds/{user_id}/{uuid.uuid4()}.{photo_extension}'
-                    background_photo = firebase.bucket.new_blob(background_path)
-                    await background_photo.upload(photo_data)
-                    background_photo_link = firebase.get_public_url(background_path)
+                    if photo_bundle.is_empty():
+                        await state.clear()
+                        await processing_message.delete()
+                        await processing_sticker.delete()
+                        return await send_photo_bundle_empty(message, user_language_code)
+
+                    # bg_photo where face changed
+                    # user_photo for face to change
+                    bg_photo_tg_file = await message.bot.get_file(message.photo[-1].file_id)
+                    bg_photo_tg_file_extension = Path(bg_photo_tg_file.file_path).suffix.lstrip(".")
+                    bg_photo_tg_file_io = await message.bot.download_file(bg_photo_tg_file.file_path)
+
+                    bg_path = f'users/backgrounds/{user_id}/{uuid.uuid4()}.{bg_photo_tg_file_extension}'
+                    await firebase.storage.upload(firebase.bucket.name, bg_path, bg_photo_tg_file_io)
+
+                    bg_photo_link = firebase.get_public_url(bg_path)
+                    user_photo_link = firebase.get_public_url(f"users/avatars/{user_id}/{photo_bundle.photos[0].file_name}")
+
+                    # Make request
+                    result = await create_face_swap_image(bg_photo_link, user_photo_link)
 
                     product = await get_product_by_quota(Quota.FACE_SWAP)
-
-                    result = await create_face_swap_image(background_photo_link, user_photo_link)
                     request = await write_request(
                         user_id=user_id,
                         processing_message_ids=[processing_sticker.message_id, processing_message.message_id],

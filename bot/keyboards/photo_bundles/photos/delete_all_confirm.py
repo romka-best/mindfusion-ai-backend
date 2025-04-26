@@ -1,20 +1,21 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from bot.locales.main import get_localization
 
 
 class DeleteAllConfirm:
-    def render(self):
+    def render(self, lang_code):
         return {
-            "text": "Вы уверены, что хотите удалить ВСЕ фотографии?",
+            "text": get_localization(lang_code).photo_bundle_delete_all_confirm(),
             "reply_markup": InlineKeyboardMarkup(
                 inline_keyboard=[
                     [
                         InlineKeyboardButton(
-                            text="Нет",
-                            callback_data="photo_bundles:show",
+                            text="❌",
+                            callback_data="1|photo_bundles:show",
                         ),
                         InlineKeyboardButton(
-                            text="Да",
-                            callback_data="photo_bundles:photos:delete_all",
+                            text="✅",
+                            callback_data="1|photo_bundles:photos:delete_all",
                         ),
                     ],
                 ]

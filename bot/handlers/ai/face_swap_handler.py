@@ -48,7 +48,7 @@ from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
 from bot.integrations.face_swap import generate_face_swap_video, get_face_swap_video_generation
-from bot.integrations.replicate_ai import create_face_swap_images, create_flux_face_swap_image
+from bot.integrations.replicate_ai import create_face_swap_images, create_flux_dev_lora, create_flux_dev_lora_trainer
 from bot.keyboards.ai.face_swap import (
     build_face_swap_keyboard,
     build_face_swap_chosen_keyboard,
@@ -68,6 +68,9 @@ from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_mo
 from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 import traceback
 
+from bot.database.operations.photo_bundle.photo_bundle import PhotoBundleGateway
+from bot.helpers.photo_bundles.download_photo_bundle import DownloadPhotoBundle
+from bot.helpers.senders.send_photo_bundle_empty import send_photo_bundle_empty
 
 face_swap_router = Router()
 
@@ -271,26 +274,61 @@ async def handle_face_swap_prompt(
             return
 
         try:
-            user_photo_blobs = await firebase.bucket.list_blobs(prefix=f'users/avatars/{user.id}.')
-            if len(user_photo_blobs) > 0:
-                user_photo = user_photo_blobs[-1]
-            else:
-                user_photo = f'users/avatars/{user.id}.jpeg'
-            user_photo = await firebase.bucket.get_blob(user_photo)
-            user_photo_link = firebase.get_public_url(user_photo.name)
+            prepared_prompt = prompt
 
-            if prompt and user_language_code != LanguageCode.EN:
-                prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
-            user_gender = 'male' if user.settings[Model.FACE_SWAP][UserSettings.GENDER] == UserGender.MALE else 'female'
-            prompt += f'. A photo of a {user_gender} person img'
-            result_id = await create_flux_face_swap_image(
-                prompt,
-                user_photo_link,
+            # Prepating lora
+            if not user.is_face_swap_lora_trained():
+                photo_bundle = await PhotoBundleGateway().get_by_user_id(user.id)
+
+                if photo_bundle.is_empty():
+                    await send_photo_bundle_empty(message, user_language_code)
+                    await processing_sticker.delete()
+                    await processing_message.delete()
+                    await state.clear()
+                    return
+
+                # if user photo exist, need to train lora
+                await message.answer(
+                    text=get_localization(user_language_code).wait_for_lora_train()
+                )
+
+                zip_file = await DownloadPhotoBundle().execute(user.id, photo_bundle, True)
+
+                training_result = await create_flux_dev_lora_trainer(
+                    "romka-best/mffswap_public", "MFFSWAP", zip_file, is_zip=True
+                )
+                del zip_file # For GC clean up
+
+                lora_version = training_result.output["version"].split(":")[-1]
+                await update_user(user.id, {"face_swap_lora_version": lora_version})
+                user.face_swap_lora_version = lora_version
+
+            # At this step lora should definitely exist
+            lora_weight = f"romka-best/mffswap_public/{user.face_swap_lora_version}"
+
+            # Preparing prompt
+            if prepared_prompt and user_language_code != LanguageCode.EN:
+                prepared_prompt = await translate_text(
+                    prepared_prompt, user_language_code, LanguageCode.EN
+                )
+
+            user_gender_name = ""
+            user_gender_property = user.settings[Model.FACE_SWAP][UserSettings.GENDER]
+            if user_gender_property != UserGender.UNSPECIFIED:
+                user_gender_name = user_gender_property.lower()
+            prepared_prompt += f". A photo of MFFSWAP a {user_gender_name} person img"  # MFFSWAP Trigger word for lora TODO maybe change prompt
+
+            # Make request
+            result_id = await create_flux_dev_lora(
+                prompt=prepared_prompt, lora_weights=lora_weight
             )
 
             request = await write_request(
                 user_id=user.id,
-                processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
+                processing_message_ids=[
+                    processing_sticker.message_id,
+                    processing_message.message_id,
+                ],
                 product_id=product.id,
                 requested=1,
             )
@@ -300,9 +338,7 @@ async def handle_face_swap_prompt(
                 request_id=request.id,
                 product_id=product.id,
                 has_error=result_id is None,
-                details={
-                    'prompt': prompt,
-                }
+                details={"prompt": prepared_prompt},
             )
         except aiohttp.ClientResponseError:
             photo_path = 'users/avatars/example.png'
@@ -728,9 +764,16 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
                 await processing_message.delete()
                 return
 
-            user_photo_blobs = await firebase.bucket.list_blobs(prefix=f'users/avatars/{user_id}.')
-            user_photo = await firebase.bucket.get_blob(user_photo_blobs[-1])
-            user_photo_link = firebase.get_public_url(user_photo.name)
+            photo_bundle = await PhotoBundleGateway().get_by_user_id(user_id)
+
+            if photo_bundle.is_empty():
+                await state.clear()
+                await processing_message.delete()
+                await processing_sticker.delete()
+                return await send_photo_bundle_empty(message, user_language_code)
+
+            user_photo_link = firebase.get_public_url(f"users/avatars/{user_id}/{photo_bundle.photos[0].file_name}")
+
             used_face_swap_package = await get_used_face_swap_package_by_user_id_and_package_id(
                 user.id,
                 face_swap_package.id,

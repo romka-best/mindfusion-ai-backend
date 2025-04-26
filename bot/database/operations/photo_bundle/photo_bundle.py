@@ -4,6 +4,7 @@ from bot.database.models.photo_bundle.photo_bundle import PhotoBundle
 from bot.database.models.photo_bundle.photo import Photo
 import asyncio
 from bot.helpers.photo_bundles.photo_binary_upload import PhotoBinaryUpload
+from bot.database.operations.user.updaters import update_user
 
 
 class PhotoBundleGateway:
@@ -40,6 +41,7 @@ class PhotoBundleGateway:
             ]
         )
 
+        await update_user(str(user_id), {"face_swap_lora_version": ""})
         return PhotoBundle
 
     async def photos_delete_all(self, user_id):
@@ -53,12 +55,15 @@ class PhotoBundleGateway:
             ]
         )
 
+        await update_user(str(user_id), {"face_swap_lora_version": ""})
+
     async def photo_delete_by_id(self, user_id, id):
         object = await self.bucket.list_blobs(
             prefix=f"users/avatars/{user_id}/{id}_"
         )
 
         await self.storage.delete(bucket=self.bucket.name, object_name=object[0])
+        await update_user(str(user_id), {"face_swap_lora_version": ""})
 
     async def photo_update(self, user_id, photo_upload):
         await self.photo_delete_by_id(user_id, photo_upload.id)
