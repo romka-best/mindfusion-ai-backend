@@ -32,3 +32,6 @@ venv/
 .env/
 
 service_account_key*.json
+
+bot/settings/config_*.py
+!bot/settings/config_example.py
