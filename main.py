@@ -173,14 +173,12 @@ async def handle_added_to_channel(update):
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    webhook_info = await bot.get_webhook_info()
-    if webhook_info.url != WEBHOOK_BOT_URL:
-        await bot.set_webhook(url=WEBHOOK_BOT_URL, allowed_updates=[
-            "my_chat_member",
-            "pre_checkout_query",
-            "callback_query",
-            "message"
-        ])
+    await bot.set_webhook(url=WEBHOOK_BOT_URL, allowed_updates=[
+        "my_chat_member",
+        "pre_checkout_query",
+        "callback_query",
+        "message"
+    ])
 
     dp.include_routers(
         photo_bundles_router,
