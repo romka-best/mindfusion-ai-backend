@@ -1,5 +1,6 @@
 import asyncio
 
+import aiohttp
 from aiogram import Router, Bot, F
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
@@ -37,6 +38,7 @@ from bot.locales.main import get_user_language, get_localization
 from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
 from bot.states.ai.suno import Suno
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 suno_router = Router()
 
@@ -238,6 +240,11 @@ async def suno_prompt_sent(message: Message, state: FSMContext):
                     await asyncio.gather(*tasks)
                 else:
                     raise NotImplementedError('No Task Id Found in Suno Generation')
+            except aiohttp.ClientResponseError as e:
+                if e.status == 500:
+                    await send_internal_ai_model_error(
+                        user_language_code, message, Model.SUNO
+                    )
             except Exception as e:
                 if 'too many requests' in str(e).lower() or 'you have exceeded the rate limit' in str(e).lower():
                     await message.answer(

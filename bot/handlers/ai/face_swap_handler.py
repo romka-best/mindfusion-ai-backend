@@ -67,6 +67,9 @@ from bot.states.common.profile import Profile
 from bot.database.operations.photo_bundle.photo_bundle import PhotoBundleGateway
 from bot.helpers.photo_bundles.download_photo_bundle import DownloadPhotoBundle
 from bot.helpers.senders.send_photo_bundle_empty import send_photo_bundle_empty
+from replicate.exceptions import ReplicateError
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
+
 
 face_swap_router = Router()
 
@@ -347,6 +350,11 @@ async def handle_face_swap_prompt(
                 has_error=result_id is None,
                 details={"prompt": prepared_prompt},
             )
+        except ReplicateError as e:
+            if e.status == 500:
+                await send_internal_ai_model_error(
+                    user_language_code, message, Model.FLUX
+                )
         except Exception as e:
             await message.answer_sticker(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
@@ -799,6 +807,11 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
                 await asyncio.gather(*tasks)
 
                 await state.update_data(maximum_quantity=face_swap_package_quantity - quantity)
+            except ReplicateError as e:
+                if e.status == 500:
+                    await send_internal_ai_model_error(
+                        user_language_code, message, Model.FACE_SWAP
+                    )
             except Exception as e:
                 await message.answer_sticker(
                     sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),

@@ -1,3 +1,6 @@
+import logging
+import json
+
 from aiogram.client.session import aiohttp
 
 from bot.config import config
@@ -69,15 +72,20 @@ class APIResource:
         self._client = client
 
     async def request(self, method: str, url: str, **kwargs):
-        return await self._client.request(method, url, **kwargs)
+        logging.debug(f"{method}: {url}\n{json.dumps(kwargs, indent=2)}")
+
+        response = await self._client.request(method, url, **kwargs)
+
+        logging.debug(f"Response: {url}\n{json.dumps(response, indent=2)}")
+        return response
 
 
 class Images(APIResource):
     async def imagine(
         self,
         prompt: str,
-        aspect_ratio: AspectRatio,
-        process_mode: str
+        process_mode: str,
+        aspect_ratio: AspectRatio = None
     ) -> str:
         url = f'{MIDJOURNEY_API_URL}/api/v1/task'
         payload = {
@@ -85,7 +93,6 @@ class Images(APIResource):
             'task_type': 'imagine',
             'input': {
                 'prompt': prompt,
-                'aspect_ratio': aspect_ratio,
                 'process_mode': process_mode,
             },
             'config': {
@@ -94,6 +101,10 @@ class Images(APIResource):
                 }
             },
         }
+
+        if aspect_ratio:
+            payload['input']['aspect_ratio'] = aspect_ratio
+
         data = await self.request('POST', url, json=payload)
         return data['data']['task_id']
 
@@ -164,8 +175,8 @@ class Images(APIResource):
 
 async def create_midjourney_images(
     prompt: str,
-    aspect_ratio: AspectRatio,
     process_mode: str,
+    aspect_ratio: AspectRatio = None,
 ) -> str:
     async with Midjourney() as client:
         task_id = await client.images.imagine(

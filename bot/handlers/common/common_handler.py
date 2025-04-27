@@ -428,8 +428,10 @@ async def handle_continue_generation_choose_selection(callback_query: CallbackQu
         if user_quota in [
             Quota.CHAT_GPT4_OMNI_MINI,
             Quota.CHAT_GPT4_OMNI,
-            Quota.CHAT_GPT_O_3_MINI,
-            Quota.CHAT_GPT_O_1,
+            Quota.CHAT_GPT_O_4_MINI,
+            Quota.CHAT_GPT_O_3,
+            Quota.CHAT_GPT_4_1_MINI,
+            Quota.CHAT_GPT_4_1,
         ]:
             await handle_chatgpt(callback_query.message, state, user, user_quota)
         elif user_quota in [

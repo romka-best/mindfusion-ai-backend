@@ -472,6 +472,10 @@ The image's width-to-height ratio must be between {min_ratio} and {max_ratio}.
     @staticmethod
     def error_photo_bundle_empty():
         return "⚠️ There are no photos in your profile. Please upload at least one photo and try again."
+ 
+    @staticmethod
+    def error_internal_ai_model(ai_model_name) -> str:
+        return f"⚠️ An error occurred on the {ai_model_name} side. Please try again later."
 
     # Examples
     EXAMPLE_INFO = "To gain access to this AI model, click the button below:"

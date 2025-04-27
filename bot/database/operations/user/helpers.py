@@ -34,7 +34,14 @@ def create_user_object(
     default_model = Model.CHAT_GPT
     default_settings = User.DEFAULT_SETTINGS
     default_additional_quota = User.DEFAULT_ADDITIONAL_USAGE_QUOTA
-    if quota in [Quota.CHAT_GPT4_OMNI_MINI, Quota.CHAT_GPT4_OMNI, Quota.CHAT_GPT_O_3_MINI, Quota.CHAT_GPT_O_1]:
+    if quota in [
+        Quota.CHAT_GPT4_OMNI_MINI,
+        Quota.CHAT_GPT4_OMNI,
+        Quota.CHAT_GPT_O_4_MINI,
+        Quota.CHAT_GPT_O_3,
+        Quota.CHAT_GPT_4_1_MINI,
+        Quota.CHAT_GPT_4_1,
+    ]:
         default_model = Model.CHAT_GPT
         if quota == Quota.CHAT_GPT4_OMNI_MINI:
             default_settings[default_model][UserSettings.VERSION] = ChatGPTVersion.V4_Omni_Mini
