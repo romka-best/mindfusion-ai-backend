@@ -105,6 +105,7 @@ from bot.middlewares.DeletePrevMsgsMiddleware import DeletePrevMsgsMiddleware
 from bot.utils.migrate import migrate
 from bot.handlers.common.photo_bundles.photo_bundles_router import photo_bundles_router
 
+
 WEBHOOK_BOT_PATH = f'/bot/{config.BOT_TOKEN.get_secret_value()}'
 WEBHOOK_YOOKASSA_PATH = '/payment/yookassa'
 WEBHOOK_STRIPE_PATH = '/payment/stripe'

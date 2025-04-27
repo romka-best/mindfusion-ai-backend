@@ -65,7 +65,8 @@ from replicate.exceptions import ReplicateError
 from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 from bot.database.operations.photo_bundle.photo_bundle import PhotoBundleGateway
 from bot.helpers.senders.send_photo_bundle_empty import send_photo_bundle_empty
-
+from replicate.exceptions import ReplicateError
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 photo_router = Router()
 photo_router.message.middleware(AlbumMiddleware())

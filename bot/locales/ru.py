@@ -499,6 +499,10 @@ class Russian(Texts):
         return f"⚠️ Ошибка на стороне модели {ai_model_name}. Попробуйте снова чуть позже."
     def error_photo_bundle_empty():
         return "⚠️ В вашем профиле отсутствуют фотографии, загрузите хотя бы одну фотографию и повторите запрос."
+    
+    @staticmethod
+    def error_internal_ai_model(ai_model_name) -> str:
+        return f"⚠️ Ошибка на стороне модели {ai_model_name}. Попробуйте снова чуть позже."
 
     # Examples
     EXAMPLE_INFO = "Чтобы получить доступ к этой нейросети нажмите кнопку ниже:"

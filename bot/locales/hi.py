@@ -481,6 +481,10 @@ class Hindi(Texts):
         return f"⚠️ मॉडल {ai_model_name} में एक त्रुटि हुई है। कृपया बाद में पुनः प्रयास करें।"
     def error_photo_bundle_empty():
         return "⚠️ आपकी प्रोफ़ाइल में कोई फ़ोटो नहीं है। कृपया कम से कम एक फ़ोटो अपलोड करें और पुनः प्रयास करें।"
+    
+    @staticmethod
+    def error_internal_ai_model(ai_model_name) -> str:
+        return f"⚠️ मॉडल {ai_model_name} में एक त्रुटि हुई है। कृपया बाद में पुनः प्रयास करें।"
 
     # Examples
     EXAMPLE_INFO = "यहाँ वह है जो आप इस न्यूरल नेटवर्क तक पहुँचने के लिए कर सकते हैं:"

@@ -288,26 +288,15 @@ async def handle_face_swap_prompt(
                     return
 
                 # if user photo exist, need to train lora
-                wait_training_msg = await message.answer(
+                await message.answer(
                     text=get_localization(user_language_code).wait_for_lora_train()
                 )
 
                 zip_file = await DownloadPhotoBundle().execute(user.id, photo_bundle, True)
 
-                try:
-                    request = await write_request(
-                        user_id=user.id, product_id=product.id, requested=1, processing_message_ids=[wait_training_msg.message_id]
-                    )
-
-                    training_result = await create_flux_dev_lora_trainer(
-                        "romka-best/mffswap_public", "MFFSWAP", zip_file, is_zip=True
-                    )
-                except Exception as e:
-                    raise e
-                finally:
-                    await wait_training_msg.delete()
-                    await update_request(request.id, {"status": RequestStatus.FINISHED})
-
+                training_result = await create_flux_dev_lora_trainer(
+                    "romka-best/mffswap_public", "MFFSWAP", zip_file, is_zip=True
+                )
                 del zip_file # For GC clean up
 
                 lora_version = training_result.output["version"].split(":")[-1]
@@ -876,3 +865,5 @@ async def face_swap_quantity_handler(message: Message, state: FSMContext, user_i
 @face_swap_router.message(FaceSwap.waiting_for_face_swap_quantity, ~F.text.startswith('/'))
 async def face_swap_quantity_sent(message: Message, state: FSMContext):
     await face_swap_quantity_handler(message, state, str(message.from_user.id), message.text)
+
+
