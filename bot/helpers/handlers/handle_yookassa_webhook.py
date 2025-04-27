@@ -45,7 +45,7 @@ from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_buy_motivation_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
-from bot.helpers.get_model_by_quota import get_model_by_quota
+from bot.helpers.getters.get_model_by_quota import get_model_by_quota
 
 
 async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):

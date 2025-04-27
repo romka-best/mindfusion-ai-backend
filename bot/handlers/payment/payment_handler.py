@@ -68,7 +68,7 @@ from bot.keyboards.payment.payment import (
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
 from bot.states.payment.payment import Payment
-from bot.helpers.get_model_by_quota import get_model_by_quota
+from bot.helpers.getters.get_model_by_quota import get_model_by_quota
 
 payment_router = Router()
 
