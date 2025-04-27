@@ -2542,60 +2542,79 @@ Selecciona tu opción y presiona el botón de abajo para suscribirte:
         if is_trial:
             trial_info = ' con un periodo de prueba de los primeros 3 días'
 
+        base_text_models = [
+                Quota.CHAT_GPT4_OMNI_MINI,
+                Quota.CHAT_GPT_4_1_MINI,
+                Quota.CLAUDE_3_HAIKU,
+                Quota.GEMINI_2_FLASH,
+                Quota.DEEP_SEEK_V3
+        ]
+
+        advanced_text_models = [
+                Quota.CHAT_GPT4_OMNI,
+                Quota.CHAT_GPT_4_1,
+                Quota.CHAT_GPT_O_4_MINI,
+                Quota.CLAUDE_3_SONNET,
+                Quota.GEMINI_2_PRO,
+                Quota.GROK_2,
+                Quota.DEEP_SEEK_R1,
+                Quota.PERPLEXITY
+        ]
+
+        flagship_text_models = [
+            Quota.CHAT_GPT_O_3,
+            Quota.CLAUDE_3_OPUS,
+            Quota.GEMINI_1_ULTRA,
+        ]
+
+        summarise_models = [
+                Quota.EIGHTIFY,
+                Quota.GEMINI_VIDEO
+        ]
+
+        base_image_models = [
+            Quota.STABLE_DIFFUSION_XL,
+            Quota.FLUX_1_DEV,
+            Quota.LUMA_PHOTON
+        ]
+
+        advanced_image_models = [
+            Quota.DALL_E,
+            Quota.MIDJOURNEY,
+            Quota.STABLE_DIFFUSION_3,
+            Quota.FLUX_1_PRO,
+            'recraft_3',
+            Quota.FACE_SWAP,
+            Quota.PHOTOSHOP_AI
+        ]
+
+        music_models = [
+            Quota.MUSIC_GEN,
+            Quota.SUNO
+        ]
+
+        video_models = [
+            Quota.KLING,
+            Quota.RUNWAY,
+            Quota.LUMA_RAY,
+            Quota.PIKA
+        ]
+
         return f"""
 Estás a punto de activar la suscripción {name} por {left_price_part}{price}{right_price_part}/{period}{trial_info}
 
-🔤 <b>Modelos de Texto</b>:
-<b>Básicos</b>:
-    ┣ ✉️ ChatGPT 4.0 Omni Mini {format_number(subscription.details['limits'][Quota.CHAT_GPT4_OMNI_MINI])}
-    ┣ 👽 ChatGPT 4.1 Mini {format_number(subscription.details['limits'][Quota.CHAT_GPT_4_1_MINI])}
-    ┣ 📜 Claude 3.5 Haiku {format_number(subscription.details['limits'][Quota.CLAUDE_3_HAIKU])}
-    ┣ 🏎 Gemini 2.0 Flash {format_number(subscription.details['limits'][Quota.GEMINI_2_FLASH])}
-    ┣ 🐬 DeepSeek V3 {format_number(subscription.details['limits'][Quota.DEEP_SEEK_V3])}
+🔤 Básicos modelos de texto: {format_number(sum([subscription.details['limits'][model] for model in base_text_models]))}
+🔤 Avanzados modelos de texto: {format_number(sum([subscription.details['limits'][model] for model in advanced_text_models]))}
+🔤 Premium modelos de texto: {format_number(sum([subscription.details['limits'][model] for model in flagship_text_models]))}
 
-<b>Avanzados</b>:
-    ┣ 💥 ChatGPT 4.0 Omni {format_number(subscription.details['limits'][Quota.CHAT_GPT4_OMNI])}
-    ┣ 🛸 ChatGPT 4.1 {format_number(subscription.details['limits'][Quota.CHAT_GPT_4_1])}
-    ┣ 🧩 ChatGPT o4-mini {format_number(subscription.details['limits'][Quota.CHAT_GPT_O_4_MINI])}
-    ┣ 💫 Claude 3.7 Sonnet {format_number(subscription.details['limits'][Quota.CLAUDE_3_SONNET])}
-    ┣ 💼 Gemini 2.5 Pro {format_number(subscription.details['limits'][Quota.GEMINI_2_PRO])}
-    ┣ 🐦 Grok 2.0 {format_number(subscription.details['limits'][Quota.GROK_2])}
-    ┣ 🐋 DeepSeek R1 {format_number(subscription.details['limits'][Quota.DEEP_SEEK_R1])}
-    ┣ 🌐 Perplexity {format_number(subscription.details['limits'][Quota.PERPLEXITY])}
+📝 Modelos de Resumen: {format_number(sum([subscription.details['limits'][model] for model in summarise_models]))}
 
-<b>Premium</b>:
-    ┣ 🧪 ChatGPT o3 {format_number(subscription.details['limits'][Quota.CHAT_GPT_O_3])}
-    ┣ 🚀 Claude 3.0 Opus {format_number(subscription.details['limits'][Quota.CLAUDE_3_OPUS])}
-    ┣ 🛡️ Gemini 1.0 Ultra {format_number(subscription.details['limits'][Quota.GEMINI_1_ULTRA])}
+🖼 Básicos modelos gráficos: {format_number(sum([subscription.details['limits'][model] for model in base_image_models]))}
+🖼 Avanzados modelos gráficos: {format_number(sum([subscription.details['limits'][model] for model in advanced_image_models]))}
 
-📝 <b>Modelos de Resumen</b>:
-    ┣ 👀 YouTube {format_number(subscription.details['limits'][Quota.EIGHTIFY])}
-    ┣ 📼 Видео {format_number(subscription.details['limits'][Quota.GEMINI_VIDEO])}
+🎵 Modelos de Música: {format_number(sum([subscription.details['limits'][model] for model in music_models]))}
 
-🖼 <b>Modelos Gráficos</b>:
-<b>Básicos</b>:
-    ┣ 🦄 Stable Diffusion XL {format_number(subscription.details['limits'][Quota.STABLE_DIFFUSION_XL])}
-    ┣ 🌲 Flux 1.0 Dev {format_number(subscription.details['limits'][Quota.FLUX_1_DEV])}
-    ┣ 🌌 Luma Photon {format_number(subscription.details['limits'][Quota.LUMA_PHOTON])}
-
-<b>Avanzados</b>:
-    ┣ 👨‍🎨 DALL-E 3 {format_number(subscription.details['limits'][Quota.DALL_E])}
-    ┣ 🎨 Midjourney 7 {format_number(subscription.details['limits'][Quota.MIDJOURNEY])}
-    ┣ 🧑‍🚀 Stable Diffusion 3.5 {format_number(subscription.details['limits'][Quota.STABLE_DIFFUSION_3])}
-    ┣ 🏔 Flux 1.1 Pro {format_number(subscription.details['limits'][Quota.FLUX_1_PRO])}
-    ┣ 🐼 Recraft 3 {format_number(subscription.details['limits']['recraft_3'])}
-    ┣ 📷 FaceSwap {format_number(subscription.details['limits'][Quota.FACE_SWAP])}
-    ┣ 🪄 Photoshop AI {format_number(subscription.details['limits'][Quota.PHOTOSHOP_AI])}
-
-🎵 <b>Modelos de Música</b>:
-    ┣ 🎺 MusicGen {format_number(subscription.details['limits'][Quota.MUSIC_GEN])}
-    ┣ 🎸 Suno {format_number(subscription.details['limits'][Quota.SUNO])}
-
-📹 <b>Modelos de Vídeo</b>:
-    ┣ 🎬 Kling {format_number(subscription.details['limits'][Quota.KLING])}
-    ┣ 🎥 Runway {format_number(subscription.details['limits'][Quota.RUNWAY])}
-    ┣ 🔆 Luma Ray {format_number(subscription.details['limits'][Quota.LUMA_RAY])}
-    ┣ 🐇 Pika {format_number(subscription.details['limits'][Quota.PIKA])}
+📹 Modelos de Vídeo: {format_number(sum([subscription.details['limits'][model] for model in video_models]))}
 
 📷 <b>Trabajo con fotos/documentos</b>: {'✅' if subscription.details['limits'][Quota.WORK_WITH_FILES] else '❌'}
 🎭 <b>Acceso al catálogo de empleados digitales</b>: {'✅' if subscription.details['limits'][Quota.ACCESS_TO_CATALOG] else '❌'}
