@@ -43,6 +43,7 @@ from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_buy_motivation_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.types import LanguageCode
+from bot.helpers.getters.get_model_by_quota import get_model_by_quota
 
 
 def get_net(amount: float):
@@ -464,6 +465,12 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     text=get_localization(user_language_code).PACKAGE_SUCCESS,
                     message_effect_id=config.MESSAGE_EFFECTS.get(MessageEffect.HEART),
                 )
+
+                current_model = get_model_by_quota(product.details['quota'])
+                await update_user(package.user_id, {
+                    'current_model': current_model
+                })
+                user.current_model = current_model
 
                 text = await get_switched_to_ai_model(
                     user,
