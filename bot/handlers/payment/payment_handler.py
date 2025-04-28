@@ -367,6 +367,7 @@ async def handle_payment_method_subscription_selection(callback_query: CallbackQ
 
         await callback_query.message.edit_caption(
             caption=get_localization(user_language_code).subscribe_confirmation(
+                subscription,
                 subscription_name,
                 subscription.category,
                 currency,

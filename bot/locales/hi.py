@@ -2536,6 +2536,7 @@ class Hindi(Texts):
 
     @staticmethod
     def subscribe_confirmation(
+        subscription: Product,
         name: str,
         category: ProductCategory,
         currency: Currency,
@@ -2550,8 +2551,85 @@ class Hindi(Texts):
         if is_trial:
             trial_info = ' पहले 3 दिन के परीक्षण अवधि के साथ'
 
+        base_text_models = [
+                Quota.CHAT_GPT4_OMNI_MINI,
+                Quota.CHAT_GPT_4_1_MINI,
+                Quota.CLAUDE_3_HAIKU,
+                Quota.GEMINI_2_FLASH,
+                Quota.DEEP_SEEK_V3
+        ]
+
+        advanced_text_models = [
+                Quota.CHAT_GPT4_OMNI,
+                Quota.CHAT_GPT_4_1,
+                Quota.CHAT_GPT_O_4_MINI,
+                Quota.CLAUDE_3_SONNET,
+                Quota.GEMINI_2_PRO,
+                Quota.GROK_2,
+                Quota.DEEP_SEEK_R1,
+                Quota.PERPLEXITY
+        ]
+
+        flagship_text_models = [
+            Quota.CHAT_GPT_O_3,
+            Quota.CLAUDE_3_OPUS,
+            Quota.GEMINI_1_ULTRA,
+        ]
+
+        summarise_models = [
+                Quota.EIGHTIFY,
+                Quota.GEMINI_VIDEO
+        ]
+
+        base_image_models = [
+            Quota.STABLE_DIFFUSION_XL,
+            Quota.FLUX_1_DEV,
+            Quota.LUMA_PHOTON
+        ]
+
+        advanced_image_models = [
+            Quota.DALL_E,
+            Quota.MIDJOURNEY,
+            Quota.STABLE_DIFFUSION_3,
+            Quota.FLUX_1_PRO,
+            'recraft_3',
+            Quota.FACE_SWAP,
+            Quota.PHOTOSHOP_AI
+        ]
+
+        music_models = [
+            Quota.MUSIC_GEN,
+            Quota.SUNO
+        ]
+
+        video_models = [
+            Quota.KLING,
+            Quota.RUNWAY,
+            Quota.LUMA_RAY,
+            Quota.PIKA
+        ]
+
         return f"""
 आप {name} सदस्यता को {left_price_part}{price}{right_price_part}/{period}{trial_info} में सक्रिय करने जा रहे हैं।
+
+🔤 बेसिक टेक्स्ट मॉडल्स: {format_number(sum([subscription.details['limits'][model] for model in base_text_models]))}
+🔤 एडवांस्ड टेक्स्ट मॉडल्स:  {format_number(sum([subscription.details['limits'][model] for model in advanced_text_models]))}
+🔤 फ्लैगशिप टेक्स्ट मॉडल्स:  {format_number(sum([subscription.details['limits'][model] for model in flagship_text_models]))}
+
+📝 सारांश मॉडल्स: {format_number(sum([subscription.details['limits'][model] for model in summarise_models]))}
+
+🖼 बेसिक इमेज मॉडल्स:  {format_number(sum([subscription.details['limits'][model] for model in base_image_models]))}
+🖼 एडवांस्ड इमेज मॉडल्स:  {format_number(sum([subscription.details['limits'][model] for model in advanced_image_models]))}
+
+🎵 म्यूज़िक मॉडल्स: {format_number(sum([subscription.details['limits'][model] for model in music_models]))}
+
+📹 वीडियो मॉडल्स: {format_number(sum([subscription.details['limits'][model] for model in video_models]))}
+
+📷 <b>फोटो/दस्तावेज़ के साथ काम</b>:: {'✅' if subscription.details['limits'][Quota.WORK_WITH_FILES] else '❌'}
+🎭 <b>डिजिटल कर्मचारी कैटलॉग तक पहुंच</b>:  {'✅' if subscription.details['limits'][Quota.ACCESS_TO_CATALOG] else '❌'}
+🎙 <b>वॉयस मैसेज</b>: {'✅' if subscription.details['limits'][Quota.VOICE_MESSAGES] else '❌'}
+⚡️ <b>फास्ट मैसेज</b>: {'✅' if subscription.details['limits'][Quota.FAST_MESSAGES] else '❌'}
+
 
 ❗️सदस्यता को किसी भी समय <b>प्रोफ़ाइल 👤</b> अनुभाग में रद्द किया जा सकता है।
 """

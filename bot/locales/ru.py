@@ -2574,6 +2574,7 @@ class Russian(Texts):
 
     @staticmethod
     def subscribe_confirmation(
+        subscription: Product,
         name: str,
         category: ProductCategory,
         currency: Currency,
@@ -2590,8 +2591,84 @@ class Russian(Texts):
         elif is_trial and currency == Currency.USD:
             trial_info = 'Бесплатно первые 3 дня, затем '
 
+        base_text_models = [
+                Quota.CHAT_GPT4_OMNI_MINI,
+                Quota.CHAT_GPT_4_1_MINI,
+                Quota.CLAUDE_3_HAIKU,
+                Quota.GEMINI_2_FLASH,
+                Quota.DEEP_SEEK_V3
+        ]
+
+        advanced_text_models = [
+                Quota.CHAT_GPT4_OMNI,
+                Quota.CHAT_GPT_4_1,
+                Quota.CHAT_GPT_O_4_MINI,
+                Quota.CLAUDE_3_SONNET,
+                Quota.GEMINI_2_PRO,
+                Quota.GROK_2,
+                Quota.DEEP_SEEK_R1,
+                Quota.PERPLEXITY
+        ]
+
+        flagship_text_models = [
+            Quota.CHAT_GPT_O_3,
+            Quota.CLAUDE_3_OPUS,
+            Quota.GEMINI_1_ULTRA,
+        ]
+
+        summarise_models = [
+                Quota.EIGHTIFY,
+                Quota.GEMINI_VIDEO
+        ]
+
+        base_image_models = [
+            Quota.STABLE_DIFFUSION_XL,
+            Quota.FLUX_1_DEV,
+            Quota.LUMA_PHOTON
+        ]
+
+        advanced_image_models = [
+            Quota.DALL_E,
+            Quota.MIDJOURNEY,
+            Quota.STABLE_DIFFUSION_3,
+            Quota.FLUX_1_PRO,
+            'recraft_3',
+            Quota.FACE_SWAP,
+            Quota.PHOTOSHOP_AI
+        ]
+
+        music_models = [
+            Quota.MUSIC_GEN,
+            Quota.SUNO
+        ]
+
+        video_models = [
+            Quota.KLING,
+            Quota.RUNWAY,
+            Quota.LUMA_RAY,
+            Quota.PIKA
+        ]
+
         return f"""
 Вы собираетесь активировать подписку <b>{name} – {trial_info}{left_price_part}{price}{right_price_part}/{period}</b>
+
+🔤 Базовые текстовые модели: {format_number(sum([subscription.details['limits'][model] for model in base_text_models]))}
+🔤 Бродвинутые текстовые модели: {format_number(sum([subscription.details['limits'][model] for model in advanced_text_models]))}
+🔤 Флагманские текстовые модели: {format_number(sum([subscription.details['limits'][model] for model in flagship_text_models]))}
+
+📝 Резюме Модели: {format_number(sum([subscription.details['limits'][model] for model in summarise_models]))}
+
+🖼 Графические модели базовые: {format_number(sum([subscription.details['limits'][model] for model in base_image_models]))}
+🖼 Графические модели продвинутые: {format_number(sum([subscription.details['limits'][model] for model in advanced_image_models]))}
+
+🎵 Музыкальные Модели: {format_number(sum([subscription.details['limits'][model] for model in music_models]))}
+
+📹 Видео Модели: {format_number(sum([subscription.details['limits'][model] for model in video_models]))}
+
+📷 Работа с фото/документами: {'✅' if subscription.details['limits'][Quota.WORK_WITH_FILES] else '❌'}
+🎭 Доступ к каталогу с ролями: {'✅' if subscription.details['limits'][Quota.ACCESS_TO_CATALOG] else '❌'}
+🎙 Голосовые сообщения: {'✅' if subscription.details['limits'][Quota.VOICE_MESSAGES] else '❌'}
+⚡️ Быстрые ответы: {'✅' if subscription.details['limits'][Quota.FAST_MESSAGES] else '❌'}
 
 ❗️Подписку можно отменить в любое время в разделе <b>Профиль 👤</b>
 """

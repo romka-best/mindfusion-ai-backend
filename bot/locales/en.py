@@ -2527,6 +2527,7 @@ To subscribe, pick your potion and hit the button below:
 
     @staticmethod
     def subscribe_confirmation(
+        subscription: Product,
         name: str,
         category: ProductCategory,
         currency: Currency,
@@ -2541,8 +2542,84 @@ To subscribe, pick your potion and hit the button below:
         if is_trial:
             trial_info = ' with a free trial period first 3 days'
 
+        base_text_models = [
+                Quota.CHAT_GPT4_OMNI_MINI,
+                Quota.CHAT_GPT_4_1_MINI,
+                Quota.CLAUDE_3_HAIKU,
+                Quota.GEMINI_2_FLASH,
+                Quota.DEEP_SEEK_V3
+        ]
+
+        advanced_text_models = [
+                Quota.CHAT_GPT4_OMNI,
+                Quota.CHAT_GPT_4_1,
+                Quota.CHAT_GPT_O_4_MINI,
+                Quota.CLAUDE_3_SONNET,
+                Quota.GEMINI_2_PRO,
+                Quota.GROK_2,
+                Quota.DEEP_SEEK_R1,
+                Quota.PERPLEXITY
+        ]
+
+        flagship_text_models = [
+            Quota.CHAT_GPT_O_3,
+            Quota.CLAUDE_3_OPUS,
+            Quota.GEMINI_1_ULTRA,
+        ]
+
+        summarise_models = [
+                Quota.EIGHTIFY,
+                Quota.GEMINI_VIDEO
+        ]
+
+        base_image_models = [
+            Quota.STABLE_DIFFUSION_XL,
+            Quota.FLUX_1_DEV,
+            Quota.LUMA_PHOTON
+        ]
+
+        advanced_image_models = [
+            Quota.DALL_E,
+            Quota.MIDJOURNEY,
+            Quota.STABLE_DIFFUSION_3,
+            Quota.FLUX_1_PRO,
+            'recraft_3',
+            Quota.FACE_SWAP,
+            Quota.PHOTOSHOP_AI
+        ]
+
+        music_models = [
+            Quota.MUSIC_GEN,
+            Quota.SUNO
+        ]
+
+        video_models = [
+            Quota.KLING,
+            Quota.RUNWAY,
+            Quota.LUMA_RAY,
+            Quota.PIKA
+        ]
+
         return f"""
 You're about to activate subscription <b>{name} for {left_price_part}{price}{right_price_part}/{period}{trial_info}</b>
+
+🔤 Basic text models: {format_number(sum([subscription.details['limits'][model] for model in base_text_models]))}
+🔤 Advanced text models: {format_number(sum([subscription.details['limits'][model] for model in advanced_text_models]))}
+🔤 Flagship text models: {format_number(sum([subscription.details['limits'][model] for model in flagship_text_models]))}
+
+📝 Summary models: {format_number(sum([subscription.details['limits'][model] for model in summarise_models]))}
+
+🖼 Basic image models: {format_number(sum([subscription.details['limits'][model] for model in base_image_models]))}
+🖼 Advanced image models: {format_number(sum([subscription.details['limits'][model] for model in advanced_image_models]))}
+
+🎵 Music models: {format_number(sum([subscription.details['limits'][model] for model in music_models]))}
+
+📹 Video models: {format_number(sum([subscription.details['limits'][model] for model in video_models]))}
+
+📷 Support Photos/Documents: {'✅' if subscription.details['limits'][Quota.WORK_WITH_FILES] else '❌'}
+🎭 Access to a Roles Catalog: {'✅' if subscription.details['limits'][Quota.ACCESS_TO_CATALOG] else '❌'}
+🎙 Voice Messages: {'✅' if subscription.details['limits'][Quota.VOICE_MESSAGES] else '❌'}
+⚡️ Fast Answers: {'✅' if subscription.details['limits'][Quota.FAST_MESSAGES] else '❌'}
 
 ❗️You can cancel your subscription at any time in <b>Profile 👤</b>
 """
