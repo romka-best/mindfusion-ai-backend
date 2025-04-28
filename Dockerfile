@@ -13,5 +13,5 @@ RUN pip install --upgrade pip setuptools wheel \
 
 COPY . .
 
-ENV ENVIRONMENT=production
+ENV ENV=prod
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
