@@ -379,6 +379,14 @@ Try shortening the text — otherwise, the model might take a vacation 🌴
 
 Waiting for a new, more compact prompt ✨
 """
+    ERROR_PROMPT_IS_EMPTY = """
+🤔 <b>Where’s the prompt?</b>
+
+You didn’t send anything.
+Without that, I can’t generate anything 😢
+
+Try again — I’m waiting for inspiration! ✨
+"""
     ERROR_REQUEST_FORBIDDEN = """
 🚨 <b>Oops! Your Request Didn’t Pass the Check</b>
 

@@ -382,6 +382,14 @@ Intenta acortar el texto; de lo contrario, el modelo se tomará unas vacaciones 
 
 Espero un nuevo y más compacto prompt ✨
 """
+    ERROR_PROMPT_IS_EMPTY = """
+🤔 <b>¿Dónde está el prompt?</b>
+
+No enviaste nada.
+Sin eso, no puedo generar nada 😢
+
+¡Inténtalo de nuevo, estoy esperando inspiración! ✨
+"""
     ERROR_REQUEST_FORBIDDEN = """
 🚨 <b>¡Ups! Tu solicitud no pasó la verificación</b>
 
