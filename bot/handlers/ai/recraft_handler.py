@@ -84,9 +84,19 @@ async def handle_recraft(message: Message, state: FSMContext, user: User):
         await state.update_data(is_processing=False)
         return
 
+    text = text.strip()
+
     if len(text) > 1000:
         await message.answer(
             text=get_localization(user_language_code).ERROR_PROMPT_TOO_LONG,
+            reply_markup=build_error_keyboard(user_language_code),
+        )
+        await state.update_data(is_processing=False)
+        return
+
+    if len(text) == 0:
+        await message.answer(
+            text=get_localization(user_language_code).ERROR_PROMPT_IS_EMPTY,
             reply_markup=build_error_keyboard(user_language_code),
         )
         await state.update_data(is_processing=False)
