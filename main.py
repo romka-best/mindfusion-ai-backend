@@ -153,12 +153,30 @@ additional_bots = [
     ) for additional_bot_token in config.ADDITIONAL_BOT_TOKENS
 ]
 
+@dp.my_chat_member()
+async def handle_added_to_channel(update):
+    if str(update.chat.id) in config.ALERT_CHANELS.values() or update.new_chat_member.status == "left":
+        return
+
+    await bot.send_message(
+        update.chat.id,
+    """
+🇺🇸 Sorry, I don't support working in channels yet 😅
+🇷🇺 Извините, я пока не умею работать в каналах 😅
+🇪🇸 Lo siento, todavía no puedo trabajar en canales 😅
+🇮🇳 माफ़ कीजिए, मैं अभी चैनलों में काम नहीं कर सकता 😅
+""")
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     webhook_info = await bot.get_webhook_info()
     if webhook_info.url != WEBHOOK_BOT_URL:
-        await bot.set_webhook(url=WEBHOOK_BOT_URL)
+        await bot.set_webhook(url=WEBHOOK_BOT_URL, allowed_updates=[
+            "my_chat_member",
+            "pre_checkout_query",
+            "callback_query",
+            "message"
+        ])
 
     dp.include_routers(
         maintenance_router,
