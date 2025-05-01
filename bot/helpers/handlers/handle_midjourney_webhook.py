@@ -18,7 +18,6 @@ from bot.database.operations.request.updaters import update_request
 from bot.database.operations.transaction.writers import write_transaction
 from bot.database.operations.user.getters import get_user
 from bot.helpers.senders.send_document import send_document
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.senders.send_images import send_image
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
 from bot.integrations.midjourney import Midjourney
@@ -26,6 +25,7 @@ from bot.keyboards.ai.midjourney import build_midjourney_keyboard
 from bot.keyboards.common.common import build_reaction_keyboard, build_error_keyboard, build_buy_motivation_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 
 
 async def handle_midjourney_webhook(bot: Bot, dp: Dispatcher, body: dict):
@@ -76,11 +76,11 @@ async def handle_midjourney_webhook(bot: Bot, dp: Dispatcher, body: dict):
                     reply_markup=build_error_keyboard(user_language_code),
                 )
 
-                await send_error_info(
+                await notify_error_channel(
                     bot=bot,
                     user_id=user.id,
                     info=generation_error,
-                    hashtags=['midjourney', 'webhook'],
+                    hashtags=["midjourney", "webhook"]
                 )
         logging.exception(f'Error in midjourney_webhook: {generation_error}')
     else:

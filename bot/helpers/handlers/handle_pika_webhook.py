@@ -19,11 +19,12 @@ from bot.database.operations.transaction.writers import write_transaction
 from bot.database.operations.user.getters import get_user
 from bot.handlers.ai.pika_handler import PRICE_PIKA
 from bot.helpers.senders.send_document import send_document
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.senders.send_video import send_video
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
 from bot.keyboards.common.common import build_error_keyboard, build_reaction_keyboard
 from bot.locales.main import get_user_language, get_localization
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
+import traceback
 
 
 async def handle_pika_webhook(bot: Bot, dp: Dispatcher, body: dict):
@@ -69,11 +70,13 @@ async def handle_pika_webhook(bot: Bot, dp: Dispatcher, body: dict):
                 text=get_localization(user_language_code).ERROR,
                 reply_markup=build_error_keyboard(user_language_code),
             )
-            await send_error_info(
+
+            await notify_error_channel(
                 bot=bot,
                 user_id=user.id,
                 info=str(error_message),
-                hashtags=['pika', 'webhook'],
+                stack_trace=traceback.format_exc(),
+                hashtags=["pika", "webhook"]
             )
     else:
         generation_result = generations_result[0]

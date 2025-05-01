@@ -52,10 +52,16 @@ class Settings(BaseSettings):
     LIMIT_BETWEEN_REQUESTS_SECONDS: int = 20
     LIMIT_PROCESSING_SECONDS: int = 60
 
-    SUPER_ADMIN_ID: str = '354543567'
+    SUPER_ADMIN_ID: str = '616315442'
     ADMIN_IDS: list[str] = field(default_factory=lambda: ['354543567', '6078317830'])
     DEVELOPER_IDS: list[str] = field(default_factory=lambda: ['354543567', '1384055865', '2048756506'])
     MODERATOR_IDS: list[str] = field(default_factory=lambda: [])
+    ALERT_CHANELS: dict[str, str] = field(default_factory=lambda: {
+        "FEEDBACK": "-4552015268",
+        "ERROR": "-4732249303",
+        "STATISTIC": "-4660221881",
+        "PAYMENT": "-4641362278"
+    })
 
     DEFAULT_ROLE_ID: SecretStr
 

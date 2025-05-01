@@ -26,7 +26,6 @@ from bot.database.operations.user.updaters import update_user
 from bot.handlers.ai.midjourney_handler import handle_midjourney_example
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.integrations.luma import get_response_image, get_response_video
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_error_keyboard
@@ -35,6 +34,9 @@ from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
 from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 import lumaai
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
+import traceback
+
 
 luma_router = Router()
 
@@ -171,11 +173,15 @@ async def handle_luma_photon(
                 text=get_localization(user_language_code).ERROR,
                 reply_markup=build_error_keyboard(user_language_code),
             )
-            await send_error_info(
+
+
+            await notify_error_channel(
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
-                hashtags=['luma_photon'],
+                stack_trace=traceback.format_exc(),
+                context={"prompt": prompt},
+                hashtags=["luma_photon"]
             )
 
             request.status = RequestStatus.FINISHED
@@ -330,11 +336,14 @@ async def handle_luma_ray(
                 text=get_localization(user_language_code).ERROR,
                 reply_markup=build_error_keyboard(user_language_code),
             )
-            await send_error_info(
+
+            await notify_error_channel(
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
-                hashtags=['luma_ray'],
+                stack_trace=traceback.format_exc(),
+                context={"prompt": prompt},
+                hashtags=["luma_ray"]
             )
 
             request.status = RequestStatus.FINISHED

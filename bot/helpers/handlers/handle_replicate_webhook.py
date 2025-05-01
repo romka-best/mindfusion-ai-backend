@@ -33,13 +33,14 @@ from bot.handlers.ai.photoshop_ai_handler import (
 from bot.handlers.ai.stable_diffusion_handler import PRICE_STABLE_DIFFUSION_XL, PRICE_STABLE_DIFFUSION_3
 from bot.helpers.senders.send_audio import send_audio
 from bot.helpers.senders.send_document import send_document
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.senders.send_images import send_image
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
 from bot.keyboards.ai.face_swap import build_face_swap_upload_photo_keyboard
 from bot.keyboards.common.common import build_reaction_keyboard, build_error_keyboard, build_buy_motivation_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.types import LanguageCode
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
+import traceback
 
 
 async def handle_replicate_webhook(bot: Bot, dp: Dispatcher, prediction: dict):
@@ -82,12 +83,15 @@ async def handle_replicate_webhook(bot: Bot, dp: Dispatcher, prediction: dict):
             'seconds': generation.seconds,
         })
 
-        await send_error_info(
+        await notify_error_channel(
             bot=bot,
             user_id=user.id,
-            info=generation_error,
-            hashtags=['replicate', 'webhook'],
+            info=str(generation_error),
+            stack_trace=traceback.format_exc(),
+            context={"logs": prediction.get("logs")},
+            hashtags=["replicate", "webhook"]
         )
+
         logging.exception(f'Error in replicate_webhook: {prediction.get("logs")}')
     else:
         generation.result = generation_result[0] if type(generation_result) == list else generation_result

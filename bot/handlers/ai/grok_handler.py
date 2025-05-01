@@ -24,13 +24,15 @@ from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.reply_with_voice import reply_with_voice
 from bot.helpers.senders.send_ai_message import send_ai_message
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.integrations.grok import get_response_message
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_continue_generating_keyboard, build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.types import LanguageCode
 from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
+import traceback
+
 
 grok_router = Router()
 
@@ -230,12 +232,15 @@ async def handle_grok(message: Message, state: FSMContext, user: User, photo_fil
                     reply_markup=build_error_keyboard(user_language_code),
                 )
 
-                await send_error_info(
+                await notify_error_channel(
                     bot=message.bot,
                     user_id=user.id,
                     info=str(e),
-                    hashtags=['grok'],
+                    stack_trace=traceback.format_exc(),
+                    context={"prompt": text},
+                    hashtags=["grok"]
                 )
+
         except openai.InternalServerError:
             await send_internal_ai_model_error(user_language_code, message, Model.GROK)
         except Exception as e:
@@ -247,12 +252,16 @@ async def handle_grok(message: Message, state: FSMContext, user: User, photo_fil
                 text=get_localization(user_language_code).ERROR,
                 reply_markup=build_error_keyboard(user_language_code),
             )
-            await send_error_info(
+
+            await notify_error_channel(
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
-                hashtags=['grok'],
+                stack_trace=traceback.format_exc(),
+                context={"prompt": text},
+                hashtags=["grok"]
             )
+
         finally:
             await processing_sticker.delete()
             await processing_message.delete()
