@@ -10,13 +10,14 @@ from bot.database.operations.feedback.getters import get_count_of_approved_feedb
 from bot.database.operations.feedback.updaters import update_feedback
 from bot.database.operations.feedback.writers import write_feedback
 from bot.database.operations.user.updaters import update_user
-from bot.helpers.senders.send_message_to_admins_and_developers import send_message_to_admins_and_developers
 from bot.keyboards.admin.feedback import build_manage_feedback_keyboard
 
 from bot.keyboards.common.feedback import build_feedback_keyboard
 from bot.keyboards.payment.bonus import build_bonus_suggestion_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.states.common.feedback import Feedback
+from bot.helpers.notifiers.notify_feedback_channel import notify_feedback_channel
+
 
 feedback_router = Router()
 
@@ -46,13 +47,7 @@ async def handle_feedback_sent(message: Message, state: FSMContext):
 
     feedback = await write_feedback(user_id, message.text)
 
-    text = (f'#feedback\n\n'
-            f'🚀 <b>Новая обратная связь от пользователя</b>: {user_id} 🚀\n\n'
-            f'<code>{message.text}</code>')
-    await send_message_to_admins_and_developers(
-        bot=message.bot,
-        message=text,
-    )
+    await notify_feedback_channel(message.bot, user_id, message.text)
 
     await message.bot.send_message(
         chat_id=config.SUPER_ADMIN_ID,

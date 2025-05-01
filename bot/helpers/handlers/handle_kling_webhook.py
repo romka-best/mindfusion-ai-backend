@@ -20,13 +20,13 @@ from bot.database.operations.request.updaters import update_request
 from bot.database.operations.transaction.writers import write_transaction
 from bot.database.operations.user.getters import get_user
 from bot.helpers.senders.send_document import send_document
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.senders.send_video import send_video
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
 from bot.integrations.kling import Kling
 from bot.keyboards.common.common import build_reaction_keyboard, build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.types import LanguageCode
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 
 
 async def handle_kling_webhook(bot: Bot, dp: Dispatcher, body: dict):
@@ -104,12 +104,13 @@ async def handle_kling_webhook(bot: Bot, dp: Dispatcher, body: dict):
 
             generation.has_error = False
         else:
-            await send_error_info(
+            await notify_error_channel(
                 bot=bot,
                 user_id=user.id,
-                info=generation_error,
-                hashtags=['kling', 'webhook'],
+                info=str(generation_error),
+                hashtags=["kling", "webhook"]
             )
+
             logging.exception(f'Error in kling_webhook: {generation_error}')
     else:
         generation.result = generation_result

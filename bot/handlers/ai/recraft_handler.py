@@ -15,7 +15,6 @@ from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
 from bot.integrations.recraft import get_response_image
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
@@ -23,6 +22,9 @@ from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 import openai
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
+import traceback
+
 
 recraft_router = Router()
 
@@ -155,11 +157,14 @@ async def handle_recraft(message: Message, state: FSMContext, user: User):
                 text=get_localization(user_language_code).ERROR,
                 reply_markup=build_error_keyboard(user_language_code),
             )
-            await send_error_info(
+
+            await notify_error_channel(
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
-                hashtags=['recraft'],
+                stack_trace=traceback.format_exc(),
+                context={"prompt": text},
+                hashtags=["recraft"]
             )
         finally:
             await processing_sticker.delete()
