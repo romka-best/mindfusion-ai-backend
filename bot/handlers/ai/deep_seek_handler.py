@@ -27,7 +27,6 @@ from bot.helpers.getters.get_history_without_duplicates import get_history_witho
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.reply_with_voice import reply_with_voice
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.senders.send_ai_message import send_ai_message
 from bot.integrations.deep_seek import get_response_message
 from bot.keyboards.ai.deep_seek import build_deep_seek_keyboard
@@ -40,6 +39,9 @@ from bot.keyboards.common.common import (
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
 from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
+import traceback
+
 
 deep_seek_router = Router()
 
@@ -285,11 +287,13 @@ async def handle_deep_seek(message: Message, state: FSMContext, user: User, user
                     reply_markup=build_error_keyboard(user_language_code),
                 )
 
-                await send_error_info(
+                await notify_error_channel(
                     bot=message.bot,
                     user_id=user.id,
                     info=str(e),
-                    hashtags=['deep_seek'],
+                    stack_trace=traceback.format_exc(),
+                    context={"prompt": full_text},
+                    hashtags=["deep_seek"]
                 )
         except openai.InternalServerError:
             await send_internal_ai_model_error(user_language_code, message, Model.DEEP_SEEK)
@@ -302,11 +306,14 @@ async def handle_deep_seek(message: Message, state: FSMContext, user: User, user
                 text=get_localization(user_language_code).ERROR,
                 reply_markup=build_error_keyboard(user_language_code),
             )
-            await send_error_info(
+
+            await notify_error_channel(
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
-                hashtags=['deep_seek'],
+                stack_trace=traceback.format_exc(),
+                context={"prompt": full_text},
+                hashtags=["deep_seek"]
             )
         finally:
             await processing_sticker.delete()
@@ -376,9 +383,11 @@ async def handle_deep_seek_r1_example(
                 reply_markup=build_buy_motivation_keyboard(user_language_code),
             )
     except Exception as e:
-        await send_error_info(
+        await notify_error_channel(
             bot=message.bot,
             user_id=user.id,
             info=str(e),
-            hashtags=['deep_seek', 'example'],
+            stack_trace=traceback.format_exc(),
+            context={"prompt": prompt},
+            hashtags=["deep_seek", "example"]
         )

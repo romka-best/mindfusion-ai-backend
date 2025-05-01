@@ -22,12 +22,12 @@ from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user
 from bot.handlers.ai.suno_handler import PRICE_SUNO
 from bot.helpers.senders.send_audio import send_audio
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.senders.send_video import send_video
 from bot.helpers.updaters.update_user_usage_quota import get_user_with_updated_quota
 from bot.keyboards.ai.suno import build_suno_keyboard
 from bot.keyboards.common.common import build_reaction_keyboard, build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 
 
 async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
@@ -70,11 +70,12 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
             text=get_localization(user_language_code).ERROR,
             reply_markup=build_error_keyboard(user_language_code),
         )
-        await send_error_info(
+
+        await notify_error_channel(
             bot=bot,
             user_id=user.id,
             info=str(error_message),
-            hashtags=['suno', 'webhook'],
+            hashtags=["suno", "webhook"]
         )
     else:
         for i, current_generation in enumerate([first_generation, second_generation]):

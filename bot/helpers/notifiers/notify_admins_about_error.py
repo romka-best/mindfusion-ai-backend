@@ -10,9 +10,9 @@ from bot.config import config, MessageSticker
 from bot.database.main import firebase
 from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.initialize_user_for_the_first_time import initialize_user_for_the_first_time
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.keyboards.common.common import build_error_keyboard, build_start_keyboard
 from bot.locales.main import get_localization, get_user_language, set_user_language
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 
 
 async def delayed_notify_admins_about_error(
@@ -29,7 +29,6 @@ async def delayed_notify_admins_about_error(
 
 async def notify_admins_about_error(bot: Bot, telegram_update: Update, dp: Dispatcher, error_info):
     try:
-        user_id = None
         if telegram_update.callback_query and telegram_update.callback_query.from_user.id:
             user_id = str(telegram_update.callback_query.from_user.id)
         elif telegram_update.message and telegram_update.message.from_user.id:
@@ -80,10 +79,11 @@ async def notify_admins_about_error(bot: Bot, telegram_update: Update, dp: Dispa
                     reply_markup=build_error_keyboard(user.interface_language_code),
                 )
 
-                await send_error_info(
+                await notify_error_channel(
                     bot=bot,
-                    user_id=user.id,
+                    user_id=user_id,
                     info=error_info,
+                    stack_trace=traceback.format_exc(),
                 )
     except TelegramRetryAfter as e:
         asyncio.create_task(delayed_notify_admins_about_error(bot, telegram_update, dp, error_info, e.retry_after + 30))
@@ -91,8 +91,9 @@ async def notify_admins_about_error(bot: Bot, telegram_update: Update, dp: Dispa
         error_trace = traceback.format_exc()
         logging.exception(f'Error in notify_admins_about_error: {error_trace}')
 
-        await send_error_info(
+        await notify_error_channel(
             bot=bot,
             user_id='UNKNOWN',
-            info=f'Неизвестная ошибка: {e}',
+            info=f"Неизвестная ошибка: {e}",
+            stack_trace=traceback.format_exc(),
         )
