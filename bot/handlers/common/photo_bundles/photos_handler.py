@@ -184,5 +184,5 @@ class PhotosHandler(BaseHandler):
 
     async def back_to_profile(self):
         await handle_profile(
-            self.message, self.state, self.callback_query.from_user, False
+            self.message, self.state, self.callback_query.from_user
         )
