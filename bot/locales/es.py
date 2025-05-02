@@ -582,6 +582,14 @@ Solo te quedan <b>{available_images} generaciones</b> en tu arsenal
 💡 <b>Consejo:</b> Prueba con un número menor o utiliza /buy para obtener posibilidades ilimitadas
 """
 
+    @staticmethod
+    def wait_for_lora_train():
+        return "🤖 Estoy entrenando mi red neuronal para darte mejores respuestas — esto solo necesita hacerse una vez. Normalmente toma 10 minutos."
+
+    @staticmethod
+    def error_photo_bundle_empty():
+        return "⚠️ No hay fotos en tu perfil. Sube al menos una foto e intenta de nuevo."
+
     # Feedback
     FEEDBACK_INFO = """
 📡 <b>Comentarios</b>
@@ -2718,3 +2726,60 @@ Por ahora, no tienes acceso para trabajar con fotos y documentos.
 
 Puedes obtener acceso haciendo clic en el botón de abajo:
 """
+
+    @staticmethod
+    def menu_bundle_photo_managment():
+        return "🖼 Gestión de fotos"
+
+    @staticmethod
+    def photo_bundle_delete_all_confirm():
+        return "⚠️ ¿Estás seguro de que quieres eliminar TODAS las fotos?"
+
+    @staticmethod
+    def menu_photo_bundle_show():
+        return "🖼 Aquí puedes subir hasta 10 fotos para usarlas en la función de intercambio de rostro (Face Swap).\
+ Usa los botones de abajo para agregar, eliminar o reemplazar fotos."
+
+    @staticmethod
+    def menu_photo_bundle_show_upload():
+        return "⬆️ Subir"
+
+    @staticmethod
+    def menu_photo_bundle_show_edit():
+        return "🔁 Reemplazar una"
+
+    @staticmethod
+    def menu_photo_bundle_delete_one():
+        return "❌ Eliminar una"
+
+    @staticmethod
+    def menu_photo_bundle_delete_all():
+        return "🗑 Eliminar todas"
+
+    @staticmethod
+    def menu_photo_bundle_back_to_profile():
+        return "👤 Volver al perfil"
+
+    @staticmethod
+    def menu_photo_bundle_delete_mode():
+        return "🔢 Selecciona el número de la foto que deseas eliminar."
+
+    @staticmethod
+    def menu_photo_bundle_back_to_photos():
+        return "📂 Volver a las fotos"
+
+    @staticmethod
+    def menu_photo_bundle_edit_mode():
+        return "🔢 Selecciona el número de la foto que deseas reemplazar."
+
+    @staticmethod
+    def menu_photo_bundle_upload_limit_reached():
+        return "🚫 Se alcanzó el límite de fotos, estas fotos no se han subido. Puedes eliminar o reemplazar las existentes."
+
+    @staticmethod
+    def menu_photo_bundle_new():
+        return "📥 Envía una o varias fotos."
+
+    @staticmethod
+    def menu_photo_bundle_edit():
+        return "📥 Envía una nueva foto para reemplazar."
