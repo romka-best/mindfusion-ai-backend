@@ -7,7 +7,6 @@ from bot.locales.types import LanguageCode
 
 def build_profile_keyboard(
     language_code: LanguageCode,
-    is_photo_uploaded: bool,
     has_active_subscription: bool,
     has_canceled_subscription: bool,
 ) -> InlineKeyboardMarkup:
@@ -22,13 +21,6 @@ def build_profile_keyboard(
             InlineKeyboardButton(
                 text=get_localization(language_code).PROFILE_SHOW_QUOTA,
                 callback_data='profile:show_quota'
-            ),
-        ],
-        [
-            InlineKeyboardButton(
-                text=get_localization(language_code).PROFILE_CHANGE_PHOTO if is_photo_uploaded
-                else get_localization(language_code).PROFILE_UPLOAD_PHOTO,
-                callback_data='profile:change_photo'
             ),
         ],
         [

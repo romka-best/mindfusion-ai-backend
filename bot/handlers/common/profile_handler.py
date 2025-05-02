@@ -39,10 +39,10 @@ profile_router = Router()
 async def profile(message: Message, state: FSMContext):
     await state.clear()
 
-    await handle_profile(message, state, message.from_user, False)
+    await handle_profile(message, state, message.from_user)
 
 
-async def handle_profile(message: Message, state: FSMContext, telegram_user: TelegramUser, is_edit=False):
+async def handle_profile(message: Message, state: FSMContext, telegram_user: TelegramUser):
     user = await get_user(str(telegram_user.id))
     user_language_code = await get_user_language(str(telegram_user.id), state.storage)
 
@@ -80,49 +80,18 @@ async def handle_profile(message: Message, state: FSMContext, telegram_user: Tel
         renewal_date,
     )
 
-    blobs = await firebase.bucket.list_blobs(prefix=f'users/avatars/{user.id}.')
-    if len(blobs) > 0:
-        photo_path = blobs[-1]
-    else:
-        photo_path = f'users/avatars/{user.id}.jpeg'
-    try:
-        photo = await firebase.bucket.get_blob(photo_path)
-        photo_link = firebase.get_public_url(photo.name)
-
-        reply_markup = build_profile_keyboard(
-            user_language_code,
-            True,
-            subscription.status == SubscriptionStatus.ACTIVE or subscription.status == SubscriptionStatus.TRIAL if subscription else False,
-            subscription.status == SubscriptionStatus.CANCELED if subscription else False,
-        )
-        if is_edit:
-            await message.edit_caption(
-                caption=text,
-                reply_markup=reply_markup,
-            )
-        else:
-            await message.answer_photo(
-                photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
-                caption=text,
-                reply_markup=reply_markup,
-            )
-    except aiohttp.ClientResponseError:
-        reply_markup = build_profile_keyboard(
-            user_language_code,
-            False,
-            subscription.status == SubscriptionStatus.ACTIVE or subscription.status == SubscriptionStatus.TRIAL if subscription else False,
-            subscription.status == SubscriptionStatus.CANCELED if subscription else False,
-        )
-        if is_edit:
-            await message.edit_text(
-                text=text,
-                reply_markup=reply_markup,
-            )
-        else:
-            await message.answer(
-                text=text,
-                reply_markup=reply_markup,
-            )
+    reply_markup = build_profile_keyboard(
+        user_language_code,
+        subscription.status == SubscriptionStatus.ACTIVE
+        or subscription.status == SubscriptionStatus.TRIAL
+        if subscription
+        else False,
+        subscription.status == SubscriptionStatus.CANCELED if subscription else False,
+    )
+    await message.answer(
+        text=text,
+        reply_markup=reply_markup
+   )
 
 
 @profile_router.callback_query(lambda c: c.data.startswith('profile:'))
@@ -137,8 +106,6 @@ async def handle_profile_selection(callback_query: CallbackQuery, state: FSMCont
         await handle_settings(callback_query.message, user_id, state)
     elif action == 'show_quota':
         await handle_profile_show_quota(callback_query.message, user_id, state)
-    elif action == 'change_photo':
-        await handle_profile_change_photo(callback_query.message, user_id, state)
     elif action == 'open_bonus_info':
         await handle_bonus(callback_query.message, user_id, state)
     elif action == 'open_buy_subscriptions_info':
@@ -171,23 +138,6 @@ async def handle_profile_show_quota(message: Message, user_id: str, state: FSMCo
         reply_markup=build_profile_quota_keyboard(user_language_code),
         allow_sending_without_reply=True,
     )
-
-
-async def handle_profile_change_photo(message: Message, user_id: str, state: FSMContext):
-    user_language_code = await get_user_language(user_id, state.storage)
-
-    photo_path = 'users/avatars/example.png'
-    photo = await firebase.bucket.get_blob(photo_path)
-    photo_link = firebase.get_public_url(photo.name)
-
-    await message.reply_photo(
-        photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
-        caption=get_localization(user_language_code).PROFILE_SEND_ME_YOUR_PICTURE,
-        reply_markup=build_cancel_keyboard(user_language_code),
-        allow_sending_without_reply=True,
-    )
-
-    await state.set_state(Profile.waiting_for_photo)
 
 
 @profile_router.callback_query(lambda c: c.data.startswith('profile_gender:'))
