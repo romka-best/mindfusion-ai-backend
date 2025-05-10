@@ -26,6 +26,12 @@ def build_admin_keyboard(language_code: LanguageCode) -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton(
+                text="📦 Управление продуктами",
+                callback_data="admin:products:select_type",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
                 text='📊 Статистика',
                 callback_data='admin:statistics',
             ),

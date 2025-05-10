@@ -106,6 +106,8 @@ from bot.utils.migrate import migrate
 from bot.handlers.common.photo_bundles.photo_bundles_router import photo_bundles_router
 
 from bot.handlers.ai.openai.gpt_image.gpt_image_handler import gpt_image_router
+from bot.middlewares.DeletePrevMsgsMiddleware import DeletePrevMsgsMiddleware
+
 
 WEBHOOK_BOT_PATH = f'/bot/{config.BOT_TOKEN.get_secret_value()}'
 WEBHOOK_YOOKASSA_PATH = '/payment/yookassa'

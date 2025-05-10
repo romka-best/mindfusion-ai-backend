@@ -51,13 +51,33 @@ async def get_active_products_by_product_type_and_category(
 async def get_products(
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
+    is_active = None,
+    product_type = None,
+    ids: Optional[str | list[str]] = None,
 ) -> list[Product]:
     products_query = firebase.db.collection(Product.COLLECTION_NAME)
 
     if start_date:
-        products_query = products_query.where(filter=FieldFilter('created_at', '>=', start_date))
+        products_query = products_query.where(
+            filter=FieldFilter("created_at", ">=", start_date)
+        )
     if end_date:
-        products_query = products_query.where(filter=FieldFilter('created_at', '<=', end_date))
+        products_query = products_query.where(
+            filter=FieldFilter("created_at", "<=", end_date)
+        )
+    if is_active:
+        products_query = products_query.where(
+            filter=FieldFilter("is_active", "==", True)
+        )
+    if product_type:
+        products_query = products_query.where(
+            filter=FieldFilter("type", "==", product_type)
+        )
+    if ids:
+        ids = [ids] if isinstance(ids, str) else ids
+        products_query = products_query.where(
+            filter=FieldFilter("id", "in", ids)
+        )
 
     products = products_query.stream()
 
