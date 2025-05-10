@@ -14,6 +14,15 @@ async def get_transaction(transaction_id: str) -> Optional[Transaction]:
     if transaction.exists:
         return Transaction(**transaction.to_dict())
 
+async def get_transaction_by_subscription_id(subscription_id: str) -> Transaction:
+    query = (
+        firebase.db.collection(Transaction.COLLECTION_NAME)
+        .where(filter=FieldFilter("details.subscription_id", "==", subscription_id))
+        .limit(1)
+    )
+    transaction = (await query.get())[0]
+
+    return Transaction(**transaction.to_dict())
 
 async def get_last_transaction_by_user(user_id: str) -> Optional[Transaction]:
     transaction_stream = firebase.db.collection(Transaction.COLLECTION_NAME) \
