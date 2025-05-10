@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
+import aiohttp
 from aiogram import Router
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
@@ -38,7 +39,10 @@ from bot.integrations.midjourney import (
 from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
+
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 from bot.helpers import midjourney as midjourney_helper
+
 
 midjourney_router = Router()
 
@@ -188,6 +192,11 @@ async def handle_midjourney(
                         'is_suggestion': False,
                     }
                 )
+            except aiohttp.ClientResponseError as e:
+                if e.status == 500:
+                    await send_internal_ai_model_error(
+                        user_language_code, message, Model.MIDJOURNEY
+                    )
             except Exception as e:
                 logging.debug(e, exc_info=True)
 

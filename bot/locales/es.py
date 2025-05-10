@@ -472,6 +472,10 @@ La relación entre ancho y alto de la imagen debe estar entre {min_ratio} y {max
         text += "\n\nPor favor, inténtalo de nuevo con otra imagen 😉"
         return text
 
+    @staticmethod
+    def error_internal_ai_model(ai_model_name) -> str:
+        return f"⚠️ Se produjo un error en el modelo {ai_model_name}. Por favor, inténtalo de nuevo más tarde."
+
     # Examples
     EXAMPLE_INFO = "Para acceder a esta red neuronal, presiona el botón de abajo:"
 
@@ -2527,6 +2531,7 @@ Selecciona tu opción y presiona el botón de abajo para suscribirte:
 
     @staticmethod
     def subscribe_confirmation(
+        subscription: Product,
         name: str,
         category: ProductCategory,
         currency: Currency,
@@ -2541,8 +2546,84 @@ Selecciona tu opción y presiona el botón de abajo para suscribirte:
         if is_trial:
             trial_info = ' con un periodo de prueba de los primeros 3 días'
 
+        base_text_models = [
+                Quota.CHAT_GPT4_OMNI_MINI,
+                Quota.CHAT_GPT_4_1_MINI,
+                Quota.CLAUDE_3_HAIKU,
+                Quota.GEMINI_2_FLASH,
+                Quota.DEEP_SEEK_V3
+        ]
+
+        advanced_text_models = [
+                Quota.CHAT_GPT4_OMNI,
+                Quota.CHAT_GPT_4_1,
+                Quota.CHAT_GPT_O_4_MINI,
+                Quota.CLAUDE_3_SONNET,
+                Quota.GEMINI_2_PRO,
+                Quota.GROK_2,
+                Quota.DEEP_SEEK_R1,
+                Quota.PERPLEXITY
+        ]
+
+        flagship_text_models = [
+            Quota.CHAT_GPT_O_3,
+            Quota.CLAUDE_3_OPUS,
+            Quota.GEMINI_1_ULTRA,
+        ]
+
+        summarise_models = [
+                Quota.EIGHTIFY,
+                Quota.GEMINI_VIDEO
+        ]
+
+        base_image_models = [
+            Quota.STABLE_DIFFUSION_XL,
+            Quota.FLUX_1_DEV,
+            Quota.LUMA_PHOTON
+        ]
+
+        advanced_image_models = [
+            Quota.DALL_E,
+            Quota.MIDJOURNEY,
+            Quota.STABLE_DIFFUSION_3,
+            Quota.FLUX_1_PRO,
+            'recraft_3',
+            Quota.FACE_SWAP,
+            Quota.PHOTOSHOP_AI
+        ]
+
+        music_models = [
+            Quota.MUSIC_GEN,
+            Quota.SUNO
+        ]
+
+        video_models = [
+            Quota.KLING,
+            Quota.RUNWAY,
+            Quota.LUMA_RAY,
+            Quota.PIKA
+        ]
+
         return f"""
 Estás a punto de activar la suscripción {name} por {left_price_part}{price}{right_price_part}/{period}{trial_info}
+
+🔤 Básicos modelos de texto: {format_number(sum([subscription.details['limits'][model] for model in base_text_models]))}
+🔤 Avanzados modelos de texto: {format_number(sum([subscription.details['limits'][model] for model in advanced_text_models]))}
+🔤 Premium modelos de texto: {format_number(sum([subscription.details['limits'][model] for model in flagship_text_models]))}
+
+📝 Modelos de Resumen: {format_number(sum([subscription.details['limits'][model] for model in summarise_models]))}
+
+🖼 Básicos modelos gráficos: {format_number(sum([subscription.details['limits'][model] for model in base_image_models]))}
+🖼 Avanzados modelos gráficos: {format_number(sum([subscription.details['limits'][model] for model in advanced_image_models]))}
+
+🎵 Modelos de Música: {format_number(sum([subscription.details['limits'][model] for model in music_models]))}
+
+📹 Modelos de Vídeo: {format_number(sum([subscription.details['limits'][model] for model in video_models]))}
+
+📷 <b>Trabajo con fotos/documentos</b>: {'✅' if subscription.details['limits'][Quota.WORK_WITH_FILES] else '❌'}
+🎭 <b>Acceso al catálogo de empleados digitales</b>: {'✅' if subscription.details['limits'][Quota.ACCESS_TO_CATALOG] else '❌'}
+🎙 <b>Mensajes de voz</b>: {'✅' if subscription.details['limits'][Quota.VOICE_MESSAGES] else '❌'}
+⚡️ <b>Respuestas rápidas</b>: {'✅' if subscription.details['limits'][Quota.FAST_MESSAGES] else '❌'}
 
 ❗️Puedes cancelar la suscripción en cualquier momento desde la sección <b>Perfil 👤</b>
 """

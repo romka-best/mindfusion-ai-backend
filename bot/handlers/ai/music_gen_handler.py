@@ -30,6 +30,8 @@ from bot.keyboards.ai.music_gen import build_music_gen_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
 from bot.states.ai.music_gen import MusicGen
+from replicate.exceptions import ReplicateError
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 music_gen_router = Router()
 
@@ -211,6 +213,11 @@ async def handle_music_gen_selection(
                         'duration': duration,
                     }
                 )
+            except ReplicateError as e:
+                if e.status == 500:
+                    await send_internal_ai_model_error(
+                        user_language_code, message, Model.MUSIC_GEN
+                    )
             except Exception as e:
                 await message.answer_sticker(
                     sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),

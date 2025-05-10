@@ -39,6 +39,7 @@ from bot.keyboards.common.common import (
 )
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 deep_seek_router = Router()
 
@@ -290,6 +291,8 @@ async def handle_deep_seek(message: Message, state: FSMContext, user: User, user
                     info=str(e),
                     hashtags=['deep_seek'],
                 )
+        except openai.InternalServerError:
+            await send_internal_ai_model_error(user_language_code, message, Model.DEEP_SEEK)
         except Exception as e:
             await message.answer_sticker(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),

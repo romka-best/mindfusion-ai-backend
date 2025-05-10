@@ -68,6 +68,7 @@ from bot.keyboards.payment.payment import (
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
 from bot.states.payment.payment import Payment
+from bot.helpers.getters.get_model_by_quota import get_model_by_quota
 
 payment_router = Router()
 
@@ -367,6 +368,7 @@ async def handle_payment_method_subscription_selection(callback_query: CallbackQ
 
         await callback_query.message.edit_caption(
             caption=get_localization(user_language_code).subscribe_confirmation(
+                subscription,
                 subscription_name,
                 subscription.category,
                 currency,
@@ -1430,6 +1432,13 @@ async def handle_successful_payment(message: Message, state: FSMContext):
                 product=product,
             )
         )
+
+        current_model = get_model_by_quota(product.details['quota'])
+        await update_user(package.user_id, {
+            'current_model': current_model
+        })
+        user.current_model = current_model
+
     elif payment_type == PaymentType.CART:
         user_id = payment.invoice_payload.split(':')[1]
         packages = await get_packages_by_user_id_and_status(user_id, PackageStatus.WAITING)

@@ -34,6 +34,8 @@ from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
+from replicate.exceptions import ReplicateError
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 flux_router = Router()
 
@@ -212,6 +214,11 @@ async def handle_flux(
                     'prompt': prompt,
                 }
             )
+        except ReplicateError as e:
+            if e.status == 500:
+                await send_internal_ai_model_error(
+                    user_language_code, message, Model.FLUX
+                )
         except Exception as e:
             await message.answer_sticker(
                 sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
@@ -225,13 +232,11 @@ async def handle_flux(
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
-                hashtags=['flux'],
+                hashtags=["flux"],
             )
 
             request.status = RequestStatus.FINISHED
-            await update_request(request.id, {
-                'status': request.status
-            })
+            await update_request(request.id, {"status": request.status})
 
             generations = await get_generations_by_request_id(request.id)
             for generation in generations:
@@ -240,8 +245,8 @@ async def handle_flux(
                 await update_generation(
                     generation.id,
                     {
-                        'status': generation.status,
-                        'has_error': generation.has_error,
+                        "status": generation.status,
+                        "has_error": generation.has_error,
                     },
                 )
 
