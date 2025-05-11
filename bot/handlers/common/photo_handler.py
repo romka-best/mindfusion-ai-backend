@@ -278,8 +278,8 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
             quota = Quota.GEMINI_2_PRO
         elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Ultra:
             quota = Quota.GEMINI_1_ULTRA
-        elif user.settings[user.current_model][UserSettings.VERSION] == GrokGPTVersion.V2:
-            quota = Quota.GROK_2
+        elif user.settings[user.current_model][UserSettings.VERSION] in [GrokGPTVersion.V2, GrokGPTVersion.V3]:
+            quota = Quota.GROK_3
         else:
             raise NotImplementedError(
                 f'User quota is not implemented: {user.settings[user.current_model][UserSettings.VERSION]}'
@@ -504,8 +504,8 @@ async def handle_album(message: Message, state: FSMContext, album: list[Message]
             quota = Quota.GEMINI_2_PRO
         elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Ultra:
             quota = Quota.GEMINI_1_ULTRA
-        elif user.settings[user.current_model][UserSettings.VERSION] == GrokGPTVersion.V2:
-            quota = Quota.GROK_2
+        elif user.settings[user.current_model][UserSettings.VERSION] in [GrokGPTVersion.V2, GrokGPTVersion.V3]:
+            quota = Quota.GROK_3
         else:
             raise NotImplementedError(
                 f'User quota is not implemented: {user.settings[user.current_model][UserSettings.VERSION]}'

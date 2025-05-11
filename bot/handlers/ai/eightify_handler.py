@@ -78,7 +78,7 @@ async def handle_eightify(message: Message, state: FSMContext, user: User):
     user_language_code = await get_user_language(str(user.id), state.storage)
 
     link = message.text
-    breakpoint()
+
     if link is None:
         await message.reply(
             text=get_localization(user_language_code).EIGHTIFY_VALUE_ERROR,

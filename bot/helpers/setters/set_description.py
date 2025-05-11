@@ -28,7 +28,7 @@ Access to AI:
 • Gemini 2 Flash
 • Gemini 2.5 Pro
 • Gemini 1 Ultra
-• Grok 2
+• Grok 3
 • DeepSeek V3
 • DeepSeek R1
 • Perplexity
@@ -74,7 +74,7 @@ Access to AI:
 • Gemini 2 Flash
 • Gemini 2.5 Pro
 • Gemini 1 Ultra
-• Grok 2
+• Grok 3
 • DeepSeek V3
 • DeepSeek R1
 • Perplexity
@@ -121,7 +121,7 @@ Acceso a redes neuronales:
 • Gemini 2 Flash
 • Gemini 2.5 Pro
 • Gemini 1 Ultra
-• Grok 2
+• Grok 3
 • DeepSeek V3
 • DeepSeek R1
 • Perplexity
@@ -168,7 +168,7 @@ AI मॉडल्स तक पहुंच:
 • Gemini 2 Flash
 • Gemini 2.5 Pro
 • Gemini 1 Ultra
-• Grok 2
+• Grok 3
 • DeepSeek V3
 • DeepSeek R1
 • Perplexity

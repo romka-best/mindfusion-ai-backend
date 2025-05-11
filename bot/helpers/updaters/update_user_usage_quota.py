@@ -15,7 +15,7 @@ TEXT_ADVANCED_QUOTA = [
     Quota.CHAT_GPT_4_1,
     Quota.CLAUDE_3_SONNET,
     Quota.GEMINI_2_PRO,
-    Quota.GROK_2,
+    Quota.GROK_3,
     Quota.DEEP_SEEK_R1,
     Quota.PERPLEXITY,
 ]

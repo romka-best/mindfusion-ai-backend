@@ -119,7 +119,7 @@ class User:
         Quota.GEMINI_1_ULTRA: 0,
         Quota.DEEP_SEEK_V3: 0,
         Quota.DEEP_SEEK_R1: 0,
-        Quota.GROK_2: 0,
+        Quota.GROK_3: 0,
         Quota.PERPLEXITY: 0,
         Quota.EIGHTIFY: 0,
         Quota.GEMINI_VIDEO: 0,
