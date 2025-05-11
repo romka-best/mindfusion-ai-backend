@@ -60,7 +60,7 @@ class Quota:
     GEMINI_2_FLASH = 'gemini_2_flash'
     GEMINI_2_PRO = 'gemini_2_pro'
     GEMINI_1_ULTRA = 'gemini_1_ultra'
-    GROK_2 = 'grok_2'
+    GROK_3 = 'grok_3'
     DEEP_SEEK_V3 = 'deep_seek_v3'
     DEEP_SEEK_R1 = 'deep_seek_r1'
     PERPLEXITY = 'perplexity'
@@ -113,7 +113,8 @@ class GeminiGPTVersion:
 
 
 class GrokGPTVersion:
-    V2 = 'grok-2-vision-1212'
+    V2 = "grok-2-vision-1212"
+    V3 = "grok-3"
 
 
 class DeepSeekVersion:

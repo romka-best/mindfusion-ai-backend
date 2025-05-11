@@ -41,7 +41,7 @@ SUBSCRIPTION_FREE_LIMITS = {
     Quota.GEMINI_2_FLASH: 10,
     Quota.GEMINI_2_PRO: 0,
     Quota.GEMINI_1_ULTRA: 0,
-    Quota.GROK_2: 0,
+    Quota.GROK_3: 0,
     Quota.DEEP_SEEK_V3: 10,
     Quota.DEEP_SEEK_R1: 0,
     Quota.PERPLEXITY: 0,

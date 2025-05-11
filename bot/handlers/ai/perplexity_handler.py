@@ -215,9 +215,9 @@ async def handle_perplexity(message: Message, state: FSMContext, user: User, pho
                     user.settings[user.current_model][UserSettings.SHOW_THE_NAME_OF_THE_ROLES]
                 ) else ''
                 header_text = f'{chat_info}{role_info}\n' if chat_info or role_info else ''
-                footer_text = f'\n\n✉️ {user.daily_limits[Quota.GROK_2] + user.additional_usage_quota[Quota.GROK_2] + 1}' \
+                footer_text = f'\n\n✉️ {user.daily_limits[Quota.GROK_3] + user.additional_usage_quota[Quota.GROK_3] + 1}' \
                     if user.settings[user.current_model][UserSettings.SHOW_USAGE_QUOTA] and \
-                       user.daily_limits[Quota.GROK_2] != float('inf') else ''
+                       user.daily_limits[Quota.GROK_3] != float('inf') else ''
                 reply_markup = build_continue_generating_keyboard(user_language_code)
                 full_text = f"{header_text}{message_content}{footer_text}"
                 await send_ai_message(

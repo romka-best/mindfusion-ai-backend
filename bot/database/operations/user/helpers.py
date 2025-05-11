@@ -83,9 +83,9 @@ def create_user_object(
         elif quota == Quota.GEMINI_1_ULTRA:
             default_settings[default_model][UserSettings.VERSION] = GeminiGPTVersion.V1_Ultra
             default_additional_quota[Quota.GEMINI_1_ULTRA] = 10
-    elif quota == Quota.GROK_2:
+    elif quota == Quota.GROK_3:
         default_model = Model.GROK
-        default_additional_quota[Quota.GROK_2] = 10
+        default_additional_quota[Quota.GROK_3] = 10
     elif quota in [Quota.DEEP_SEEK_V3, Quota.DEEP_SEEK_R1]:
         default_model = Model.DEEP_SEEK
         if quota == Quota.DEEP_SEEK_V3:
