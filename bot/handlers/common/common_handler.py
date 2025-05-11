@@ -183,7 +183,7 @@ async def start(message: Message, state: FSMContext):
                     elif sub_param_value == 'gemini1ultra':
                         default_quota = Quota.GEMINI_1_ULTRA
                     elif sub_param_value == 'grok':
-                        default_quota = Quota.GROK_2
+                        default_quota = Quota.GROK_3
                     elif sub_param_value == 'deepseekv3':
                         default_quota = Quota.DEEP_SEEK_V3
                     elif sub_param_value == 'deepseekr1':
@@ -414,8 +414,8 @@ async def handle_continue_generation_choose_selection(callback_query: CallbackQu
             user_quota = Quota.GEMINI_2_PRO
         elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Ultra:
             user_quota = Quota.GEMINI_1_ULTRA
-        elif user.settings[user.current_model][UserSettings.VERSION] == GrokGPTVersion.V2:
-            user_quota = Quota.GROK_2
+        elif user.settings[user.current_model][UserSettings.VERSION] in [GrokGPTVersion.V2, GrokGPTVersion.V3]:
+            user_quota = Quota.GROK_3
         elif user.settings[user.current_model][UserSettings.VERSION] == DeepSeekVersion.V3:
             user_quota = Quota.DEEP_SEEK_V3
         elif user.settings[user.current_model][UserSettings.VERSION] == DeepSeekVersion.R1:
@@ -446,7 +446,7 @@ async def handle_continue_generation_choose_selection(callback_query: CallbackQu
             Quota.GEMINI_1_ULTRA,
         ]:
             await handle_gemini(callback_query.message, state, user, user_quota)
-        elif user_quota == Quota.GROK_2:
+        elif user_quota == Quota.GROK_3:
             await handle_grok(callback_query.message, state, user)
         elif user_quota in [
             Quota.DEEP_SEEK_V3,

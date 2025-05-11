@@ -404,7 +404,7 @@ Revisa el texto/la foto en busca de contenido prohibido e inténtalo de nuevo �
     ┣ Gemini 2.0 Flash 🏎
     ┣ Gemini 2.5 Pro 💼
     ┣ Gemini 1.0 Ultra 🛡️
-    ┗ Grok 2.0 🐦
+    ┗ Grok 3.0 🐦
 
 🖼 <b>Modelos gráficos:</b>
     ┣ 🎨 Midjourney
@@ -2080,7 +2080,7 @@ Seleccione una acción 👇
     ┣ 🧩 ChatGPT o4-mini{f': adicional {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ''}
     ┣ 💫 Claude 3.7 Sonnet{f': adicional {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 2.5 Pro{f': adicional {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
-    ┣ 🐦 Grok 2.0{f': adicional {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
+    ┣ 🐦 Grok 3.0{f': adicional {additional_usage_quota[Quota.GROK_3]}' if additional_usage_quota[Quota.GROK_3] > 0 else ''}
     ┣ 🌐 Perplexity{f': adicional {additional_usage_quota[Quota.PERPLEXITY]}' if additional_usage_quota[Quota.PERPLEXITY] > 0 else ''}
     ┗ Límite diario: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}
 
@@ -2569,7 +2569,7 @@ Selecciona tu opción y presiona el botón de abajo para suscribirte:
                 Quota.CHAT_GPT_O_4_MINI,
                 Quota.CLAUDE_3_SONNET,
                 Quota.GEMINI_2_PRO,
-                Quota.GROK_2,
+                Quota.GROK_3,
                 Quota.DEEP_SEEK_R1,
                 Quota.PERPLEXITY
         ]

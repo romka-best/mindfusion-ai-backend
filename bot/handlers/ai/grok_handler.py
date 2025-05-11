@@ -266,3 +266,5 @@ async def handle_grok(message: Message, state: FSMContext, user: User, photo_fil
             await processing_sticker.delete()
             await processing_message.delete()
             await state.update_data(is_processing=False)
+
+

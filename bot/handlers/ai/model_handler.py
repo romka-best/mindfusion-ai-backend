@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.config import config, MessageEffect
-from bot.database.models.common import Model, ModelType
+from bot.database.models.common import GrokGPTVersion, Model, ModelType
 from bot.database.models.user import UserSettings
 from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user
@@ -215,6 +215,8 @@ async def handle_model_selection(callback_query: CallbackQuery, state: FSMContex
             user.settings[Model.STABLE_DIFFUSION][UserSettings.VERSION] = chosen_version
         elif chosen_model == Model.FLUX:
             user.settings[Model.FLUX][UserSettings.VERSION] = chosen_version
+        elif chosen_model == Model.GROK:
+            user.settings[Model.GROK][UserSettings.VERSION] = GrokGPTVersion.V3
 
         await update_user(
             user_id,
