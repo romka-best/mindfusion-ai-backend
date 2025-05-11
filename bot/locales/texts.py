@@ -270,7 +270,7 @@ class Texts(Protocol):
     GENERATION_VIDEO_SUCCESS: str
 
     # Grok
-    GROK = '🐦 Grok 2.0'
+    GROK = "🐦 Grok 3.0"
 
     # Help
     HELP_INFO: str

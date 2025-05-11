@@ -39,7 +39,7 @@ def get_quota_by_model(model: Model, version: str):
         elif version == GeminiGPTVersion.V1_Ultra:
             return Quota.GEMINI_1_ULTRA
     elif model == Model.GROK:
-        return Quota.GROK_2
+        return Quota.GROK_3
     elif model == Model.DEEP_SEEK:
         if version == DeepSeekVersion.V3:
             return Quota.DEEP_SEEK_V3

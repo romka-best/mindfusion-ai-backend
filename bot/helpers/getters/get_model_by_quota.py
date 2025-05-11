@@ -23,7 +23,7 @@ def get_model_by_quota(quota: Quota) -> Model:
         "stable-diffusion-3": Model.STABLE_DIFFUSION,
         "flux-1-dev": Model.FLUX,
         "flux-1-pro": Model.FLUX,
-        "grok-2": Model.GROK,
+        "grok-3": Model.GROK,
     }
 
     if quota_name in manual_mapping:
