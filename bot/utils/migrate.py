@@ -1,147 +1,144 @@
-import io
-import os
-import asyncio
+import re
+
 from aiogram import Bot
+
 from bot.database.main import firebase
-from bot.database.models.user import User
-from aiogram.types import BufferedInputFile
+from bot.database.models.common import Model, Quota
+from bot.database.models.product import ProductCategory, ProductType
+from bot.database.operations.product.writers import write_product
+from bot.helpers import gpt_image
+from bot.helpers.senders.send_message_to_admins_and_developers import send_message_to_admins_and_developers
+from bot.locales.texts import Texts
 
 
-MIGRATE_CHAT_ID = "-4752921470"
+async def up(product_data, user_settings_gpt_image, limits):
+    # Create product
+    await write_product(**product_data)
 
-MAX_RETRIES = 10
-RETRY_DELAY = 2
+    # Users
+    async for user_doc in firebase.db.collection("users").stream():
+        user_data = user_doc.to_dict()
+        updates = {}
 
-# FIELD
-async def user_field_lora():
-    users_ref = firebase.db.collection("users")
+        daily_limits = user_data.get("daily_limits", {})
+        daily_limits.update(limits)
+        updates["daily_limits"] = daily_limits
 
-    batch = firebase.db.batch()
-    count = 0
-    batch_size = 500
+        additional_quota = user_data.get("additional_usage_quota", {})
+        additional_quota.update(limits)
+        updates["additional_usage_quota"] = additional_quota
 
-    async for user in users_ref.stream():
-        doc_ref = users_ref.document(user.id)
-        batch.update(doc_ref, {"face_swap_lora_version": ""})
-        count += 1
+        settings = user_data.get("settings", {})
+        settings.update(user_settings_gpt_image)
+        updates["settings"] = settings
 
-        if count % batch_size == 0:
-            batch.commit()
-            print(f"Committed {count}")
-            batch = firebase.db.batch()
+        if updates:
+            await firebase.db.collection("users").document(user_doc.id).update(updates)
 
-    if count % batch_size != 0:
-        await batch.commit()
-        print(f"Committed {count % batch_size}")
-
-    print(f"DONE {count}")
-
-
-
-# PHOTOS
-async def send_photo_with_retry(bot, chat_id, buffer, filename):
-    file_data = buffer.read()
-    input_file = BufferedInputFile(file_data, filename=filename)
-
-    for attempt in range(1, MAX_RETRIES + 1):
-        try:
-            return await bot.send_photo(chat_id=chat_id, photo=input_file)
-        except Exception as e:
-            print(f"Попытка {filename} {attempt} не удалась: {e}")
-            if attempt == MAX_RETRIES:
-                return None
-            await asyncio.sleep(RETRY_DELAY)
-
-
-async def migrate_user_avatars(bot: Bot):
-    # Get all files and dirs in /users/avatars/
-    bucket = firebase.bucket
-    blobs = (await bucket.list_blobs(prefix="users/avatars/"))[1:]
-
-    file_paths = set()
-
-    for blob_name in blobs:
-        parts = blob_name.split('/')
-        if len(parts) == 3:
-            file_paths.add(blob_name)
-        elif len(parts) == 4:
-            file_paths.add(f"{parts[0]}/{parts[1]}/{parts[2]}/")
-    # /
-
-    # Get all users
-    users = firebase.db.collection(User.COLLECTION_NAME).stream()
-    user_ids = set()
-
-    async for doc in users:
-        user_data = doc.to_dict()
-        user_ids.add(user_data["id"])
-
-    total_to_migarte = len(user_ids)
-    current_migrated = 0
-    # /
-
-
-    # Iterate and move existed photos
-    for file_path in file_paths:
-        print(f"Status: {total_to_migarte}/{current_migrated}")
-
-        if file_path.count('/') > 2:
-            user_id = file_path.split("/")[2]
-            user_ids.remove(user_id)
-
-            print(f"Папка для {user_id} уже есть")
-            current_migrated += 1
-            continue
-
-        filename = os.path.basename(file_path)
-        possible_user_id = os.path.splitext(filename)[0]
-
-        if possible_user_id not in user_ids:
-            print(f"Пропущен (не найден user_id): {filename}")
-            continue
-
-        data = await bucket.storage.download(bucket.name, file_path)
-        buffer = io.BytesIO(data)
-
-        message = await send_photo_with_retry(bot, MIGRATE_CHAT_ID, buffer, filename)
-
-        if message is None:
-            print(f"Ошибка миграции {file_path}")
-            continue
-
-        file_id = message.photo[-1].file_id
-        print(f"Отправили фото в тг {file_path} получили {file_id}")
-
-
-        ext = os.path.splitext(filename)[1]
-        new_filename = f"0_{file_id}{ext}"
-        new_path = f"users/avatars/{possible_user_id}/{new_filename}"
-
-
-        buffer.seek(0)
-        await firebase.bucket.new_blob(new_path).upload(buffer)
-        print(f"загружаем в {new_path} и удаляем старый")
-
-
-        await firebase.storage.delete(bucket=firebase.bucket.name, object_name=file_path)
-
-        print(f"Перемещено: {file_path} → {new_path}")
-        current_migrated += 1
-        user_ids.remove(possible_user_id)
-
-    # Create dirs for rest users with no photos
-    for user_id in user_ids:
-        print(f"Status: {total_to_migarte}/{current_migrated}")
-        fake_dir_blob_name = f"users/avatars/{user_id}/"
-        empty_blob = firebase.bucket.new_blob(fake_dir_blob_name)
-
-        await empty_blob.upload(b"")
-
-        print(f"Создана директория для {user_id}")
-        current_migrated += 1
+    query = firebase.db.collection("products").where("type", "==", "SUBSCRIPTION")
+    async for sub_doc in query.stream():
+        await sub_doc.reference.update({f"details.limits.{Quota.GPT_IMAGE}": 1}) # TODO Manually change limits for each subsc in db
 
 
 
-async def migrate(bot):
-    await user_field_lora()
-    await migrate_user_avatars(bot)
+async def down():
+    # Delete product
+    query = firebase.db.collection("products").where("details.quota", "==", Quota.GPT_IMAGE)
+    async for doc in query.stream():
+        await doc.reference.delete()
+
+    # Delete field in limits
+    query = firebase.db.collection("products").where("type", "==", "SUBSCRIPTION")
+    async for prod_doc in query.stream():
+        prod_data = prod_doc.to_dict()
+        updates = {}
+
+        if Quota.GPT_IMAGE in prod_data["details"]["limits"]:
+            del prod_data["details"]["limits"][Quota.GPT_IMAGE]
+            updates["details"] = prod_data["details"]
+
+        if updates:
+            await firebase.db.collection("products").document(prod_doc.id).update(updates)
+
+
+    # Delete user settigns
+    async for user_doc in firebase.db.collection("users").stream():
+        user_data = user_doc.to_dict()
+        updates = {}
+
+        daily_limits = user_data.get("daily_limits", {})
+        if Quota.GPT_IMAGE in daily_limits:
+            del daily_limits["gpt_image"]
+            updates["daily_limits"] = daily_limits
+
+        additional_quota = user_data.get("additional_usage_quota", {})
+        if Quota.GPT_IMAGE in additional_quota:
+            del additional_quota["gpt_image"]
+            updates["additional_usage_quota"] = additional_quota
+
+        settings = user_data.get("settings", {})
+        if Model.GPT_IMAGE in settings:
+            del settings["gpt-image"]
+            updates["settings"] = settings
+
+        if updates:
+            await firebase.db.collection("users").document(user_doc.id).update(updates)
+
+async def delete_old_product_id_transactions(product_id):
+    query = firebase.db.collection("transactions").where("product_id", "==", product_id)
+    async for doc in query.stream():
+        await doc.reference.delete()
+
+
+async def migrate(bot: Bot):
+    # TODO change values
+    product_data = {
+        "stripe_id": "prod_S8obyQgyW9WfRa",  # this
+        "is_active": True,  # this
+        "type": ProductType.PACKAGE,
+        "category": ProductCategory.IMAGE,
+        "names": {
+            "ru": Texts.GPT_IMAGE,
+            "en": Texts.GPT_IMAGE,
+            "es": Texts.GPT_IMAGE,
+            "hi": Texts.GPT_IMAGE,
+        },
+        "descriptions": {
+            "en": "Bring your vision to life with GPT-Image – your ideas, beautifully rendered by AI! 🧠🖼️",
+            "ru": "Оживите своё видение с GPT-Image – ваши идеи, изящно воплощённые ИИ! 🧠🖼️",
+            "es": "Da vida a tu visión con GPT-Image: ¡tus ideas bellamente plasmadas por la IA! 🧠🖼️",
+            "hi": "GPT-Image के साथ अपने विचारों को जीवन दें – आपके आइडिया अब AI के जरिए खूबसूरती से साकार होंगे! 🧠🖼️",
+        },
+        "prices": {
+            "RUB": 8,  # this
+            "USD": 0.08,  # this
+            "XTR": 8,  # this
+        },
+        "order": -1,
+        "details": {
+            "quota": Quota.GPT_IMAGE,
+            "support_photos": True,
+        },
+    }
+
+    user_settings_gpt_image = {
+        Model.GPT_IMAGE: {
+            "version": gpt_image.Version.V1,
+            "show_usage_quota": False,
+            "size": gpt_image.user.settings.Size.SQUARE.value,
+            "quality": gpt_image.user.settings.Quality.LOW.value,
+            "background": gpt_image.user.settings.Background.AUTO.value,
+            "compression": gpt_image.user.settings.Compression.NO.value,
+        },
+    }
+
+    limits = {Quota.GPT_IMAGE: 0}
+
+    #await delete_old_product_id_transactions("kcdOV4M5jU9Ozt8lOpXH")
+
+    #await down()
+    #await up(product_data, user_settings_gpt_image, limits)
+
+    await send_message_to_admins_and_developers(bot, "<b>Database Migration Was Successful!</b> 🎉")
+
+

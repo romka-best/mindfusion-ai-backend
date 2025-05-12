@@ -85,5 +85,7 @@ def get_quota_by_model(model: Model, version: str):
         return Quota.LUMA_RAY
     elif model == Model.PIKA:
         return Quota.PIKA
+    elif model == Model.GPT_IMAGE:
+        return Quota.GPT_IMAGE
     else:
         raise NotImplementedError(f'User Model is not Implemented: {model}')
