@@ -155,6 +155,9 @@ class Texts(Protocol):
     # DALL-E
     DALL_E = '👨‍🎨 DALL-E'
 
+    # Gpt Image
+    GPT_IMAGE  = "✨ Gpt image"
+
     # DeepSeek
     DEEP_SEEK = '🐳 DeepSeek'
     DEEP_SEEK_V3 = '🐬 DeepSeek V3'

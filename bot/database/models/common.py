@@ -36,6 +36,7 @@ class Model:
     RUNWAY = 'runway'
     LUMA_RAY = 'luma-ray'
     PIKA = 'pika'
+    GPT_IMAGE = "gpt-image"
 
 
 class ModelType(StrEnum):
@@ -66,6 +67,7 @@ class Quota:
     EIGHTIFY = 'eightify'
     GEMINI_VIDEO = 'gemini_video'
     DALL_E = 'dall_e'
+    GPT_IMAGE = "gpt_image"
     MIDJOURNEY = 'midjourney'
     STABLE_DIFFUSION_XL = 'stable_diffusion_xl'
     STABLE_DIFFUSION_3 = 'stable_diffusion_3'

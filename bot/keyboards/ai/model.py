@@ -371,71 +371,61 @@ def build_model_keyboard(
                 [
                     InlineKeyboardButton(
                         text=get_localization(language_code).MODELS_IMAGE.upper(),
-                        callback_data=f'model:{ModelType.IMAGE}',
+                        callback_data=f"model:{ModelType.IMAGE}",
                     ),
                 ],
                 [
                     InlineKeyboardButton(
-                        text=get_localization(language_code).DALL_E + (' ✅' if model == Model.DALL_E else ''),
-                        callback_data=f'model:{Model.DALL_E}'
+                        text=get_localization(language_code).GPT_IMAGE + (" ✅" if model == Model.GPT_IMAGE else ""),
+                        callback_data=f"model:{Model.GPT_IMAGE}",
+                    ),
+                ],
+                [
+                    InlineKeyboardButton(
+                        text=get_localization(language_code).DALL_E + (" ✅" if model == Model.DALL_E else ""),
+                        callback_data=f"model:{Model.DALL_E}",
                     ),
                     InlineKeyboardButton(
-                        text=get_localization(language_code).MIDJOURNEY + (' ✅' if model == Model.MIDJOURNEY else ''),
-                        callback_data=f'model:{Model.MIDJOURNEY}'
+                        text=get_localization(language_code).MIDJOURNEY + (" ✅" if model == Model.MIDJOURNEY else ""),
+                        callback_data=f"model:{Model.MIDJOURNEY}",
                     ),
                 ],
                 [
                     InlineKeyboardButton(
                         text=get_localization(language_code).STABLE_DIFFUSION,
-                        callback_data=f'model:{Model.STABLE_DIFFUSION}'
+                        callback_data=f"model:{Model.STABLE_DIFFUSION}",
                     ),
                     InlineKeyboardButton(
-                        text=get_localization(language_code).FLUX,
-                        callback_data=f'model:{Model.FLUX}'
+                        text=get_localization(language_code).FLUX, callback_data=f"model:{Model.FLUX}",
                     ),
                 ],
                 [
                     InlineKeyboardButton(
-                        text=get_localization(language_code).LUMA_PHOTON + (
-                            ' ✅' if model == Model.LUMA_PHOTON else ''
-                        ),
-                        callback_data=f'model:{Model.LUMA_PHOTON}'
+                        text=get_localization(language_code).LUMA_PHOTON
+                        + (" ✅" if model == Model.LUMA_PHOTON else ""),
+                        callback_data=f"model:{Model.LUMA_PHOTON}",
                     ),
                     InlineKeyboardButton(
-                        text=get_localization(language_code).RECRAFT + (
-                            ' ✅' if model == Model.RECRAFT else ''
-                        ),
-                        callback_data=f'model:{Model.RECRAFT}'
+                        text=get_localization(language_code).RECRAFT + (" ✅" if model == Model.RECRAFT else ""),
+                        callback_data=f"model:{Model.RECRAFT}",
                     ),
                 ],
                 [
                     InlineKeyboardButton(
-                        text=get_localization(language_code).FACE_SWAP + (
-                            ' ✅' if model == Model.FACE_SWAP else ''
-                        ),
-                        callback_data=f'model:{Model.FACE_SWAP}'
+                        text=get_localization(language_code).FACE_SWAP + (" ✅" if model == Model.FACE_SWAP else ""),
+                        callback_data=f"model:{Model.FACE_SWAP}",
                     ),
                     InlineKeyboardButton(
-                        text=get_localization(language_code).PHOTOSHOP_AI + (
-                            ' ✅' if model == Model.PHOTOSHOP_AI else ''
-                        ),
-                        callback_data=f'model:{Model.PHOTOSHOP_AI}'
+                        text=get_localization(language_code).PHOTOSHOP_AI
+                        + (" ✅" if model == Model.PHOTOSHOP_AI else ""),
+                        callback_data=f"model:{Model.PHOTOSHOP_AI}",
                     ),
                 ],
                 [
-                    InlineKeyboardButton(
-                        text='⬅️',
-                        callback_data='model:back:1'
-                    ),
-                    InlineKeyboardButton(
-                        text='3/5',
-                        callback_data='model:page:2'
-                    ),
-                    InlineKeyboardButton(
-                        text='➡️',
-                        callback_data='model:next:3'
-                    ),
-                ]
+                    InlineKeyboardButton(text="⬅️", callback_data="model:back:1"),
+                    InlineKeyboardButton(text="3/5", callback_data="model:page:2"),
+                    InlineKeyboardButton(text="➡️", callback_data="model:next:3"),
+                ],
             ])
     elif page == 3:
         buttons.extend([
