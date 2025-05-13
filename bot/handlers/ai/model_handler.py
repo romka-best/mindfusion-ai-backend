@@ -37,6 +37,7 @@ from bot.locales.main import get_localization, get_user_language
 from bot.database.models.subscription import SUBSCRIPTION_FREE_LIMITS
 from bot.database.operations.subscription.getters import get_subscription
 from bot.database.operations.product.getters import get_product
+from bot import keyboards
 
 model_router = Router()
 
@@ -130,7 +131,13 @@ async def handle_model_selection(callback_query: CallbackQuery, state: FSMContex
         return await handle_info_selection(callback_query, state, chosen_model)
     if chosen_model in {"next", "back"}:
         page = int(callback_query.data.split(":")[2])
-        return await handle_model(callback_query.message, str(callback_query.from_user.id), state, page, is_edit=True)
+        return await handle_model(
+            callback_query.message,
+            str(callback_query.from_user.id),
+            state,
+            page=page,
+            is_edit=True,
+        )
 
     # Model version selection handling
     if chosen_model in (
@@ -146,7 +153,11 @@ async def handle_model_selection(callback_query: CallbackQuery, state: FSMContex
             action = callback_query.data.split(":")[2]
             if action == "back":
                 return await handle_model(
-                    callback_query.message, str(callback_query.from_user.id), state, page, None, is_edit=True,
+                    callback_query.message,
+                    str(callback_query.from_user.id),
+                    state,
+                    page=page,
+                    is_edit=True,
                 )
             chosen_version = callback_query.data.split(":")[2]
         else:
@@ -154,9 +165,9 @@ async def handle_model_selection(callback_query: CallbackQuery, state: FSMContex
                 callback_query.message,
                 str(callback_query.from_user.id),
                 state,
-                page,
-                chosen_model,
+                chosen_model=chosen_model,
                 is_edit=True,
+                page=page,
             )
 
     # Set check mark on selected model
@@ -187,7 +198,13 @@ async def handle_model_selection(callback_query: CallbackQuery, state: FSMContex
     user_language_code = await get_user_language(user_id, state.storage)
 
     user.current_model = chosen_model
-    reply_markup = build_switched_to_ai_keyboard(user_language_code, user.current_model)
+
+    match chosen_model:
+        case Model.GPT_IMAGE:
+            reply_markup = keyboards.ai.openai.gpt_image.Show().render(user_language_code)
+        case _:
+            reply_markup = build_switched_to_ai_keyboard(user_language_code, user.current_model)
+
     if keyboard_changed:
         if chosen_model == Model.CHAT_GPT:
             user.settings[Model.CHAT_GPT][UserSettings.VERSION] = chosen_version
