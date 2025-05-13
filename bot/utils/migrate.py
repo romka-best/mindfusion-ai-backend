@@ -30,7 +30,8 @@ async def up(product_data, user_settings_gpt_image, limits):
         settings.update(user_settings_gpt_image)
         updates["settings"] = settings
 
-        await firebase.db.collection("users").document(user_doc.id).update(updates)
+        if updates:
+            await firebase.db.collection("users").document(user_doc.id).update(updates)
 
 
 async def down():
@@ -59,7 +60,8 @@ async def down():
             del settings["gpt-image"]
             updates["settings"] = settings
 
-        await firebase.db.collection("users").document(user_doc.id).update(updates)
+        if updates:
+            await firebase.db.collection("users").document(user_doc.id).update(updates)
 
 
 async def migrate(bot: Bot):
@@ -97,16 +99,17 @@ async def migrate(bot: Bot):
         Model.GPT_IMAGE: {
             "version": gpt_image.Version.V1,
             "show_usage_quota": False,
-            "size": gpt_image.user.settings.Size.SQUARE,
-            "quality": gpt_image.user.settings.Quality.MEDIUM,
-            "bg_transparent": gpt_image.user.settings.BgTransparent.NO,
-            "compression": gpt_image.user.settings.Compression.NO,
+            "size": gpt_image.user.settings.Size.SQUARE.value,
+            "quality": gpt_image.user.settings.Quality.MEDIUM.value,
+            "bg_transparent": gpt_image.user.settings.BgTransparent.NO.value,
+            "compression": gpt_image.user.settings.Compression.NO.value,
         },
     }
 
     limits = {Quota.GPT_IMAGE: 0}
 
+    # TODO add safe comment
+    await down()
     await up(product_data, user_settings_gpt_image, limits)
-    #await down()
 
     await send_message_to_admins_and_developers(bot, "<b>Database Migration Was Successful!</b> 🎉")
