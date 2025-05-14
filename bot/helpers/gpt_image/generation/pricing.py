@@ -18,5 +18,6 @@ class Pricing:
         (Size.LANDSCAPE, Quality.HIGH): Decimal("0.25"),
     })
 
-    def __getitem__(self, key: tuple[Size, Quality]) -> float:
-        return self._PRICING[key]
+    @classmethod
+    def get(cls, key: tuple[Size, Quality]):
+        return cls._PRICING[key]

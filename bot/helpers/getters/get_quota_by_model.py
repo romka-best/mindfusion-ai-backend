@@ -1,3 +1,4 @@
+from bot import helpers
 from bot.database.models.common import (
     Model,
     Quota,
@@ -86,6 +87,7 @@ def get_quota_by_model(model: Model, version: str):
     elif model == Model.PIKA:
         return Quota.PIKA
     elif model == Model.GPT_IMAGE:
-        return Quota.GPT_IMAGE
+        if version == helpers.gpt_image.Version.V1:
+            return Quota.GPT_IMAGE
     else:
         raise NotImplementedError(f'User Model is not Implemented: {model}')

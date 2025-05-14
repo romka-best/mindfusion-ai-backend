@@ -47,7 +47,7 @@ class WithTextPromptHandler:
             prompt = message.text.strip()
 
             try:
-                gen_response = await get_response_image(
+                gen_result = await get_response_image(
                     version=settings["version"],
                     size=settings["size"],
                     quality=settings["quality"],
@@ -56,7 +56,7 @@ class WithTextPromptHandler:
                     output_format="png",
                 )
 
-                image_bytes = base64.b64decode(gen_response["data"][0]["b64_json"])
+                image_bytes = base64.b64decode(gen_result.data[0].b64_json)
             except openai.BadRequestError as e:
                 if e.code == "content_policy_violation":
                     await message.answer_sticker(
@@ -87,7 +87,7 @@ class WithTextPromptHandler:
                 return await send_internal_ai_model_error(lang_code, message, Model.GPT_IMAGE)
 
             product = await get_product_by_quota(Quota.GPT_IMAGE)
-            cost = float(Pricing[settings["size"], settings["quality"]])
+            cost = float(Pricing.get((settings["size"], settings["quality"])))
 
             await write_transaction(
                 user_id=user.id,
@@ -105,12 +105,12 @@ class WithTextPromptHandler:
 
             footer_text = (
                 f"\n\n🖼 {user.daily_limits[Quota.GPT_IMAGE] + user.additional_usage_quota[Quota.GPT_IMAGE]}"
-                if user.settings[UserSettings.SHOW_USAGE_QUOTA] and user.daily_limits[Quota.GPT_IMAGE] != float("inf")
+                if settings[UserSettings.SHOW_USAGE_QUOTA] and user.daily_limits[Quota.GPT_IMAGE] != float("inf")
                 else ""
             )
 
             image = BufferedInputFile(image_bytes, "gen.png")
-            if user.settings["compression"]:
+            if settings["compression"]:
                 await message.reply_photo(
                     caption=f"{get_localization(lang_code).GENERATION_IMAGE_SUCCESS}{footer_text}",
                     photo=image,
@@ -123,7 +123,7 @@ class WithTextPromptHandler:
                     allow_sending_without_reply=True,
                 )
 
-            await update_user_usage_quota(user, Quota.GPT_IMAGE, quantity_to_delete=1)  # TODO quantity_to_delete=1?
+            await update_user_usage_quota(user, Quota.GPT_IMAGE, quantity_to_delete=1)  # TODO quantity_to_delete=1? NOOT WORKING FIX IT
         except Exception as e:
             logging.exception("Unhandled")
             await message.answer_sticker(
