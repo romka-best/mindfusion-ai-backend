@@ -59,20 +59,37 @@ def get_cost_for_image(quality: DALLEQuality, resolution: DALLEResolution):
 
 
 async def get_response_image(
-    model_version: DALLEVersion,
-    prompt: str,
-    size: DALLEResolution,
-    quality: DALLEQuality,
+    version,
+    prompt,
+    size=None,
+    quality=None,
+    background=None,
+    moderation="low",
+    output_compression=None,
+    output_format=None,
+    response_format=None,
+    style=None,
+    user=None,
+    n=1,
 ) -> str:
-    response = await client.images.generate(
-        model=model_version,
-        prompt=prompt,
-        size=size,
-        quality=quality,
-        n=1,
-    )
+    args = {
+        "model": version,
+        "prompt": prompt,
+        "size": size,
+        "quality": quality,
+        "background": background,
+        "moderation": moderation,
+        "output_compression": output_compression,
+        "output_format": output_format,
+        "response_format": response_format,
+        "style": style,
+        "user": user,
+        "n": n,
+    }
 
-    return response.data[0].url
+    args = {k: v for k, v in args.items() if v is not None}
+
+    return await client.images.generate(**args)
 
 
 async def get_response_speech_to_text(audio_file: BinaryIO) -> str:

@@ -100,8 +100,8 @@ async def migrate(bot: Bot):
             "version": gpt_image.Version.V1,
             "show_usage_quota": False,
             "size": gpt_image.user.settings.Size.SQUARE.value,
-            "quality": gpt_image.user.settings.Quality.MEDIUM.value,
-            "bg_transparent": gpt_image.user.settings.BgTransparent.NO.value,
+            "quality": gpt_image.user.settings.Quality.LOW.value,
+            "background": gpt_image.user.settings.Background.AUTO.value,
             "compression": gpt_image.user.settings.Compression.NO.value,
         },
     }
