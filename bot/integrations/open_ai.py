@@ -71,7 +71,7 @@ async def get_response_image(
     style=None,
     user=None,
     n=1,
-) -> str:
+):
     args = {
         "model": version,
         "prompt": prompt,
@@ -90,6 +90,35 @@ async def get_response_image(
     args = {k: v for k, v in args.items() if v is not None}
 
     return await client.images.generate(**args)
+
+async def create_image_edit(
+    version,
+    prompt,
+    image: list[BinaryIO],
+    background=None,
+    mask=None,
+    quality=None,
+    response_format=None,
+    size=None,
+    user=None,
+    n=1,
+):
+    args = {
+        "model": version,
+        "prompt": prompt,
+        "size": size,
+        "quality": quality,
+        "background": background,
+        "response_format": response_format,
+        "user": user,
+        "n": n,
+        "image": image,
+        "mask": mask,
+    }
+
+    args = {k: v for k, v in args.items() if v is not None}
+
+    return await client.images.edit(**args)
 
 
 async def get_response_speech_to_text(audio_file: BinaryIO) -> str:
