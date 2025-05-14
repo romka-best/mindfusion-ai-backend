@@ -36,6 +36,7 @@ from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.utils.is_already_processing import is_already_processing
 from bot.utils.is_messages_limit_exceeded import is_messages_limit_exceeded
 from bot.utils.is_time_limit_exceeded import is_time_limit_exceeded
+from bot import handlers
 
 text_router = Router()
 
@@ -105,6 +106,8 @@ async def handle_text(message: Message, state: FSMContext):
         await handle_luma_ray(message, state, user)
     elif user.current_model == Model.PIKA:
         await handle_pika(message, state, user)
+    elif user.current_model == Model.GPT_IMAGE:
+        await handlers.ai.openai.gpt_image.generation.WithTextPromptHandler().process_with_text(message, state, user)
     else:
         raise NotImplementedError(
             f'User model is not found: {user.current_model}'

@@ -93,12 +93,12 @@ async def handle_dall_e(message: Message, state: FSMContext, user: User):
             quality = user.settings[Model.DALL_E][UserSettings.QUALITY]
             cost = get_cost_for_image(quality, resolution)
 
-            response_url = await get_response_image(
+            response_url = (await get_response_image(
                 version,
                 text,
                 resolution,
                 quality,
-            )
+            )).data[0].url
 
             product = await get_product_by_quota(Quota.DALL_E)
 

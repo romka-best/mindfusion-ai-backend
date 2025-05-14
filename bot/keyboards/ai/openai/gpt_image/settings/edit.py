@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from bot.helpers.gpt_image.user.settings import BgTransparent, Compression, Quality, Size
+from bot.helpers.gpt_image.user.settings import Background, Compression, Quality, Size
 from bot.locales.main import get_localization
 
 
@@ -8,7 +8,7 @@ class Edit:
     def _toggle(self, condition):
         return "✅ " if condition else "❌ "
 
-    def render(self, lang_code, size, quality, bg_transparent, compression, **kwargs):  # noqa: ARG002
+    def render(self, lang_code, size, quality, background, compression, **kwargs):  # noqa: ARG002
         return {
             "text": "Настройки",  # TODO loc
             "reply_markup": InlineKeyboardMarkup(
@@ -42,19 +42,16 @@ class Edit:
                     ],
                     [
                         InlineKeyboardButton(
-                            text="Прозрачный фон",  # TODO loc
+                            text="🖼️ Фон изображения",  # TODO loc
                             callback_data="void",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            text=self._toggle(bg_transparent) + "Да",  # TODO loc
-                            callback_data=f"oai:gpt-image:settings:update:bg_transparent:{BgTransparent(True).name}",
-                        ),
-                        InlineKeyboardButton(
-                            text=self._toggle(not bg_transparent) + "Нет",  # TODO loc
-                            callback_data=f"oai:gpt-image:settings:update:bg_transparent:{BgTransparent(False).name}",
-                        ),
+                            text=self._toggle(background == background_variant.value) + background_variant.name.capitalize(),
+                            callback_data=f"oai:gpt-image:settings:update:background:{background_variant.name}",
+                        )
+                        for background_variant in Background
                     ],
                     [
                         InlineKeyboardButton(
@@ -64,12 +61,12 @@ class Edit:
                     ],
                     [
                         InlineKeyboardButton(
-                            text=self._toggle(compression) + "Оригинал",  # TODO loc
-                            callback_data=f"oai:gpt-image:settings:update:compression:{Compression(True).name}",
+                            text=self._toggle(not compression) + "Оригинал",  # TODO loc
+                            callback_data=f"oai:gpt-image:settings:update:compression:{Compression(False).name}",
                         ),
                         InlineKeyboardButton(
-                            text=self._toggle(not compression) + "Сжатый",  # TODO loc
-                            callback_data=f"oai:gpt-image:settings:update:compression:{Compression(False).name}",
+                            text=self._toggle(compression) + "Сжатый",  # TODO loc
+                            callback_data=f"oai:gpt-image:settings:update:compression:{Compression(True).name}",
                         ),
                     ],
                     [

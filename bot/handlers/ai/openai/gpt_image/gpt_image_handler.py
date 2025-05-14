@@ -7,11 +7,13 @@ from bot.handlers.ai.model_handler import handle_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.locales.main import get_user_language
 
+from .generation.with_text_prompt_handler import with_text_prompt_router
 from .settings_handler import settings_router
 
 
 class GptImageHandler:
     async def show(self, callback_query, state):
+        await state.clear()
         user_id = str(callback_query.from_user.id)
         user = await get_user(user_id)
         lang_code = await get_user_language(user_id, state.storage)
@@ -26,7 +28,7 @@ class GptImageHandler:
 
 
 r = Router()
-r.include_routers(settings_router)
+r.include_routers(settings_router, with_text_prompt_router)
 r.callback_query(lambda c: c.data == "oai:gpt-image:show")(GptImageHandler().show)
 r.callback_query(lambda c: c.data == "oai:gpt-image:back_to_models")(GptImageHandler().back_to_models)
 
