@@ -5,6 +5,7 @@ from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from proto import message
 
 from bot.config import config, MessageEffect
 from bot.database.models.common import Model, ModelType
@@ -38,6 +39,7 @@ from bot.database.models.subscription import SUBSCRIPTION_FREE_LIMITS
 from bot.database.operations.subscription.getters import get_subscription
 from bot.database.operations.product.getters import get_product
 from bot import keyboards
+import contextlib
 
 model_router = Router()
 
@@ -199,11 +201,7 @@ async def handle_model_selection(callback_query: CallbackQuery, state: FSMContex
 
     user.current_model = chosen_model
 
-    match chosen_model:
-        case Model.GPT_IMAGE:
-            reply_markup = keyboards.ai.openai.gpt_image.Show().render(user_language_code)
-        case _:
-            reply_markup = build_switched_to_ai_keyboard(user_language_code, user.current_model)
+    reply_markup = build_switched_to_ai_keyboard(user_language_code, user.current_model)
 
     if keyboard_changed:
         if chosen_model == Model.CHAT_GPT:
@@ -240,11 +238,10 @@ async def handle_model_selection(callback_query: CallbackQuery, state: FSMContex
             allow_sending_without_reply=True,
         )
 
-        try:
-            await callback_query.bot.unpin_all_chat_messages(user.telegram_chat_id)
-            await callback_query.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
-        except (TelegramBadRequest, TelegramRetryAfter):
-            pass
+        with contextlib.suppress(TelegramBadRequest, TelegramRetryAfter): # is raised if user not have any pinned msgs
+            await callback_query.bot.unpin_all_chat_messages(callback_query.message.chat.id)
+
+        await callback_query.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
     else:
         await callback_query.message.reply(
             text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,

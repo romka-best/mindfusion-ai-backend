@@ -3,10 +3,10 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from bot.locales.main import get_localization
 
 
-class Ask:
+class AskTextPrompt:
     def render(self, lang_code):
         return {
-            "text": "Отправьте промпт",  # TODO loc
+            "text": get_localization(lang_code).ASK_TEXT_PROMPT,
             "reply_markup": InlineKeyboardMarkup(
                 inline_keyboard=[
                     [

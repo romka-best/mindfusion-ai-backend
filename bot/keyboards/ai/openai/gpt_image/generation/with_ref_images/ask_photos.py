@@ -3,14 +3,10 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from bot.locales.main import get_localization
 
 
-class Ask:
+class AskPhotos:
     def render(self, lang_code):
         return {
-            "text": """
-Отправьте до 10 референсных картинок 📸 в одном сообщении.
-
-Промпт отправьте отдельным текстовым сообщением ✍️.
-""",  # TODO loc
+            "text": get_localization(lang_code).ask_ref_images(10),
             "reply_markup": InlineKeyboardMarkup(
                 inline_keyboard=[
                     [

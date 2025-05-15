@@ -36,7 +36,7 @@ from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.utils.is_already_processing import is_already_processing
 from bot.utils.is_messages_limit_exceeded import is_messages_limit_exceeded
 from bot.utils.is_time_limit_exceeded import is_time_limit_exceeded
-from bot import handlers
+from bot import handlers, states
 
 text_router = Router()
 
@@ -44,6 +44,7 @@ text_router = Router()
 @text_router.message(F.text, ~F.text.startswith('/'))
 async def handle_text(message: Message, state: FSMContext):
     user = await get_user(str(message.from_user.id))
+    current_state = await state.get_state()
 
     current_time = time.time()
 
@@ -106,6 +107,8 @@ async def handle_text(message: Message, state: FSMContext):
         await handle_luma_ray(message, state, user)
     elif user.current_model == Model.PIKA:
         await handle_pika(message, state, user)
+    elif current_state == states.ai.open_ai.gpt_image.generation.WithRefImagesState.wait_ref_text_prompt.state:
+        await handlers.ai.openai.gpt_image.generation.WithRefImagesHandler().process_with_ref_text_prompt(message, state, user)
     elif user.current_model == Model.GPT_IMAGE:
         await handlers.ai.openai.gpt_image.generation.WithTextPromptHandler().process_with_text(message, state, user)
     else:

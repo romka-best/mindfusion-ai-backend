@@ -1,1 +1,1 @@
-from .ask import Ask
+from .ask_photos import AskPhotos

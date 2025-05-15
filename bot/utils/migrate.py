@@ -11,7 +11,7 @@ from bot.locales.texts import Texts
 
 async def up(product_data, user_settings_gpt_image, limits):
     # Create product
-    product = await write_product(**product_data)
+    await write_product(**product_data)
 
     # Users
     async for user_doc in firebase.db.collection("users").stream():
@@ -33,12 +33,31 @@ async def up(product_data, user_settings_gpt_image, limits):
         if updates:
             await firebase.db.collection("users").document(user_doc.id).update(updates)
 
+    query = firebase.db.collection("products").where("type", "==", "SUBSCRIPTION")
+    async for sub_doc in query.stream():
+        await sub_doc.reference.update({f"details.limits.{Quota.GPT_IMAGE}": 1}) # TODO Manually change limits for each subsc in db
+
+
 
 async def down():
     # Delete product
     query = firebase.db.collection("products").where("details.quota", "==", Quota.GPT_IMAGE)
     async for doc in query.stream():
         await doc.reference.delete()
+
+    # Delete field in limits
+    query = firebase.db.collection("products").where("type", "==", "SUBSCRIPTION")
+    async for prod_doc in query.stream():
+        prod_data = prod_doc.to_dict()
+        updates = {}
+
+        if Quota.GPT_IMAGE in prod_data["details"]["limits"]:
+            del prod_data["details"]["limits"][Quota.GPT_IMAGE]
+            updates["details"] = prod_data["details"]
+
+        if updates:
+            await firebase.db.collection("products").document(prod_doc.id).update(updates)
+
 
     # Delete user settigns
     async for user_doc in firebase.db.collection("users").stream():
@@ -63,12 +82,17 @@ async def down():
         if updates:
             await firebase.db.collection("users").document(user_doc.id).update(updates)
 
+async def delete_old_product_id_transactions(product_id):
+    query = firebase.db.collection("transactions").where("product_id", "==", product_id)
+    async for doc in query.stream():
+        await doc.reference.delete()
+
 
 async def migrate(bot: Bot):
     # TODO change values
     product_data = {
         "stripe_id": "prod_S8obyQgyW9WfRa",  # this
-        "is_active": False,  # this
+        "is_active": True,  # this
         "type": ProductType.PACKAGE,
         "category": ProductCategory.IMAGE,
         "names": {
@@ -88,7 +112,7 @@ async def migrate(bot: Bot):
             "USD": 0.08,  # this
             "XTR": 8,  # this
         },
-        "order": -1,  # this
+        "order": -1,
         "details": {
             "quota": Quota.GPT_IMAGE,
             "support_photos": True,
@@ -108,8 +132,9 @@ async def migrate(bot: Bot):
 
     limits = {Quota.GPT_IMAGE: 0}
 
-    # TODO add safe comment
-    await down()
-    await up(product_data, user_settings_gpt_image, limits)
+    #await delete_old_product_id_transactions("kcdOV4M5jU9Ozt8lOpXH")
+
+    #await down()
+    #await up(product_data, user_settings_gpt_image, limits)
 
     await send_message_to_admins_and_developers(bot, "<b>Database Migration Was Successful!</b> 🎉")
