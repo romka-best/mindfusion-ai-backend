@@ -1,4 +1,4 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, callback_query
 
 from bot.database.models.common import (
     Model,
@@ -516,11 +516,18 @@ def build_model_keyboard(
 
 
 def build_switched_to_ai_keyboard(language_code: LanguageCode, model: Model) -> InlineKeyboardMarkup:
+    match model:
+        case Model.GPT_IMAGE:
+            callback_data="oai:gpt-image:show"
+        case _:
+            callback_data=f"switched_to_ai:manage:{model}"
+
+
     buttons = [
         [
             InlineKeyboardButton(
                 text=get_localization(language_code).MODEL_SWITCHED_TO_AI_MANAGE,
-                callback_data=f'switched_to_ai:manage:{model}'
+                callback_data=callback_data,
             ),
         ],
     ]

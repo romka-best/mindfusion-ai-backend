@@ -2150,6 +2150,7 @@ class Russian(Texts):
     ┗ Дневной лимит: {format_number(daily_limits[Quota.STABLE_DIFFUSION_XL])}/{format_number(subscription_limits[Quota.STABLE_DIFFUSION_XL])}
 
 <b>Продвинутые</b>:
+    ┣ {Texts.GPT_IMAGE}{f': доп. {additional_usage_quota[Quota.GPT_IMAGE]}' if additional_usage_quota[Quota.GPT_IMAGE] > 0 else ''}
     ┣ 👨‍🎨 DALL-E 3{f': доп. {additional_usage_quota[Quota.DALL_E]}' if additional_usage_quota[Quota.DALL_E] > 0 else ''}
     ┣ 🎨 Midjourney 7{f': доп. {additional_usage_quota[Quota.MIDJOURNEY]}' if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ''}
     ┣ 🧑‍🚀 Stable Diffusion 3.5{f': доп. {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ''}

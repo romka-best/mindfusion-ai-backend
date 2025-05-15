@@ -9,29 +9,25 @@ class Show:
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        #text=get_localization(lang_code).MODEL_CHANGE_AI,
-                        text="Настройки",
+                        text=get_localization(lang_code).MODEL_SWITCHED_TO_AI_SETTINGS,
                         callback_data="oai:gpt-image:settings:edit",
                     ),
                 ],
                 [
                     InlineKeyboardButton(
-                        #text=get_localization(lang_code).MODEL_CHANGE_AI,
-                        text="Генерация по тексту",
-                        callback_data="oai:gpt-image:gen:with_text_prompt:ask",
+                        text=get_localization(lang_code).ACTION_GENERATION_WITH_TEXT_PROMPT,
+                        callback_data="oai:gpt-image:gen:with_text_prompt:ask_text_prompt",
                     ),
                 ],
                 [
                     InlineKeyboardButton(
-                        #text=get_localization(lang_code).MODEL_CHANGE_AI,
-                        text="Генерация на основе картинок",
-                        callback_data="oai:gpt-image:gen:with_ref_images:ask",
+                        text=get_localization(lang_code).ACTION_GENERATION_WITH_REF_IMAGES,
+                        callback_data="oai:gpt-image:gen:with_ref_images:ask_photos",
                     ),
                 ],
                 [
                     InlineKeyboardButton(
-                        #text=get_localization(lang_code).MODEL_CHANGE_AI,
-                        text="Назад к моделям",
+                        text=get_localization(lang_code).ACTION_TO_OTHER_MODELS,
                         callback_data="oai:gpt-image:back_to_models",
                     ),
                 ],

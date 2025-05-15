@@ -1,23 +1,26 @@
 from decimal import Decimal
 from types import MappingProxyType
 
-from bot.helpers.gpt_image.user.settings.quality import Quality
-from bot.helpers.gpt_image.user.settings.size import Size
+from bot.helpers.gpt_image.version import Version
 
 
 class Pricing:
     _PRICING = MappingProxyType({
-        (Size.SQUARE, Quality.LOW): Decimal("0.011"),
-        (Size.SQUARE, Quality.MEDIUM): Decimal("0.042"),
-        (Size.SQUARE, Quality.HIGH): Decimal("0.167"),
-        (Size.PORTRAIT, Quality.LOW): Decimal("0.016"),
-        (Size.PORTRAIT, Quality.MEDIUM): Decimal("0.063"),
-        (Size.PORTRAIT, Quality.HIGH): Decimal("0.25"),
-        (Size.LANDSCAPE, Quality.LOW): Decimal("0.016"),
-        (Size.LANDSCAPE, Quality.MEDIUM): Decimal("0.063"),
-        (Size.LANDSCAPE, Quality.HIGH): Decimal("0.25"),
+        Version.V1: {
+            "input": {
+                "image": Decimal("10.00") / Decimal("1000000.00"),
+                "text": Decimal("5.00") / Decimal("1000000.00"),
+            },
+            "output": {"image": Decimal("40.00") / Decimal("1000000.00")},
+        },
     })
 
     @classmethod
-    def get(cls, key: tuple[Size, Quality]):
-        return cls._PRICING[key]
+    def get(cls, version, token_usage_data):
+        pricing = cls._PRICING[version]
+
+        return (
+            pricing["input"]["text"] * token_usage_data.input_tokens_details.text_tokens
+            + pricing["input"]["image"] * token_usage_data.input_tokens_details.image_tokens
+            + pricing["output"]["image"] * token_usage_data.output_tokens
+        )
