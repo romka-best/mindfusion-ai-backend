@@ -5,7 +5,6 @@ from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
-from proto import message
 
 from bot.config import config, MessageEffect
 from bot.database.models.common import Model, ModelType
