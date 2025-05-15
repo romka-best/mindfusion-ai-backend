@@ -2103,6 +2103,7 @@ class Hindi(Texts):
     ┗ दैनिक सीमा: {format_number(daily_limits[Quota.STABLE_DIFFUSION_XL])}/{format_number(subscription_limits[Quota.STABLE_DIFFUSION_XL])}
 
 <b>उन्नत</b>:
+    ┣ {Texts.GPT_IMAGE}{f': अतिरिक्त {additional_usage_quota[Quota.GPT_IMAGE]}' if additional_usage_quota[Quota.GPT_IMAGE] > 0 else ''}
     ┣ 👨‍🎨 DALL-E 3{f': अतिरिक्त {additional_usage_quota[Quota.DALL_E]}' if additional_usage_quota[Quota.DALL_E] > 0 else ''}
     ┣ 🎨 Midjourney 7{f': अतिरिक्त {additional_usage_quota[Quota.MIDJOURNEY]}' if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ''}
     ┣ 🧑‍🚀 Stable Diffusion 3.5{f': अतिरिक्त {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ''}
@@ -2724,3 +2725,55 @@ class Hindi(Texts):
 
 आप नीचे दिए गए बटन पर क्लिक करके पहुंच प्राप्त कर सकते हैं:
 """
+
+    SETTINGS = "⚙️ सेटिंग्स"
+
+    ACTION_GENERATION_WITH_TEXT_PROMPT = "📝 टेक्स्ट-आधारित जनरेशन"
+    ACTION_GENERATION_WITH_REF_IMAGES = "🖼 चित्र-आधारित जनरेशन"
+    ASK_TEXT_PROMPT = "✍️ प्रॉम्प्ट भेजें"
+
+    @classmethod
+    def ask_ref_images(cls, n):
+        return f"एक संदेश में {n} तक संदर्भ चित्र 📸 भेजें\n\nप्रॉम्प्ट को अलग टेक्स्ट संदेश में भेजें ✍️"
+
+    WAITING_YOUR_NEXT_IDEA = "✨ आपके अगले विचार की प्रतीक्षा कर रहे हैं!"
+
+    GENERATION_SETTING_BACKGROUND = "🖼️ छवि पृष्ठभूमि"
+
+    # As TG documnt or photo
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT = "📷 छवि प्रारूप"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_ORIGINAL = "मूल"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_COMPRESSED = "संपीड़ित"
+
+    @staticmethod
+    def generation_setting_image_bg(value):
+        value = value.lower()
+        match value:
+            case "auto":
+                return "स्वचालित"
+            case "opaque":
+                return "अपारदर्शी"
+            case "transparent":
+                return "पारदर्शी"
+
+    @staticmethod
+    def generation_setting_image_quality(value):
+        value = value.lower()
+        match value:
+            case "low":
+                return "निम्न"
+            case "medium":
+                return "मध्यम"
+            case "high":
+                return "उच्च"
+
+    @staticmethod
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "वर्ग"
+            case "landscape":
+                return "लैंडस्केप"
+            case "portrait":
+                return "पोर्ट्रेट"

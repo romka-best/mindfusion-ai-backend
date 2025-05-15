@@ -2099,6 +2099,7 @@ Seleccione una acción 👇
     ┗ Límite diario: {format_number(daily_limits[Quota.STABLE_DIFFUSION_XL])}/{format_number(subscription_limits[Quota.STABLE_DIFFUSION_XL])}
 
 <b>Avanzados</b>:
+    ┣ {Texts.GPT_IMAGE}{f': adicional {additional_usage_quota[Quota.GPT_IMAGE]}' if additional_usage_quota[Quota.GPT_IMAGE] > 0 else ''}
     ┣ 👨‍🎨 DALL-E 3{f': adicional {additional_usage_quota[Quota.DALL_E]}' if additional_usage_quota[Quota.DALL_E] > 0 else ''}
     ┣ 🎨 Midjourney 7{f': adicional {additional_usage_quota[Quota.MIDJOURNEY]}' if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ''}
     ┣ 🧑‍🚀 Stable Diffusion 3.5{f': adicional {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ''}
@@ -2718,3 +2719,55 @@ Por ahora, no tienes acceso para trabajar con fotos y documentos.
 
 Puedes obtener acceso haciendo clic en el botón de abajo:
 """
+
+    SETTINGS = "⚙️ Configuraciones"
+
+    ACTION_GENERATION_WITH_TEXT_PROMPT = "📝 Generación basada en texto"
+    ACTION_GENERATION_WITH_REF_IMAGES = "🖼 Generación basada en imágenes"
+    ASK_TEXT_PROMPT = "✍️ Envía el prompt"
+
+    @classmethod
+    def ask_ref_images(cls, n):
+        return f"Envía hasta {n} imágenes de referencia 📸 en un solo mensaje\n\nEnvía el prompt en un mensaje de texto separado ✍️"
+
+    WAITING_YOUR_NEXT_IDEA = "✨ ¡Esperamos tu próxima idea!"
+
+    GENERATION_SETTING_BACKGROUND = "🖼️ Fondo de la imagen"
+
+    # As TG documnt or photo
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT = "📷 Formato de imagen"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_ORIGINAL = "Original"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_COMPRESSED = "Comprimido"
+
+    @staticmethod
+    def generation_setting_image_bg(value):
+        value = value.lower()
+        match value:
+            case "auto":
+                return "Automático"
+            case "opaque":
+                return "Opaco"
+            case "transparent":
+                return "Transparente"
+
+    @staticmethod
+    def generation_setting_image_quality(value):
+        value = value.lower()
+        match value:
+            case "low":
+                return "Baja"
+            case "medium":
+                return "Media"
+            case "high":
+                return "Alta"
+
+    @staticmethod
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "Cuadrado"
+            case "landscape":
+                return "Paisaje"
+            case "portrait":
+                return "Retrato"

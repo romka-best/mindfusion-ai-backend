@@ -2096,6 +2096,7 @@ Choose action 👇
     ┗ Daily Limits: {format_number(daily_limits[Quota.STABLE_DIFFUSION_XL])}/{format_number(subscription_limits[Quota.STABLE_DIFFUSION_XL])}
 
 <b>Advanced</b>:
+    ┣ {Texts.GPT_IMAGE}{f': extra {additional_usage_quota[Quota.GPT_IMAGE]}' if additional_usage_quota[Quota.GPT_IMAGE] > 0 else ''}
     ┣ 👨‍🎨 DALL-E 3{f': extra {additional_usage_quota[Quota.DALL_E]}' if additional_usage_quota[Quota.DALL_E] > 0 else ''}
     ┣ 🎨 Midjourney 7{f': extra {additional_usage_quota[Quota.MIDJOURNEY]}' if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ''}
     ┣ 🧑‍🚀 Stable Diffusion 3.5{f': extra {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ''}
@@ -3122,3 +3123,55 @@ So, once more: when exactly did this financial miracle occur? 🗓️
         ]
 
         return random.choice(texts)
+
+    SETTINGS = "⚙️ Settings"
+
+    ACTION_GENERATION_WITH_TEXT_PROMPT = "📝 Text-based generation"
+    ACTION_GENERATION_WITH_REF_IMAGES = "🖼 Image-based generation"
+    ASK_TEXT_PROMPT = "✍️ Send the prompt"
+
+    @classmethod
+    def ask_ref_images(cls, n):
+        return f"Send up to {n} reference images 📸 in one message\n\nSend the prompt in a separate text message ✍️"
+
+    WAITING_YOUR_NEXT_IDEA = "✨ Waiting for your next idea!"
+
+    GENERATION_SETTING_BACKGROUND = "🖼️ Image background"
+
+    # As TG documnt or photo
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT = "📷 Image format"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_ORIGINAL = "Original"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_COMPRESSED = "Compressed"
+
+    @staticmethod
+    def generation_setting_image_bg(value):
+        value = value.lower()
+        match value:
+            case "auto":
+                return "Auto"
+            case "opaque":
+                return "Opaque"
+            case "transparent":
+                return "Transparent"
+
+    @staticmethod
+    def generation_setting_image_quality(value):
+        value = value.lower()
+        match value:
+            case "low":
+                return "Low"
+            case "medium":
+                return "Medium"
+            case "high":
+                return "High"
+
+    @staticmethod
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "Square"
+            case "landscape":
+                return "Landscape"
+            case "portrait":
+                return "Portrait"

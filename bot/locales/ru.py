@@ -2140,6 +2140,7 @@ class Russian(Texts):
     ┗ Дневной лимит: {format_number(daily_limits[Quota.STABLE_DIFFUSION_XL])}/{format_number(subscription_limits[Quota.STABLE_DIFFUSION_XL])}
 
 <b>Продвинутые</b>:
+    ┣ {Texts.GPT_IMAGE}{f': доп. {additional_usage_quota[Quota.GPT_IMAGE]}' if additional_usage_quota[Quota.GPT_IMAGE] > 0 else ''}
     ┣ 👨‍🎨 DALL-E 3{f': доп. {additional_usage_quota[Quota.DALL_E]}' if additional_usage_quota[Quota.DALL_E] > 0 else ''}
     ┣ 🎨 Midjourney 7{f': доп. {additional_usage_quota[Quota.MIDJOURNEY]}' if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ''}
     ┣ 🧑‍🚀 Stable Diffusion 3.5{f': доп. {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ''}
@@ -4133,3 +4134,54 @@ class Russian(Texts):
 
 @roman_danilov, посмотришь? 🤨
 """
+    SETTINGS = "⚙️ Настройки"
+
+    ACTION_GENERATION_WITH_TEXT_PROMPT = "📝 Генерация по тексту"
+    ACTION_GENERATION_WITH_REF_IMAGES = "🖼 Генерация на основе картинок"
+    ASK_TEXT_PROMPT = "✍️ Отправьте промпт"
+
+    @classmethod
+    def ask_ref_images(cls, n):
+        return f"Отправьте до {n} референсных картинок 📸 в одном сообщении\n\nПромпт отправьте отдельным текстовым сообщением ✍️"
+
+    WAITING_YOUR_NEXT_IDEA = "✨ Ждем вашей следующей идеи!"
+
+    GENERATION_SETTING_BACKGROUND = "🖼️ Фон изображения"
+
+    # As TG documnt or photo
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT = "📷 Формат изображения"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_ORIGINAL = "Оригинал"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_COMPRESSED = "Сжатый"
+
+    @staticmethod
+    def generation_setting_image_bg(value):
+        value = value.lower()
+        match value:
+            case "auto":
+                return "Авто"
+            case "opaque":
+                return "Непрозрачный"
+            case "transparent":
+                return "Прозрачный"
+
+    @staticmethod
+    def generation_setting_image_quality(value):
+        value = value.lower()
+        match value:
+            case "low":
+                return "Низкое"
+            case "medium":
+                return "Среднее"
+            case "high":
+                return "Высокое"
+
+    @staticmethod
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "Квадрат"
+            case "landscape":
+                return "Пейзаж"
+            case "portrait":
+                return "Портрет"
