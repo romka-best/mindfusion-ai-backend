@@ -491,4 +491,4 @@ for path, additional_bot in zip(WEBHOOK_ADDITIONAL_BOTS_PATHS, additional_bots):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    uvicorn.run(app, host='0.0.0.0', port=os.getenv('PORT', 8080), timeout_keep_alive=600)
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", "8080")), timeout_keep_alive=600)

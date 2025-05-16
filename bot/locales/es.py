@@ -2784,3 +2784,17 @@ Puedes obtener acceso haciendo clic en el botón de abajo:
     @staticmethod
     def menu_photo_bundle_edit():
         return "📥 Envía una nueva foto para reemplazar."
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "Cuadrado"
+            case "landscape":
+                return "Paisaje"
+            case "portrait":
+                return "Retrato"
+    ASK_EXTEND_VIDEO = "🎥 ¿Quieres extender el video?"
+
+    EXTEND_AUDIO = "Extender"
+
+    CONCAT_AUDIO = "Combinar"

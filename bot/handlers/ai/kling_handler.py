@@ -282,3 +282,5 @@ async def kling_extend_video(callback_query, state):
             raise
 
 
+
+

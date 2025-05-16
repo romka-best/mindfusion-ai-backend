@@ -4201,3 +4201,17 @@ class Russian(Texts):
     @staticmethod
     def menu_photo_bundle_edit():
         return "📥 Отправьте новую фотографию для замены."
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "Квадрат"
+            case "landscape":
+                return "Пейзаж"
+            case "portrait":
+                return "Портрет"
+    ASK_EXTEND_VIDEO = "🎥 Хотите продлить видео?"
+
+    EXTEND_AUDIO = "Продлить"
+
+    CONCAT_AUDIO = "Объединить"

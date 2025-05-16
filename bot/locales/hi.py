@@ -2792,3 +2792,18 @@ class Hindi(Texts):
     @staticmethod
     def menu_photo_bundle_edit():
         return "📥 बदलने के लिए एक नई फ़ोटो भेजें।"
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "वर्ग"
+            case "landscape":
+                return "लैंडस्केप"
+            case "portrait":
+                return "पोर्ट्रेट"
+
+    ASK_EXTEND_VIDEO = "🎥 क्या आप वीडियो को बढ़ाना चाहते हैं?"
+
+    EXTEND_AUDIO = "विस्तार करना"
+
+    CONCAT_AUDIO = "जोड़ना"
