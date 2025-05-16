@@ -103,6 +103,34 @@ class Videos(APIResource):
         data = await self.request('POST', url, json=payload)
         return data['data']['task_id']
 
+    async def extend_video(
+        self,
+        version: KlingVersion,
+        mode: KlingMode,
+        duration: KlingDuration,
+        aspect_ratio: AspectRatio,
+        origin_task_id: str,
+    ) -> str:
+        url = f"{KLING_API_URL}/api/v1/task"
+        payload = {
+            "model": "kling",
+            "task_type": "extend_video",
+            "input": {
+                "version": version,
+                "mode": KlingMode.PRO if version == KlingVersion.V2 else mode,
+                "duration": duration,
+                "aspect_ratio": aspect_ratio,
+                "cfg_scale": 0.5,
+                "origin_task_id": origin_task_id,
+            },
+            "config": {
+                "webhook_config": {
+                    "endpoint": WEBHOOK_KLING_URL,
+                },
+            },
+        }
+        data = await self.request("POST", url, json=payload)
+        return data["data"]["task_id"]
 
 async def generate_video(
     prompt: str,
@@ -123,3 +151,19 @@ async def generate_video(
         )
 
         return video_id
+
+async def extend_video(
+    version: KlingVersion,
+    mode: KlingMode,
+    duration: KlingDuration,
+    aspect_ratio: AspectRatio,
+    origin_task_id: str,
+) -> str:
+    async with Kling() as client:
+        return await client.videos.extend_video(
+            version,
+            mode,
+            duration,
+            aspect_ratio,
+            origin_task_id,
+        )

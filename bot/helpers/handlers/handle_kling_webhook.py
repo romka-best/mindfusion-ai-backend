@@ -1,14 +1,16 @@
 import re
 import asyncio
 import logging
+from subprocess import call
 import uuid
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import StorageKey
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.config import config, MessageSticker
-from bot.database.models.common import Quota, Model, SendType, Currency
+from bot.database.models.common import KlingVersion, Quota, Model, SendType, Currency
 from bot.database.models.generation import GenerationStatus, Generation
 from bot.database.models.request import Request, RequestStatus
 from bot.database.models.transaction import TransactionType
@@ -160,6 +162,20 @@ async def handle_kling(
                 height=generation.details.get('height'),
                 reply_markup=build_reaction_keyboard(generation.id),
             )
+
+        # # Currently not working
+        # await bot.send_message(
+        #     chat_id=user.telegram_chat_id,
+        #     text=get_localization(user_language_code).ASK_EXTEND_VIDEO,
+        #     reply_markup=InlineKeyboardMarkup(
+        #         inline_keyboard=[
+        #             [
+        #                 InlineKeyboardButton(text="5", callback_data=f"kling:extend:{generation.id}:5"),
+        #                 InlineKeyboardButton(text="10", callback_data=f"kling:extend:{generation.id}:10"),
+        #             ],
+        #         ],
+        #     ),
+        # )
     elif generation.has_error:
         await bot.send_sticker(
             chat_id=user.telegram_chat_id,

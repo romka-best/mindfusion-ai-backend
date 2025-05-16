@@ -13,7 +13,7 @@ class Suno:
         self.headers = {
             'accept': 'application/json',
             'content-type': 'application/json',
-            'authorization': f'Bearer {SUNO_API_KEY}',
+            'authorization': f'bearer {SUNO_API_KEY}',
         }
         self.session = session
 
@@ -43,41 +43,53 @@ class APIResource:
 
 class Songs(APIResource):
     async def generate(
-        self,
-        version: SunoVersion,
-        prompt: str,
-        instrumental: bool = False,
-        custom: bool = False,
-        tags: str = ''
+        self, version: SunoVersion, prompt: str, instrumental: bool = False, custom: bool = False, tags: str = ""
     ) -> str:
         payload = {
-            'action': 'generate',
-            'model': version,
-            'lyric': prompt if custom else '',
-            'prompt': '' if custom else prompt,
-            'custom': custom,
-            'instrumental': instrumental,
-            'style': tags if custom else '',
-            'callback_url': WEBHOOK_SUNO_URL,
+            "action": "generate",
+            "model": version,
+            "lyric": prompt if custom else "",
+            "prompt": "" if custom else prompt,
+            "custom": custom,
+            "instrumental": instrumental,
+            "style": tags if custom else "",
+            "callback_url": WEBHOOK_SUNO_URL,
         }
-        data = await self.request('POST', SUNO_API_URL, json=payload)
-        return data['task_id']
+        data = await self.request("POST", SUNO_API_URL, json=payload)
+        return data["task_id"]
 
+    async def extend(self, version: SunoVersion, style, audio_id, lyric, continue_at) -> str:
+        payload = {
+            "action": "extend",
+            "model": version,
+            "style": style,
+            "audio_id": audio_id,
+            "lyric": lyric,
+            "continue_at": continue_at,
+            "callback_url": WEBHOOK_SUNO_URL,
+        }
 
-async def generate_song(
-    version: SunoVersion,
-    prompt: str,
-    instrumental: bool = False,
-    custom: bool = False,
-    tags: str = ''
-) -> str:
+        data = await self.request("POST", SUNO_API_URL, json=payload)
+        return data["task_id"]
+
+    async def concat(self, audio_id) -> str:
+        payload = {
+          "action": "concat",
+          "audio_id": audio_id,
+          "callback_url": WEBHOOK_SUNO_URL,
+        }
+
+        data = await self.request("POST", SUNO_API_URL, json=payload)
+        return data["task_id"]
+
+async def generate_song(*args, **kwargs) -> str:
     async with Suno() as client:
-        task_id = await client.songs.generate(
-            version=version,
-            prompt=prompt,
-            instrumental=instrumental,
-            custom=custom,
-            tags=tags,
-        )
+        return await client.songs.generate(*args, **kwargs)
 
-        return task_id
+async def extend_song(*args, **kwargs) -> str:
+    async with Suno() as client:
+        return await client.songs.extend(*args, **kwargs)
+
+async def concat_song(*args, **kwargs) -> str:
+    async with Suno() as client:
+        return await client.songs.concat(*args, **kwargs)

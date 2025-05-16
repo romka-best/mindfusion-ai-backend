@@ -3191,3 +3191,17 @@ So, once more: when exactly did this financial miracle occur? 🗓️
     def menu_photo_bundle_edit():
         return "📥 Send a new photo for replacement."
 
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "Square"
+            case "landscape":
+                return "Landscape"
+            case "portrait":
+                return "Portrait"
+    ASK_EXTEND_VIDEO = "🎥 Want to extend the video?"
+
+    EXTEND_AUDIO = "Extend"
+
+    CONCAT_AUDIO = "Combine"
