@@ -13,7 +13,7 @@ from bot.database.models.common import Model, SunoMode, Quota
 from bot.database.models.generation import GenerationStatus
 from bot.database.models.request import RequestStatus
 from bot.database.models.user import UserSettings
-from bot.database.operations.generation.getters import get_generations_by_request_id
+from bot.database.operations.generation.getters import get_generation, get_generations_by_request_id
 from bot.database.operations.generation.updaters import update_generation
 from bot.database.operations.generation.writers import write_generation
 from bot.database.operations.product.getters import get_product_by_quota
@@ -25,7 +25,7 @@ from bot.database.operations.user.updaters import update_user
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.senders.send_error_info import send_error_info
-from bot.integrations.suno import generate_song
+from bot.integrations.suno import extend_song, concat_song, generate_song
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard, build_model_limit_exceeded_keyboard
 from bot.keyboards.ai.suno import (
     build_suno_keyboard,
@@ -39,6 +39,7 @@ from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
 from bot.states.ai.suno import Suno
 from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
+from bot.utils.process_generation_context import ProcessGenerationContext
 
 suno_router = Router()
 
@@ -539,3 +540,147 @@ async def suno_genres_sent(message: Message, state: FSMContext):
 
                 await processing_sticker.delete()
                 await processing_message.delete()
+
+@suno_router.callback_query(lambda c: c.data.startswith("action:suno:extend"))
+async def suno_extend(callback_query, state):
+    # Params
+    _, _, _, generation_id = callback_query.data.split(":")
+    message = callback_query.message
+    user_id = str(callback_query.from_user.id)
+    user = await get_user(user_id)
+    user_language_code = await get_user_language(user_id, state.storage)
+    product = await get_product_by_quota(Quota.SUNO)
+    generation = await get_generation(generation_id)
+
+    # Validation
+    is_user_has_unfinished_requests = bool(await get_started_requests_by_user_id_and_product_id(user.id, product.id))
+    is_qouta_enough = (user.daily_limits[Quota.SUNO] + user.additional_usage_quota[Quota.SUNO]) >= 2
+
+    if is_user_has_unfinished_requests:
+        return await message.reply(
+            text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
+            allow_sending_without_reply=True,
+        )
+    if not is_qouta_enough:
+        await message.answer_sticker(
+            sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
+        )
+
+        await message.answer(
+            text=get_localization(user_language_code).model_reached_usage_limit(),
+            reply_markup=build_model_limit_exceeded_keyboard(user_language_code, user.had_subscription),
+        )
+        return
+
+    # Generation
+    try:
+        async with ProcessGenerationContext(
+            message,
+            sticker=MessageSticker.MUSIC_GENERATION,
+            text=get_localization(user_language_code).model_music_processing_request(),
+            user_id=user.id,
+            product_id=product.id,
+        ) as ctx:
+            task_id = await extend_song(
+                user.settings[Model.SUNO][UserSettings.VERSION],
+                style=generation.details["style"],
+                audio_id=generation.details["id"],
+                lyric=generation.details["lyric"],
+                continue_at=generation.details["duration"],
+            )
+
+            tasks = [
+                write_generation(
+                    id=f"{task_id}-{i}",
+                    request_id=ctx.request.id,
+                    product_id=product.id,
+                    has_error=False,
+                    details={"action": "extend"},
+                )
+                for i in range(1, 3)
+            ]
+
+            ctx.generation.extend(await asyncio.gather(*tasks))
+    except aiohttp.ClientResponseError as e:
+        if e.status == 500:
+            await send_internal_ai_model_error(user_language_code, message, Model.SUNO)
+    except Exception as e:
+        if "too many requests" in str(e).lower() or "you have exceeded the rate limit" in str(e).lower():
+            return await message.answer(
+                text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
+            )
+        else:
+            await send_error_info(
+                bot=message.bot,
+                user_id=user.id,
+                info=str(e),
+                hashtags=["suno"],
+            )
+
+        raise
+
+@suno_router.callback_query(lambda c: c.data.startswith("action:suno:concat"))
+async def suno_concat(callback_query, state):
+    # Params
+    _, _, _, audio_id = callback_query.data.split(":")
+    message = callback_query.message
+    user_id = str(callback_query.from_user.id)
+    user = await get_user(user_id)
+    user_language_code = await get_user_language(user_id, state.storage)
+    product = await get_product_by_quota(Quota.SUNO)
+
+    # Validation
+    is_user_has_unfinished_requests = bool(await get_started_requests_by_user_id_and_product_id(user.id, product.id))
+    is_qouta_enough = (user.daily_limits[Quota.SUNO] + user.additional_usage_quota[Quota.SUNO]) >= 1
+
+    if is_user_has_unfinished_requests:
+        return await message.reply(
+            text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
+            allow_sending_without_reply=True,
+        )
+    if not is_qouta_enough:
+        await message.answer_sticker(
+            sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
+        )
+
+        await message.answer(
+            text=get_localization(user_language_code).model_reached_usage_limit(),
+            reply_markup=build_model_limit_exceeded_keyboard(user_language_code, user.had_subscription),
+        )
+        return
+
+    # Generation
+    try:
+        async with ProcessGenerationContext(
+            message,
+            sticker=MessageSticker.MUSIC_GENERATION,
+            text=get_localization(user_language_code).model_music_processing_request(),
+            user_id=user.id,
+            product_id=product.id,
+        ) as ctx:
+            task_id = await concat_song(audio_id=audio_id)
+
+            ctx.generation.append(await write_generation(
+                id=task_id + "-1",
+                request_id=ctx.request.id,
+                product_id=product.id,
+                has_error=False,
+                details={"action": "concat"},
+            ))
+    except aiohttp.ClientResponseError as e:
+        if e.status == 500:
+            await send_internal_ai_model_error(user_language_code, message, Model.SUNO)
+    except Exception as e:
+        if "too many requests" in str(e).lower() or "you have exceeded the rate limit" in str(e).lower():
+            return await message.answer(
+                text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
+            )
+        else:
+            await send_error_info(
+                bot=message.bot,
+                user_id=user.id,
+                info=str(e),
+                hashtags=["suno"],
+            )
+
+        raise

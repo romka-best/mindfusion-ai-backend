@@ -31,8 +31,10 @@ from bot.keyboards.common.common import build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
-from replicate.exceptions import ReplicateError
 from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
+from bot.utils.is_messages_limit_exceeded import is_messages_limit_exceeded
+from bot.integrations.kling import extend_video
+from bot.utils.process_generation_context import ProcessGenerationContext
 
 kling_router = Router()
 
@@ -125,6 +127,7 @@ async def handle_kling(
         try:
             if prompt and user_language_code != LanguageCode.EN:
                 prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
+
             result_id = await generate_video(
                 prompt,
                 user.settings[Model.KLING][UserSettings.VERSION],
@@ -202,3 +205,83 @@ async def handle_kling(
 
             await processing_sticker.delete()
             await processing_message.delete()
+
+@kling_router.callback_query(lambda c: c.data.startswith("kling:extend:"))
+async def kling_extend_video(callback_query, state):
+    # Prepare params
+    _, _, task_id, duration = callback_query.data.split(":")
+    duration = int(duration)
+
+    message = callback_query.message
+    user_id = str(callback_query.from_user.id)
+    user = await get_user(user_id)
+    user_language_code = await get_user_language(user_id, state.storage)
+    product = await get_product_by_quota(Quota.KLING)
+
+    # Validation
+    is_user_has_unfinished_requests = bool(await get_started_requests_by_user_id_and_product_id(user.id, product.id))
+    is_limit_exceeded = await is_messages_limit_exceeded(callback_query.message, state, user, Quota.KLING)
+
+    if is_user_has_unfinished_requests:
+        return await message.reply(
+            text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
+            allow_sending_without_reply=True,
+        )
+    if is_limit_exceeded:
+        return
+
+    # Generation
+    # ENCH: Error handling class
+    try:
+        async with ProcessGenerationContext(
+            message,
+            sticker=MessageSticker.VIDEO_GENERATION,
+            text=get_localization(user_language_code).model_video_processing_request(),
+            user_id=user.id,
+            product_id=product.id,
+        ) as ctx:
+            result_id = await extend_video(
+                user.settings[Model.KLING][UserSettings.VERSION],
+                user.settings[Model.KLING][UserSettings.MODE],
+                duration,
+                user.settings[Model.KLING][UserSettings.ASPECT_RATIO],
+                task_id,
+            )
+
+            ctx.generation = await write_generation(
+                id=result_id,
+                request_id=ctx.request.id,
+                product_id=product.id,
+                has_error=result_id is None,
+                details={
+                    "version": user.settings[Model.KLING][UserSettings.VERSION],
+                    "mode": user.settings[Model.KLING][UserSettings.MODE],
+                    "duration": duration,
+                    "aspect_ratio": user.settings[Model.KLING][UserSettings.ASPECT_RATIO],
+                },
+            )
+    except aiohttp.ClientResponseError as e:
+        if e.status == 500:
+            await send_internal_ai_model_error(user_language_code, message, Model.KLING)
+    except Exception as e:
+        if "the prompt contains sensitive words" in str(e).lower():
+            await message.answer_sticker(
+                sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
+            )
+            await message.reply(
+                text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
+                allow_sending_without_reply=True,
+            )
+        elif "too many requests" in str(e).lower():
+            await message.answer(
+                text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
+                allow_sending_without_reply=True,
+            )
+        else:
+            await send_error_info(
+                bot=message.bot,
+                user_id=user.id,
+                info=str(e),
+                hashtags=["kling"],
+            )
+            raise

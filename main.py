@@ -102,6 +102,8 @@ from bot.locales.main import get_localization
 from bot.middlewares.AuthMiddleware import AuthMessageMiddleware, AuthCallbackQueryMiddleware
 from bot.middlewares.LoggingMiddleware import LoggingMessageMiddleware, LoggingCallbackQueryMiddleware
 from bot.utils.migrate import migrate
+
+
 WEBHOOK_BOT_PATH = f'/bot/{config.BOT_TOKEN.get_secret_value()}'
 WEBHOOK_YOOKASSA_PATH = '/payment/yookassa'
 WEBHOOK_STRIPE_PATH = '/payment/stripe'
@@ -465,4 +467,4 @@ for path, additional_bot in zip(WEBHOOK_ADDITIONAL_BOTS_PATHS, additional_bots):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    uvicorn.run(app, host='0.0.0.0', port=os.getenv('PORT', 8080), timeout_keep_alive=600)
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", "8080")), timeout_keep_alive=600)

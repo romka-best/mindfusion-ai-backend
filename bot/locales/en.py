@@ -3122,3 +3122,9 @@ So, once more: when exactly did this financial miracle occur? 🗓️
         ]
 
         return random.choice(texts)
+
+    ASK_EXTEND_VIDEO = "🎥 Want to extend the video?"
+
+    EXTEND_AUDIO = "Extend"
+
+    CONCAT_AUDIO = "Combine"
