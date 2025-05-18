@@ -373,3 +373,5 @@ async def handle_midjourney_example(user: User, user_language_code: LanguageCode
                 )
 
 
+
+
