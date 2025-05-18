@@ -3122,3 +3122,12 @@ So, once more: when exactly did this financial miracle occur? 🗓️
         ]
 
         return random.choice(texts)
+
+    @staticmethod
+    def midjourney_params_error(prompt, error_params):
+        return f"""
+{prompt}
+
+⚠️ Error in midjourney parameters {error_params}
+https://docs.midjourney.com/hc/en-us/articles/32859204029709-Parameter-List
+"""

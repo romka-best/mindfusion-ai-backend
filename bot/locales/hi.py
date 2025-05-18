@@ -2724,3 +2724,13 @@ class Hindi(Texts):
 
 आप नीचे दिए गए बटन पर क्लिक करके पहुंच प्राप्त कर सकते हैं:
 """
+
+    @staticmethod
+    def midjourney_params_error(prompt, error_params):
+        return f"""
+{prompt}
+
+⚠️ Midjourney पैरामीटर्स में त्रुटि  {error_params}
+https://docs.midjourney.com/hc/en-us/articles/32859204029709-Parameter-List
+"""
+

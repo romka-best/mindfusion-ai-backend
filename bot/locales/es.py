@@ -2718,3 +2718,13 @@ Por ahora, no tienes acceso para trabajar con fotos y documentos.
 
 Puedes obtener acceso haciendo clic en el botón de abajo:
 """
+
+    @staticmethod
+    def midjourney_params_error(prompt, error_params):
+        return f"""
+{prompt}
+
+⚠️ Error en los parámetros de midjourney {error_params}
+https://docs.midjourney.com/hc/en-us/articles/32859204029709-Parameter-List
+"""
+

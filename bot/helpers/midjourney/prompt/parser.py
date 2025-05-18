@@ -10,8 +10,8 @@ class Parser:
         normalized_prompt = re.sub(r" {2,}", " ", normalized_prompt)
         normalized_prompt = normalized_prompt.strip()
         # Reference images zone
-        reference_images_match = re.search(r"^(https?:\/\/\S+\s)*", prompt)
-        prompt_without_reference_images = prompt[reference_images_match.end():]
+        reference_images_match = re.search(r"^(https?:\/\/\S+\s)*", normalized_prompt)
+        prompt_without_reference_images = normalized_prompt[reference_images_match.end():]
 
         prompt_reference_images = reference_images_match.group().split()
         # Params zone
