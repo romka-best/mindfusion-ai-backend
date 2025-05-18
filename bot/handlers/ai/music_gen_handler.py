@@ -1,3 +1,5 @@
+from contextlib import AsyncExitStack
+import logging
 from aiogram import Router, Bot, F
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
@@ -33,6 +35,10 @@ from replicate.exceptions import ReplicateError
 from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 import traceback
+
+from bot.utils.ctx_managers.generation_record_ctx import GenerationRecordCtx
+from bot.utils.ctx_managers.processing_msgs_ctx import ProcessingMsgsCtx
+from bot.utils.ctx_managers.request_record_ctx import RequestRecordCtx
 
 
 music_gen_router = Router()
@@ -117,147 +123,128 @@ async def handle_music_gen_selection(
     duration: str,
     state: FSMContext,
 ):
+    # Params
     user = await get_user(str(user_id))
     user_language_code = await get_user_language(str(user_id), state.storage)
     user_data = await state.get_data()
+    quota = user.daily_limits[Quota.MUSIC_GEN] + user.additional_usage_quota[Quota.MUSIC_GEN]
+    prompt = user_data.get("music_gen_prompt")
 
     try:
         duration = (int(duration) // 10) * 10
     except (TypeError, ValueError):
-        await message.reply(
+        return await message.reply(
             text=get_localization(user_language_code).ERROR_IS_NOT_NUMBER,
             reply_markup=build_cancel_keyboard(user_language_code),
             allow_sending_without_reply=True,
         )
 
+    # Validation
+    is_validation_error = False
+
+    if not prompt:
+        return await handle_music_gen(message.bot, user.telegram_chat_id, state, user_id)
+
+    product = await get_product_by_quota(Quota.MUSIC_GEN)
+    user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
+    if len(user_not_finished_requests) and not is_validation_error:
+        await message.reply(
+            text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
+            allow_sending_without_reply=True,
+        )
+        is_validation_error = True
+
+    if quota * 10 < duration and not is_validation_error:
+        await message.reply(
+            text=get_localization(user_language_code).music_gen_forbidden_error(quota * 10),
+            reply_markup=build_cancel_keyboard(user_language_code),
+            allow_sending_without_reply=True,
+        )
+        is_validation_error = True
+    elif duration < 10 and not is_validation_error:
+        await message.reply(
+            text=get_localization(user_language_code).MUSIC_GEN_MIN_ERROR,
+            reply_markup=build_cancel_keyboard(user_language_code),
+            allow_sending_without_reply=True,
+        )
+        is_validation_error = True
+    elif duration > 600 and not is_validation_error:
+        await message.reply(
+            text=get_localization(user_language_code).MUSIC_GEN_MAX_ERROR,
+            reply_markup=build_cancel_keyboard(user_language_code),
+            allow_sending_without_reply=True,
+        )
+        is_validation_error = True
+
+    if is_validation_error:
         return
 
-    processing_sticker = await message.answer_sticker(
-        sticker=config.MESSAGE_STICKERS.get(MessageSticker.MUSIC_GENERATION),
-    )
-    processing_message = await message.reply(
-        text=get_localization(user_language_code).model_music_processing_request(),
-        allow_sending_without_reply=True,
-    )
-
-    async with ChatActionSender.record_voice(bot=message.bot, chat_id=message.chat.id):
-        quota = user.daily_limits[Quota.MUSIC_GEN] + user.additional_usage_quota[Quota.MUSIC_GEN]
-        prompt = user_data.get('music_gen_prompt')
-
-        if not prompt:
-            await handle_music_gen(message.bot, user.telegram_chat_id, state, user_id)
-
-            await processing_sticker.delete()
-            await processing_message.delete()
-            await message.delete()
-            return
-
-        if quota * 10 < duration:
-            await message.reply(
-                text=get_localization(user_language_code).music_gen_forbidden_error(quota * 10),
-                reply_markup=build_cancel_keyboard(user_language_code),
-                allow_sending_without_reply=True,
+    # Generation
+    try:
+        async with AsyncExitStack() as stack:
+            # Prepare ctxs
+            await stack.enter_async_context(ChatActionSender.record_voice(bot=message.bot, chat_id=message.chat.id))
+            processing_msgs_ctx = await stack.enter_async_context(
+                ProcessingMsgsCtx(
+                    message,
+                    config.MESSAGE_STICKERS.get(MessageSticker.MUSIC_GENERATION),
+                    get_localization(user_language_code).model_music_processing_request(),
+                ),
             )
-
-            await processing_sticker.delete()
-            await processing_message.delete()
-        elif duration < 10:
-            await message.reply(
-                text=get_localization(user_language_code).MUSIC_GEN_MIN_ERROR,
-                reply_markup=build_cancel_keyboard(user_language_code),
-                allow_sending_without_reply=True,
+            request_record_ctx = await stack.enter_async_context(
+                RequestRecordCtx(
+                    user_id=user.id,
+                    processing_message_ids=processing_msgs_ctx.ids,
+                    product_id=product.id,
+                    requested=1,
+                ),
             )
+            gen_ctx = await stack.enter_async_context(GenerationRecordCtx())
 
-            await processing_sticker.delete()
-            await processing_message.delete()
-        elif duration > 600:
-            await message.reply(
-                text=get_localization(user_language_code).MUSIC_GEN_MAX_ERROR,
-                reply_markup=build_cancel_keyboard(user_language_code),
-                allow_sending_without_reply=True,
-            )
+            # Translate
+            if user_language_code != LanguageCode.EN:
+                prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
 
-            await processing_sticker.delete()
-            await processing_message.delete()
-        else:
-            product = await get_product_by_quota(Quota.MUSIC_GEN)
+            # Send generation
+            result_id = await create_music_gen_melody(prompt, duration)
 
-            user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
-
-            if len(user_not_finished_requests):
-                await message.reply(
-                    text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
-                    allow_sending_without_reply=True,
-                )
-
-                await processing_sticker.delete()
-                await processing_message.delete()
-                return
-
-            request = await write_request(
-                user_id=user.id,
-                processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
-                product_id=product.id,
-                requested=1,
-            )
-
-            try:
-                if user_language_code != LanguageCode.EN:
-                    prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
-                result_id = await create_music_gen_melody(prompt, duration)
+            gen_ctx.add(
                 await write_generation(
                     id=result_id,
-                    request_id=request.id,
+                    request_id=request_record_ctx.request.id,
                     product_id=product.id,
                     has_error=result_id is None,
                     details={
-                        'prompt': prompt,
-                        'duration': duration,
-                    }
-                )
-            except ReplicateError as e:
-                if e.status == 500:
-                    await send_internal_ai_model_error(
-                        user_language_code, message, Model.MUSIC_GEN
-                    )
-            except Exception as e:
-                await message.answer_sticker(
-                    sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
-                )
+                        "prompt": prompt,
+                        "duration": duration,
+                    },
+                ),
+            )
+    except ReplicateError as e:
+        if e.status == 500:
+            await send_internal_ai_model_error(user_language_code, message, Model.MUSIC_GEN)
+        else:
+            raise
+    except Exception as e:
+        logging.exception("")
 
-                await message.answer(
-                    text=get_localization(user_language_code).ERROR,
-                    reply_markup=build_error_keyboard(user_language_code),
-                )
+        await message.answer_sticker(
+            sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
+        )
 
-                await notify_error_channel(
-                    bot=message.bot,
-                    user_id=user.id,
-                    info=str(e),
-                    stack_trace=traceback.format_exc(),
-                    context={"prompt": prompt},
-                    hashtags=["music_gen"]
-                )
+        await message.answer(
+            text=get_localization(user_language_code).ERROR,
+            reply_markup=build_error_keyboard(user_language_code),
+        )
 
-                request.status = RequestStatus.FINISHED
-                await update_request(request.id, {
-                    'status': request.status
-                })
-
-                generations = await get_generations_by_request_id(request.id)
-                for generation in generations:
-                    generation.status = GenerationStatus.FINISHED
-                    generation.has_error = True
-                    await update_generation(
-                        generation.id,
-                        {
-                            'status': generation.status,
-                            'has_error': generation.has_error,
-                        },
-                    )
-
-                await processing_sticker.delete()
-                await processing_message.delete()
+        await notify_error_channel(
+            bot=message.bot,
+            user_id=user.id,
+            info=str(e),
+            stack_trace=traceback.format_exc(),
+            context={"prompt": prompt},
+            hashtags=["music_gen"],
+        )
 
 
 @music_gen_router.message(MusicGen.waiting_for_music_gen_duration, ~F.text.startswith('/'))

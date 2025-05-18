@@ -1,3 +1,4 @@
+from contextlib import AsyncExitStack
 from typing import Optional
 
 import aiohttp
@@ -33,6 +34,10 @@ from bot.locales.types import LanguageCode
 from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 import traceback
+
+from bot.utils.ctx_managers.generation_record_ctx import GenerationRecordCtx
+from bot.utils.ctx_managers.processing_msgs_ctx import ProcessingMsgsCtx
+from bot.utils.ctx_managers.request_record_ctx import RequestRecordCtx
 
 
 pika_router = Router()
@@ -76,58 +81,61 @@ async def pika(message: Message, state: FSMContext):
         except (TelegramBadRequest, TelegramRetryAfter):
             pass
 
-
 async def handle_pika(
     message: Message,
     state: FSMContext,
     user: User,
-    video_frame_link: Optional[str] = None
+    video_frame_link: Optional[str] = None,
 ):
+    # Params
     user_language_code = await get_user_language(user.id, state.storage)
     user_data = await state.get_data()
 
-    prompt = user_data.get('recognized_text', '')
+    prompt = user_data.get("recognized_text", "")
     if not prompt:
         if message.caption:
             prompt = message.caption
         elif message.text:
             prompt = message.text
         else:
-            prompt = ''
+            prompt = ""
 
-    processing_sticker = await message.answer_sticker(
-        sticker=config.MESSAGE_STICKERS.get(MessageSticker.VIDEO_GENERATION),
-    )
-    processing_message = await message.reply(
-        text=get_localization(user_language_code).model_video_processing_request(),
-        allow_sending_without_reply=True,
-    )
-
-    async with ChatActionSender.upload_video(bot=message.bot, chat_id=message.chat.id):
-        product = await get_product_by_quota(Quota.PIKA)
-
-        user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
-
-        if len(user_not_finished_requests):
-            await message.reply(
-                text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
-                allow_sending_without_reply=True,
-            )
-
-            await processing_sticker.delete()
-            await processing_message.delete()
-            return
-
-        request = await write_request(
-            user_id=user.id,
-            processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
-            product_id=product.id,
-            requested=1,
+    # Validation
+    product = await get_product_by_quota(Quota.PIKA)
+    user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
+    if len(user_not_finished_requests):
+        return await message.reply(
+            text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
+            allow_sending_without_reply=True,
         )
 
-        try:
+    # Generation
+    try:
+        async with AsyncExitStack() as stack:
+            # Prepare ctxs
+            await stack.enter_async_context(ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id))
+            processing_msgs_ctx = await stack.enter_async_context(
+                ProcessingMsgsCtx(
+                    message,
+                    config.MESSAGE_STICKERS.get(MessageSticker.VIDEO_GENERATION),
+                    get_localization(user_language_code).model_video_processing_request(),
+                ),
+            )
+            request_record_ctx = await stack.enter_async_context(
+                RequestRecordCtx(
+                    user_id=user.id,
+                    processing_message_ids=processing_msgs_ctx.ids,
+                    product_id=product.id,
+                    requested=1,
+                ),
+            )
+            gen_ctx = await stack.enter_async_context(GenerationRecordCtx())
+
+            # Translate
             if prompt and user_language_code != LanguageCode.EN:
                 prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
+
+            # Send generation
             result_id = await generate_video(
                 prompt,
                 user.settings[Model.PIKA][UserSettings.VERSION],
@@ -135,59 +143,40 @@ async def handle_pika(
                 video_frame_link,
             )
 
-            await write_generation(
-                id=result_id,
-                request_id=request.id,
-                product_id=product.id,
-                has_error=result_id is None,
-                details={
-                    'prompt': prompt,
-                    'version': user.settings[Model.PIKA][UserSettings.VERSION],
-                    'aspect_ratio': user.settings[Model.PIKA][UserSettings.ASPECT_RATIO],
-                    'video_first_frame_link': video_frame_link,
-                }
-            )
-        except aiohttp.ClientResponseError as e:
-            if e.status == 500:
-                await send_internal_ai_model_error(
-                    user_language_code, message, Model.PIKA
-                )
-        except Exception as e:
-            await message.answer_sticker(
-                sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
-            )
-
-            await message.answer(
-                text=get_localization(user_language_code).ERROR,
-                reply_markup=build_error_keyboard(user_language_code),
-            )
-
-            await notify_error_channel(
-                bot=message.bot,
-                user_id=user.id,
-                info=str(e),
-                stack_trace=traceback.format_exc(),
-                context={"prompt": prompt},
-                hashtags=["pika"]
-            )
-
-            request.status = RequestStatus.FINISHED
-            await update_request(request.id, {
-                'status': request.status
-            })
-
-            generations = await get_generations_by_request_id(request.id)
-            for generation in generations:
-                generation.status = GenerationStatus.FINISHED
-                generation.has_error = True
-                await update_generation(
-                    generation.id,
-                    {
-                        'status': generation.status,
-                        'has_error': generation.has_error,
+            gen_ctx.add(
+                await write_generation(
+                    id=result_id,
+                    request_id=request_record_ctx.request.id,
+                    product_id=product.id,
+                    has_error=result_id is None,
+                    details={
+                        "prompt": prompt,
+                        "version": user.settings[Model.PIKA][UserSettings.VERSION],
+                        "aspect_ratio": user.settings[Model.PIKA][UserSettings.ASPECT_RATIO],
+                        "video_first_frame_link": video_frame_link,
                     },
-                )
+                ),
+            )
+    except aiohttp.ClientResponseError as e:
+        if e.status == 500:
+            await send_internal_ai_model_error(user_language_code, message, Model.PIKA)
+        else:
+            raise
+    except Exception as e:
+        await message.answer_sticker(
+            sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
+        )
 
-            await processing_sticker.delete()
-            await processing_message.delete()
+        await message.answer(
+            text=get_localization(user_language_code).ERROR,
+            reply_markup=build_error_keyboard(user_language_code),
+        )
 
+        await notify_error_channel(
+            bot=message.bot,
+            user_id=user.id,
+            info=str(e),
+            stack_trace=traceback.format_exc(),
+            context={"prompt": prompt},
+            hashtags=["pika"],
+        )
