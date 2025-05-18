@@ -2,6 +2,7 @@ import logging
 import json
 
 from aiogram.client.session import aiohttp
+from aiohttp import ClientResponseError, ContentTypeError
 
 from bot.config import config
 from bot.database.models.common import MidjourneyVersion, MidjourneyAction, AspectRatio
@@ -10,6 +11,13 @@ MIDJOURNEY_API_URL = 'https://api.piapi.ai'
 MIDJOURNEY_API_KEY = config.MIDJOURNEY_API_KEY.get_secret_value()
 WEBHOOK_MIDJOURNEY_URL = config.WEBHOOK_URL + config.WEBHOOK_MIDJOURNEY_PATH
 
+class ClientResponseWithBodyError(ClientResponseError):
+    def __init__(self, *args, payload=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.payload = payload
+
+    def __str__(self):
+        return f"{super().__str__()}\nPayload: {self.payload}"
 
 class Midjourney:
     def __init__(self, session: aiohttp.ClientSession = None) -> None:
@@ -31,8 +39,24 @@ class Midjourney:
 
     async def request(self, method: str, url: str, **kwargs):
         async with self.session.request(method, url, headers=self.headers, **kwargs) as response:
-            response.raise_for_status()
-            return await response.json()
+            try:
+                payload = await response.json()
+            except ContentTypeError:
+                payload = await response.text()
+
+            try:
+                response.raise_for_status()
+            except ClientResponseError as e:
+                raise ClientResponseWithBodyError(
+                    request_info=e.request_info,
+                    history=e.history,
+                    status=e.status,
+                    message=e.message,
+                    headers=e.headers,
+                    payload=payload,
+                ) from e
+
+            return payload
 
     @staticmethod
     def get_price_for_image(version: MidjourneyVersion, action: MidjourneyAction):
