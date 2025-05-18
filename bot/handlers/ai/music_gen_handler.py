@@ -263,3 +263,5 @@ async def handle_music_gen_selection(
 @music_gen_router.message(MusicGen.waiting_for_music_gen_duration, ~F.text.startswith('/'))
 async def music_gen_duration_sent(message: Message, state: FSMContext):
     await handle_music_gen_selection(message, str(message.from_user.id), message.text, state)
+
+
