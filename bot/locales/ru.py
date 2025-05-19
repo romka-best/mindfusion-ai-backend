@@ -4133,3 +4133,12 @@ class Russian(Texts):
 
 @roman_danilov, посмотришь? 🤨
 """
+
+    @staticmethod
+    def midjourney_params_error(prompt, error_params):
+        return f"""
+{prompt}
+
+⚠️ Ошибка в параметрах midjourney {error_params}
+https://docs.midjourney.com/hc/en-us/articles/32859204029709-Parameter-List
+"""

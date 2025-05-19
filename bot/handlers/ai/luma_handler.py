@@ -1,6 +1,8 @@
-import asyncio
+import logging
+from contextlib import AsyncExitStack
 from typing import Optional
 
+import lumaai
 from aiogram import Router
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
@@ -8,33 +10,27 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram.utils.chat_action import ChatActionSender
 
-from bot.config import config, MessageEffect, MessageSticker
+from bot.config import MessageEffect, MessageSticker, config
 from bot.database.main import firebase
 from bot.database.models.common import Model, Quota
-from bot.database.models.generation import GenerationStatus
-from bot.database.models.request import RequestStatus
-from bot.database.models.user import UserSettings, User
-from bot.database.operations.generation.getters import get_generations_by_request_id
-from bot.database.operations.generation.updaters import update_generation
+from bot.database.models.user import User, UserSettings
 from bot.database.operations.generation.writers import write_generation
 from bot.database.operations.product.getters import get_product_by_quota
 from bot.database.operations.request.getters import get_started_requests_by_user_id_and_product_id
-from bot.database.operations.request.updaters import update_request
-from bot.database.operations.request.writers import write_request
 from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user
 from bot.handlers.ai.midjourney_handler import handle_midjourney_example
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.integrations.luma import get_response_image, get_response_video
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_error_keyboard
-from bot.locales.main import get_user_language, get_localization
+from bot.locales.main import get_localization, get_user_language
 from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
-from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
-import lumaai
+from bot.utils.ctx_managers import GenerationRecordCtx, ProcessingMsgsCtx, RequestRecordCtx
 
 luma_router = Router()
 
@@ -79,134 +75,110 @@ async def luma_photon(message: Message, state: FSMContext):
             pass
 
 
-async def handle_luma_photon(
-    message: Message,
-    state: FSMContext,
-    user: User,
-    image_filename: Optional[str] = None,
-):
+async def handle_luma_photon(message: Message, state: FSMContext, user: User, image_filename: Optional[str] = None):
+    # Params
     user_language_code = await get_user_language(user.id, state.storage)
     user_data = await state.get_data()
+    prompt = user_data.get("recognized_text", None)
 
-    prompt = user_data.get('recognized_text', None)
+    # Validation
     if prompt is None:
         if message.caption:
             prompt = message.caption
         elif message.text:
             prompt = message.text
         else:
-            prompt = ''
-
+            prompt = ""
     if not prompt or len(prompt) <= 3:
-        await message.reply(
+        return await message.reply(
             text=get_localization(user_language_code).ERROR_PROMPT_REQUIRED,
             allow_sending_without_reply=True,
         )
-        return
 
+    product = await get_product_by_quota(Quota.LUMA_PHOTON)
+    user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
+    if len(user_not_finished_requests):
+        return await message.reply(
+            text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
+            allow_sending_without_reply=True,
+        )
+
+    # Save image for supervision
     image_link = None
     if image_filename:
-        image_path = f'users/vision/{user.id}/{image_filename}'
+        image_path = f"users/vision/{user.id}/{image_filename}"
         image = await firebase.bucket.get_blob(image_path)
         image_link = firebase.get_public_url(image.name)
 
-    processing_sticker = await message.answer_sticker(
-        sticker=config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),
-    )
-    processing_message = await message.reply(
-        text=get_localization(user_language_code).model_image_processing_request(),
-        allow_sending_without_reply=True,
-    )
-
-    async with ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id):
-        product = await get_product_by_quota(Quota.LUMA_PHOTON)
-
-        user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
-
-        if len(user_not_finished_requests):
-            await message.reply(
-                text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
-                allow_sending_without_reply=True,
+    # Generation
+    try:
+        async with AsyncExitStack() as stack:
+            # Prepare ctxs
+            await stack.enter_async_context(ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id))
+            processing_msgs_ctx = await stack.enter_async_context(
+                ProcessingMsgsCtx(
+                    message,
+                    config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),
+                    get_localization(user_language_code).model_image_processing_request(),
+                ),
             )
+            request_record_ctx = await stack.enter_async_context(
+                RequestRecordCtx(
+                    user_id=user.id,
+                    processing_message_ids=processing_msgs_ctx.ids,
+                    product_id=product.id,
+                    requested=1,
+                ),
+            )
+            gen_ctx = await stack.enter_async_context(GenerationRecordCtx())
 
-            await processing_sticker.delete()
-            await processing_message.delete()
-            return
-
-        request = await write_request(
-            user_id=user.id,
-            processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
-            product_id=product.id,
-            requested=1,
-        )
-
-        try:
+            # Translate
             if prompt and user_language_code != LanguageCode.EN:
                 prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
+
+            # Send generation
             result_id = await get_response_image(
                 prompt,
                 user.settings[Model.LUMA_PHOTON][UserSettings.ASPECT_RATIO],
                 image_link,
             )
 
-            await write_generation(
-                id=result_id,
-                request_id=request.id,
-                product_id=product.id,
-                has_error=result_id is None,
-                details={
-                    'prompt': prompt,
-                }
+            gen_ctx.add(
+                await write_generation(
+                    id=result_id,
+                    request_id=request_record_ctx.request.id,
+                    product_id=product.id,
+                    has_error=result_id is None,
+                    details={"prompt": prompt},
+                ),
             )
-        except lumaai.InternalServerError:
-            await send_internal_ai_model_error(
-                user_language_code, message, Model.LUMA_PHOTON
-            )
-        except Exception as e:
-            await message.answer_sticker(
-                sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
-            )
+    except lumaai.InternalServerError:
+        await send_internal_ai_model_error(user_language_code, message, Model.LUMA_PHOTON)
+    except Exception as e:
+        logging.exception("")
 
-            await message.answer(
-                text=get_localization(user_language_code).ERROR,
-                reply_markup=build_error_keyboard(user_language_code),
-            )
-            await send_error_info(
-                bot=message.bot,
-                user_id=user.id,
-                info=str(e),
-                hashtags=['luma_photon'],
-            )
-
-            request.status = RequestStatus.FINISHED
-            await update_request(request.id, {
-                'status': request.status
-            })
-
-            generations = await get_generations_by_request_id(request.id)
-            for generation in generations:
-                generation.status = GenerationStatus.FINISHED
-                generation.has_error = True
-                await update_generation(
-                    generation.id,
-                    {
-                        'status': generation.status,
-                        'has_error': generation.has_error,
-                    },
-                )
-
-            await processing_sticker.delete()
-            await processing_message.delete()
-
-        asyncio.create_task(
-            handle_midjourney_example(
-                user=user,
-                user_language_code=user_language_code,
-                prompt=prompt,
-                message=message,
-            )
+        await message.answer_sticker(
+            sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
         )
 
+        await message.answer(
+            text=get_localization(user_language_code).ERROR,
+            reply_markup=build_error_keyboard(user_language_code),
+        )
+        await send_error_info(
+            bot=message.bot,
+            user_id=user.id,
+            info=str(e),
+            hashtags=["luma_photon"],
+        )
+
+    # WTF
+    await handle_midjourney_example(
+        user=user,
+        user_language_code=user_language_code,
+        prompt=prompt,
+        message=message,
+    )
 
 @luma_router.message(Command('luma_ray'))
 async def luma_ray(message: Message, state: FSMContext):
@@ -245,57 +217,55 @@ async def luma_ray(message: Message, state: FSMContext):
             pass
 
 
-async def handle_luma_ray(
-    message: Message,
-    state: FSMContext,
-    user: User,
-    video_frame_link: Optional[str] = None
-):
+async def handle_luma_ray(message: Message, state: FSMContext, user: User, video_frame_link: Optional[str] = None):
+    # Params
     user_language_code = await get_user_language(user.id, state.storage)
     user_data = await state.get_data()
-
-    prompt = user_data.get('recognized_text', '')
+    prompt = user_data.get("recognized_text", "")
     if not prompt:
         if message.caption:
             prompt = message.caption
         elif message.text:
             prompt = message.text
         else:
-            prompt = ''
+            prompt = ""
 
-    processing_sticker = await message.answer_sticker(
-        sticker=config.MESSAGE_STICKERS.get(MessageSticker.VIDEO_GENERATION),
-    )
-    processing_message = await message.reply(
-        text=get_localization(user_language_code).model_video_processing_request(),
-        allow_sending_without_reply=True,
-    )
-
-    async with ChatActionSender.upload_video(bot=message.bot, chat_id=message.chat.id):
-        product = await get_product_by_quota(Quota.LUMA_RAY)
-
-        user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
-
-        if len(user_not_finished_requests):
-            await message.reply(
-                text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
-                allow_sending_without_reply=True,
-            )
-
-            await processing_sticker.delete()
-            await processing_message.delete()
-            return
-
-        request = await write_request(
-            user_id=user.id,
-            processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
-            product_id=product.id,
-            requested=1,
+    # Validation
+    product = await get_product_by_quota(Quota.LUMA_RAY)
+    user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
+    if len(user_not_finished_requests):
+        return await message.reply(
+            text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
+            allow_sending_without_reply=True,
         )
 
-        try:
+    # Generation
+    try:
+        async with AsyncExitStack() as stack:
+            # Prepare ctxs
+            await stack.enter_async_context(ChatActionSender.upload_video(bot=message.bot, chat_id=message.chat.id))
+            processing_msgs_ctx = await stack.enter_async_context(
+                ProcessingMsgsCtx(
+                    message,
+                    config.MESSAGE_STICKERS.get(MessageSticker.VIDEO_GENERATION),
+                    get_localization(user_language_code).model_video_processing_request(),
+                ),
+            )
+            request_record_ctx = await stack.enter_async_context(
+                RequestRecordCtx(
+                    user_id=user.id,
+                    processing_message_ids=processing_msgs_ctx.ids,
+                    product_id=product.id,
+                    requested=1,
+                ),
+            )
+            gen_ctx = await stack.enter_async_context(GenerationRecordCtx())
+
+            # Translate
             if prompt and user_language_code != LanguageCode.EN:
                 prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
+
+            # Send generation
             result_id = await get_response_video(
                 prompt,
                 user.settings[Model.LUMA_RAY][UserSettings.VERSION],
@@ -305,54 +275,36 @@ async def handle_luma_ray(
                 video_frame_link,
             )
 
-            await write_generation(
-                id=result_id,
-                request_id=request.id,
-                product_id=product.id,
-                has_error=result_id is None,
-                details={
-                    'prompt': prompt,
-                    'aspect_ratio': user.settings[Model.LUMA_RAY][UserSettings.ASPECT_RATIO],
-                    'duration': user.settings[Model.LUMA_RAY][UserSettings.DURATION],
-                    'quality': user.settings[Model.LUMA_RAY][UserSettings.QUALITY],
-                }
-            )
-        except lumaai.InternalServerError:
-            await send_internal_ai_model_error(
-                user_language_code, message, Model.LUMA_RAY
-            )
-        except Exception as e:
-            await message.answer_sticker(
-                sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
-            )
-
-            await message.answer(
-                text=get_localization(user_language_code).ERROR,
-                reply_markup=build_error_keyboard(user_language_code),
-            )
-            await send_error_info(
-                bot=message.bot,
-                user_id=user.id,
-                info=str(e),
-                hashtags=['luma_ray'],
-            )
-
-            request.status = RequestStatus.FINISHED
-            await update_request(request.id, {
-                'status': request.status
-            })
-
-            generations = await get_generations_by_request_id(request.id)
-            for generation in generations:
-                generation.status = GenerationStatus.FINISHED
-                generation.has_error = True
-                await update_generation(
-                    generation.id,
-                    {
-                        'status': generation.status,
-                        'has_error': generation.has_error,
+            gen_ctx.add(
+                await write_generation(
+                    id=result_id,
+                    request_id=request_record_ctx.request.id,
+                    product_id=product.id,
+                    has_error=result_id is None,
+                    details={
+                        "prompt": prompt,
+                        "aspect_ratio": user.settings[Model.LUMA_RAY][UserSettings.ASPECT_RATIO],
+                        "duration": user.settings[Model.LUMA_RAY][UserSettings.DURATION],
+                        "quality": user.settings[Model.LUMA_RAY][UserSettings.QUALITY],
                     },
-                )
+                ),
+            )
+    except lumaai.InternalServerError:
+        await send_internal_ai_model_error(user_language_code, message, Model.LUMA_RAY)
+    except Exception as e:
+        logging.exception("")
 
-            await processing_sticker.delete()
-            await processing_message.delete()
+        await message.answer_sticker(
+            sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
+        )
+
+        await message.answer(
+            text=get_localization(user_language_code).ERROR,
+            reply_markup=build_error_keyboard(user_language_code),
+        )
+        await send_error_info(
+            bot=message.bot,
+            user_id=user.id,
+            info=str(e),
+            hashtags=["luma_ray"],
+        )

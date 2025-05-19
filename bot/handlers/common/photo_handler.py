@@ -1,25 +1,26 @@
 import asyncio
 import time
 import uuid
+from contextlib import AsyncExitStack
 
 import aiohttp
-from aiogram import Router, F
-
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, URLInputFile, File, ReactionTypeEmoji
+from aiogram.types import File, Message, ReactionTypeEmoji, URLInputFile
 from aiogram.utils.chat_action import ChatActionSender
+from replicate.exceptions import ReplicateError
 
-from bot.config import config, MessageSticker
+from bot.config import MessageSticker, config
 from bot.database.main import firebase
 from bot.database.models.common import (
-    Model,
-    Quota,
     ChatGPTVersion,
     ClaudeGPTVersion,
     GeminiGPTVersion,
     GrokGPTVersion,
     MidjourneyAction,
+    Model,
     PhotoshopAIAction,
+    Quota,
 )
 from bot.database.models.face_swap_package import FaceSwapPackageStatus
 from bot.database.models.user import UserSettings
@@ -31,7 +32,6 @@ from bot.database.operations.face_swap_package.updaters import update_face_swap_
 from bot.database.operations.generation.writers import write_generation
 from bot.database.operations.product.getters import get_product_by_quota
 from bot.database.operations.request.getters import get_started_requests_by_user_id_and_product_id
-from bot.database.operations.request.writers import write_request
 from bot.database.operations.user.getters import get_user
 from bot.handlers.admin.face_swap_handler import handle_manage_face_swap
 from bot.handlers.ai.chat_gpt_handler import handle_chatgpt
@@ -47,21 +47,23 @@ from bot.handlers.ai.pika_handler import handle_pika
 from bot.handlers.ai.runway_handler import handle_runway
 from bot.handlers.ai.stable_diffusion_handler import handle_stable_diffusion
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 from bot.integrations.replicate_ai import create_face_swap_image, create_photoshop_ai_image
 from bot.keyboards.admin.catalog import build_manage_catalog_create_role_confirmation_keyboard
 from bot.keyboards.ai.model import build_model_limit_exceeded_keyboard
-from bot.keyboards.common.common import build_cancel_keyboard, build_suggestions_keyboard, build_buy_motivation_keyboard
+from bot.keyboards.common.common import build_buy_motivation_keyboard, build_cancel_keyboard, build_suggestions_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.middlewares.AlbumMiddleware import AlbumMiddleware
-from bot.states.common.catalog import Catalog
 from bot.states.ai.face_swap import FaceSwap
 from bot.states.ai.photoshop_ai import PhotoshopAI
+from bot.states.common.catalog import Catalog
 from bot.states.common.profile import Profile
+from bot.utils.ctx_managers.generation_record_ctx import GenerationRecordCtx
+from bot.utils.ctx_managers.processing_msgs_ctx import ProcessingMsgsCtx
+from bot.utils.ctx_managers.request_record_ctx import RequestRecordCtx
 from bot.utils.is_already_processing import is_already_processing
 from bot.utils.is_messages_limit_exceeded import is_messages_limit_exceeded
 from bot.utils.is_time_limit_exceeded import is_time_limit_exceeded
-from replicate.exceptions import ReplicateError
-from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 
 photo_router = Router()
 photo_router.message.middleware(AlbumMiddleware())
@@ -162,41 +164,26 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
         await message.answer(text=get_localization(user_language_code).ADMIN_FACE_SWAP_EDIT_SUCCESS)
         await handle_manage_face_swap(message, str(message.from_user.id), state)
     elif current_state == PhotoshopAI.waiting_for_photo.state:
+        # Validation
         quota = user.daily_limits[Quota.PHOTOSHOP_AI] + user.additional_usage_quota[Quota.PHOTOSHOP_AI]
         if quota < 1:
-            await message.answer_sticker(
-                sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
-            )
+            await message.answer_sticker(sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD))
 
-            await message.answer(
+            return await message.answer(
                 text=get_localization(user_language_code).model_reached_usage_limit(),
                 reply_markup=build_model_limit_exceeded_keyboard(user_language_code, user.had_subscription),
             )
-            return
-
-        processing_sticker = await message.answer_sticker(
-            sticker=config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),
-        )
-        processing_message = await message.reply(
-            text=get_localization(user_language_code).model_image_processing_request(),
-            allow_sending_without_reply=True,
-        )
 
         product = await get_product_by_quota(Quota.PHOTOSHOP_AI)
-
         user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
         if len(user_not_finished_requests):
-            await message.reply(
+            return await message.reply(
                 text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
                 allow_sending_without_reply=True,
             )
 
-            await processing_sticker.delete()
-            await processing_message.delete()
-            return
-
         user_data = await state.get_data()
-        photoshop_ai_action_name = user_data['photoshop_ai_action_name']
+        photoshop_ai_action_name = user_data["photoshop_ai_action_name"]
         if photoshop_ai_action_name not in [
             PhotoshopAIAction.UPSCALE,
             PhotoshopAIAction.RESTORATION,
@@ -205,43 +192,61 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
         ]:
             return
 
-        async with ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id):
-            photo_data_io = await message.bot.download_file(photo_file.file_path, timeout=300)
-            photo_data = await asyncio.to_thread(photo_data_io.read)
-            photo_extension = photo_file.file_path.split('.')[-1]
-            photo_name = f'{uuid.uuid4()}.{photo_extension}'
-            photo_path = f'users/photoshop/{photoshop_ai_action_name}/{user_id}/{photo_name}'
-            photo_link = firebase.get_public_url(photo_path)
-            photo_photoshop = firebase.bucket.new_blob(photo_path)
-            await photo_photoshop.upload(photo_data)
-            try:
-                result = await create_photoshop_ai_image(photoshop_ai_action_name, photo_link)
-                request = await write_request(
-                    user_id=user_id,
-                    processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
-                    product_id=product.id,
-                    requested=1,
-                    details={
-                        'type': photoshop_ai_action_name,
-                    },
+        # Generation
+        try:
+            async with AsyncExitStack() as stack:
+                # Prepare ctxs
+                await stack.enter_async_context(ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id))
+                processing_msgs_ctx = await stack.enter_async_context(
+                    ProcessingMsgsCtx(
+                        message,
+                        config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),
+                        get_localization(user_language_code).model_image_processing_request(),
+                    ),
                 )
-                await write_generation(
-                    id=result,
-                    request_id=request.id,
-                    product_id=product.id,
-                    has_error=result is None,
-                    details={
-                        'type': photoshop_ai_action_name,
-                    }
+                request_record_ctx = await stack.enter_async_context(
+                    RequestRecordCtx(
+                        user_id=user_id,
+                        processing_message_ids=processing_msgs_ctx.ids,
+                        product_id=product.id,
+                        requested=1,
+                        details={
+                            "type": photoshop_ai_action_name,
+                        },
+                    ),
+                )
+                gen_ctx = await stack.enter_async_context(GenerationRecordCtx())
+
+                # Download photo
+                photo_data = (await message.bot.download_file(photo_file.file_path, timeout=300)).read()
+                photo_extension = photo_file.file_path.split(".")[-1]
+                photo_name = f"{uuid.uuid4()}.{photo_extension}"
+                photo_path = f"users/photoshop/{photoshop_ai_action_name}/{user_id}/{photo_name}"
+                photo_link = firebase.get_public_url(photo_path)
+                photo_photoshop = firebase.bucket.new_blob(photo_path)
+                await photo_photoshop.upload(photo_data)
+
+                # Send generation
+                result = await create_photoshop_ai_image(photoshop_ai_action_name, photo_link)
+
+                gen_ctx.add(
+                    await write_generation(
+                        id=result,
+                        request_id=request_record_ctx.request.id,
+                        product_id=product.id,
+                        has_error=result is None,
+                        details={
+                            "type": photoshop_ai_action_name,
+                        },
+                    ),
                 )
 
                 await state.clear()
-            except ReplicateError as e:
-                if e.status == 500:
-                    await send_internal_ai_model_error(
-                        user_language_code, message, Model.PHOTOSHOP_AI
-                    )
-
+        except ReplicateError as e:
+            if e.status == 500:
+                await send_internal_ai_model_error(user_language_code, message, Model.PHOTOSHOP_AI)
+            else:
+                raise
     elif (
         user.current_model == Model.CHAT_GPT or
         user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Sonnet or
@@ -356,70 +361,82 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
         elif user.current_model == Model.LUMA_PHOTON:
             await handle_luma_photon(message, state, user, photo_vision_filename)
     elif user.current_model == Model.FACE_SWAP:
+        # Validation
         quota = user.daily_limits[Quota.FACE_SWAP] + user.additional_usage_quota[Quota.FACE_SWAP]
         quantity = 1
         if quota < quantity:
-            await message.answer(text=get_localization(user_language_code).face_swap_package_forbidden_error(quota))
-        else:
-            processing_sticker = await message.answer_sticker(
-                sticker=config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),
-            )
-            processing_message = await message.reply(
-                text=get_localization(user_language_code).model_face_swap_processing_request(),
-                allow_sending_without_reply=True,
+            return await message.answer(
+                text=get_localization(user_language_code).face_swap_package_forbidden_error(quota),
             )
 
-            async with ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id):
-                try:
-                    user_photo_blobs = await firebase.bucket.list_blobs(prefix=f'users/avatars/{user_id}.')
-                    if len(user_photo_blobs) > 0:
-                        user_photo_blob = user_photo_blobs[-1]
-                    else:
-                        user_photo_blob = f'users/avatars/{user_id}.jpeg'
-                    user_photo = await firebase.bucket.get_blob(user_photo_blob)
-                    user_photo_link = firebase.get_public_url(user_photo.name)
-                    photo_data_io = await message.bot.download_file(photo_file.file_path, timeout=300)
-                    photo_data = await asyncio.to_thread(photo_data_io.read)
-                    photo_extension = photo_file.file_path.split('.')[-1]
-
-                    background_path = f'users/backgrounds/{user_id}/{uuid.uuid4()}.{photo_extension}'
-                    background_photo = firebase.bucket.new_blob(background_path)
-                    await background_photo.upload(photo_data)
-                    background_photo_link = firebase.get_public_url(background_path)
-
-                    product = await get_product_by_quota(Quota.FACE_SWAP)
-
-                    result = await create_face_swap_image(background_photo_link, user_photo_link)
-                    request = await write_request(
+        # Generation
+        product = await get_product_by_quota(Quota.FACE_SWAP)
+        try:
+            async with AsyncExitStack() as stack:
+                # Prepare ctxs
+                await stack.enter_async_context(ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id))
+                processing_msgs_ctx = await stack.enter_async_context(
+                    ProcessingMsgsCtx(
+                        message,
+                        config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),
+                        get_localization(user_language_code).model_face_swap_processing_request(),
+                    ),
+                )
+                request_record_ctx = await stack.enter_async_context(
+                    RequestRecordCtx(
                         user_id=user_id,
-                        processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
+                        processing_message_ids=processing_msgs_ctx.ids,
                         product_id=product.id,
                         requested=1,
                         details={
-                            'is_test': False,
-                        }
-                    )
+                            "is_test": False,
+                        },
+                    ),
+                )
+                gen_ctx = await stack.enter_async_context(GenerationRecordCtx())
+
+                # Download photos
+                user_photo_blobs = await firebase.bucket.list_blobs(prefix=f"users/avatars/{user_id}.")
+                user_photo_blob = user_photo_blobs[-1] if len(user_photo_blobs) > 0 else f"users/avatars/{user_id}.jpeg"
+                user_photo = await firebase.bucket.get_blob(user_photo_blob)
+                user_photo_link = firebase.get_public_url(user_photo.name)
+                photo_data = (await message.bot.download_file(photo_file.file_path, timeout=300)).read()
+                photo_extension = photo_file.file_path.split(".")[-1]
+
+                background_path = f"users/backgrounds/{user_id}/{uuid.uuid4()}.{photo_extension}"
+                background_photo = firebase.bucket.new_blob(background_path)
+                await background_photo.upload(photo_data)
+                background_photo_link = firebase.get_public_url(background_path)
+
+                # Send generation
+                result = await create_face_swap_image(background_photo_link, user_photo_link)
+
+                gen_ctx.add(
                     await write_generation(
                         id=result,
-                        request_id=request.id,
+                        request_id=request_record_ctx.request.id,
                         product_id=product.id,
-                        has_error=result is None
-                    )
+                        has_error=result is None,
+                    ),
+                )
 
-                    await state.clear()
-                except aiohttp.ClientResponseError:
-                    photo_path = 'users/avatars/example.png'
-                    example_photo = await firebase.bucket.get_blob(photo_path)
-                    photo_link = firebase.get_public_url(example_photo.name)
+                await state.clear()
+        except aiohttp.ClientResponseError:
+            photo_path = "users/avatars/example.png"
+            example_photo = await firebase.bucket.get_blob(photo_path)
+            photo_link = firebase.get_public_url(example_photo.name)
 
-                    await message.answer_photo(
-                    )
-                    await state.set_state(Profile.waiting_for_photo)
-                except ReplicateError as e:
-                    if e.status == 500:
-                        await send_internal_ai_model_error(
-                            user_language_code, message, Model.FACE_SWAP
-                        )
+            await message.answer_photo(
+                photo=URLInputFile(photo_link, filename=photo_path, timeout=300),
+                caption=get_localization(user_language_code).PROFILE_SEND_ME_YOUR_PICTURE,
+                reply_markup=build_cancel_keyboard(user_language_code),
+            )
+            await state.set_state(Profile.waiting_for_photo)
+        except ReplicateError as e:
+            if e.status == 500:
+                await send_internal_ai_model_error(user_language_code, message, Model.FACE_SWAP)
+            else:
+                raise
     elif (
         user.current_model == Model.KLING or
         user.current_model == Model.RUNWAY or
