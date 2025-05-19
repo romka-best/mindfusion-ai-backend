@@ -191,3 +191,5 @@ async def handle_pika(
             await processing_sticker.delete()
             await processing_message.delete()
 
+
+
