@@ -1,51 +1,50 @@
 import asyncio
+from contextlib import AsyncExitStack
+import logging
 
 import aiohttp
-from aiogram import Router, Bot, F
+from aiogram import Bot, F, Router
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from aiogram.utils.chat_action import ChatActionSender
 
-from bot.config import config, MessageEffect, MessageSticker
-from bot.database.models.common import Model, SunoMode, Quota
-from bot.database.models.generation import GenerationStatus
-from bot.database.models.request import RequestStatus
+from bot.config import MessageEffect, MessageSticker, config
+from bot.database.models.common import Model, Quota, SunoMode
 from bot.database.models.user import UserSettings
-from bot.database.operations.generation.getters import get_generations_by_request_id
-from bot.database.operations.generation.updaters import update_generation
 from bot.database.operations.generation.writers import write_generation
 from bot.database.operations.product.getters import get_product_by_quota
 from bot.database.operations.request.getters import get_started_requests_by_user_id_and_product_id
-from bot.database.operations.request.updaters import update_request
-from bot.database.operations.request.writers import write_request
 from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 from bot.helpers.senders.send_error_info import send_error_info
 from bot.integrations.suno import generate_song
-from bot.keyboards.ai.model import build_switched_to_ai_keyboard, build_model_limit_exceeded_keyboard
+from bot.keyboards.ai.model import build_model_limit_exceeded_keyboard, build_switched_to_ai_keyboard
 from bot.keyboards.ai.suno import (
+    build_suno_custom_mode_genres_keyboard,
+    build_suno_custom_mode_lyrics_keyboard,
     build_suno_keyboard,
     build_suno_simple_mode_keyboard,
-    build_suno_custom_mode_lyrics_keyboard,
-    build_suno_custom_mode_genres_keyboard,
 )
 from bot.keyboards.common.common import build_error_keyboard
-from bot.locales.main import get_user_language, get_localization
+from bot.locales.main import get_localization, get_user_language
 from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
 from bot.states.ai.suno import Suno
-from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
+from bot.utils.ctx_managers.generation_record_ctx import GenerationRecordCtx
+from bot.utils.ctx_managers.processing_msgs_ctx import ProcessingMsgsCtx
+from bot.utils.ctx_managers.request_record_ctx import RequestRecordCtx
 
 suno_router = Router()
 
 PRICE_SUNO = 0.0348
 
 
-@suno_router.message(Command('suno'))
+@suno_router.message(Command("suno"))
 async def suno(message: Message, state: FSMContext):
     await state.clear()
 
@@ -61,7 +60,7 @@ async def suno(message: Message, state: FSMContext):
     else:
         user.current_model = Model.SUNO
         await update_user(user_id, {
-            'current_model': user.current_model,
+            "current_model": user.current_model,
         })
 
         text = await get_switched_to_ai_model(
@@ -94,14 +93,14 @@ async def handle_suno(bot: Bot, chat_id: str, state: FSMContext, user_id: str):
     )
 
 
-@suno_router.callback_query(lambda c: c.data.startswith('suno:'))
+@suno_router.callback_query(lambda c: c.data.startswith("suno:"))
 async def handle_suno_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    mode = callback_query.data.split(':')[1]
+    mode = callback_query.data.split(":")[1]
 
     if mode == SunoMode.SIMPLE:
         await callback_query.message.edit_text(
@@ -121,16 +120,16 @@ async def handle_suno_selection(callback_query: CallbackQuery, state: FSMContext
     await state.update_data(suno_mode=mode)
 
 
-@suno_router.callback_query(lambda c: c.data.startswith('suno_simple_mode:'))
+@suno_router.callback_query(lambda c: c.data.startswith("suno_simple_mode:"))
 async def handle_suno_simple_mode_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    action = callback_query.data.split(':')[1]
+    action = callback_query.data.split(":")[1]
 
-    if action == 'back':
+    if action == "back":
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).SUNO_INFO,
             reply_markup=build_suno_keyboard(user_language_code),
@@ -139,13 +138,16 @@ async def handle_suno_simple_mode_selection(callback_query: CallbackQuery, state
         await state.clear()
 
 
-@suno_router.message(Suno.waiting_for_prompt, ~F.text.startswith('/'))
+@suno_router.message(Suno.waiting_for_prompt, ~F.text.startswith("/"))
 async def suno_prompt_sent(message: Message, state: FSMContext):
+    await state.clear()
+    # Params
     user_id = str(message.from_user.id)
     user = await get_user(str(user_id))
     user_language_code = await get_user_language(str(user_id), state.storage)
-
     prompt = message.text
+
+    # Validation
     if prompt is None:
         await message.reply(
             text=get_localization(user_language_code).SUNO_VALUE_ERROR,
@@ -160,164 +162,121 @@ async def suno_prompt_sent(message: Message, state: FSMContext):
         )
         return
 
-    processing_sticker = await message.answer_sticker(
-        sticker=config.MESSAGE_STICKERS.get(MessageSticker.MUSIC_GENERATION),
-    )
-    processing_message = await message.reply(
-        text=get_localization(user_language_code).model_music_processing_request(),
-        allow_sending_without_reply=True,
-    )
+    quota = user.daily_limits[Quota.SUNO] + user.additional_usage_quota[Quota.SUNO]
+    if quota < 2:
+        await message.answer_sticker(
+            sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
+        )
 
-    async with ChatActionSender.upload_voice(bot=message.bot, chat_id=message.chat.id):
-        quota = user.daily_limits[Quota.SUNO] + user.additional_usage_quota[Quota.SUNO]
-        if quota < 2:
-            await message.answer_sticker(
-                sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
+        await message.answer(
+            text=get_localization(user_language_code).model_reached_usage_limit(),
+            reply_markup=build_model_limit_exceeded_keyboard(user_language_code, user.had_subscription),
+        )
+        return
+
+    product = await get_product_by_quota(Quota.SUNO)
+    user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
+    if len(user_not_finished_requests):
+        await message.reply(
+            text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
+            allow_sending_without_reply=True,
+        )
+        return
+
+    # Generate
+    try:
+        async with AsyncExitStack() as stack:
+            # Prepare ctxs
+            await stack.enter_async_context(ChatActionSender.upload_voice(bot=message.bot, chat_id=message.chat.id))
+            processing_msgs_ctx = await stack.enter_async_context(
+                ProcessingMsgsCtx(
+                    message,
+                    config.MESSAGE_STICKERS.get(MessageSticker.MUSIC_GENERATION),
+                    get_localization(user_language_code).model_music_processing_request(),
+                ),
             )
-
-            await message.answer(
-                text=get_localization(user_language_code).model_reached_usage_limit(),
-                reply_markup=build_model_limit_exceeded_keyboard(user_language_code, user.had_subscription),
+            request_record_ctx = await stack.enter_async_context(
+                RequestRecordCtx(
+                    user_id=user.id,
+                    processing_message_ids=processing_msgs_ctx.ids,
+                    product_id=product.id,
+                    requested=2,
+                    details={
+                        "mode": SunoMode.SIMPLE,
+                        "prompt": prompt,
+                        "is_suggestion": False,
+                    },
+                ),
             )
+            gen_ctx = await stack.enter_async_context(GenerationRecordCtx())
 
-            await processing_sticker.delete()
-            await processing_message.delete()
-        else:
-            product = await get_product_by_quota(Quota.SUNO)
+            # Send generation
+            task_id = await generate_song(user.settings[Model.SUNO][UserSettings.VERSION], prompt)
 
-            user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
-
-            if len(user_not_finished_requests):
-                await message.reply(
-                    text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
-                    allow_sending_without_reply=True,
+            tasks = [
+                write_generation(
+                    id=f"{task_id}-{i}",
+                    request_id=request_record_ctx.request.id,
+                    product_id=product.id,
+                    has_error=False,
+                    details={
+                        "mode": SunoMode.SIMPLE,
+                        "prompt": prompt,
+                        "is_suggestion": False,
+                    },
                 )
+                for i in range(1, 3)
+            ]
 
-                await processing_sticker.delete()
-                await processing_message.delete()
-                return
+            [gen_ctx.add(generation) for generation in await asyncio.gather(*tasks)]
+    except aiohttp.ClientResponseError as e:
+        if e.status == 500:
+            await send_internal_ai_model_error(user_language_code, message, Model.SUNO)
+        else:
+            raise
+    except Exception as e:
+        logging.exception("")
 
-            request = await write_request(
-                user_id=user.id,
-                processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
-                product_id=product.id,
-                requested=2,
-                details={
-                    'mode': SunoMode.SIMPLE,
-                    'prompt': prompt,
-                    'is_suggestion': False,
-                },
+        if "too many requests" in str(e).lower() or "you have exceeded the rate limit" in str(e).lower():
+            await message.answer(text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED)
+        elif "prompt too long" in str(e).lower():
+            await message.answer(text=get_localization(user_language_code).ERROR_PROMPT_TOO_LONG)
+            await handle_suno(message.bot, str(message.chat.id), state, user_id)
+        elif "forbidden keywords" in str(e).lower():
+            await message.answer(text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN)
+            await handle_suno(message.bot, str(message.chat.id), state, user_id)
+        else:
+            await message.answer_sticker(sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR))
+            await message.answer(
+                text=get_localization(user_language_code).ERROR,
+                reply_markup=build_error_keyboard(user_language_code),
             )
 
-            try:
-                task_id = await generate_song(user.settings[Model.SUNO][UserSettings.VERSION], prompt)
-                if task_id:
-                    tasks = [
-                        write_generation(
-                            id=f'{task_id}-1',
-                            request_id=request.id,
-                            product_id=product.id,
-                            has_error=False,
-                            details={
-                                'mode': SunoMode.SIMPLE,
-                                'prompt': prompt,
-                                'is_suggestion': False,
-                            }
-                        ),
-                        write_generation(
-                            id=f'{task_id}-2',
-                            request_id=request.id,
-                            product_id=product.id,
-                            has_error=False,
-                            details={
-                                'mode': SunoMode.SIMPLE,
-                                'prompt': prompt,
-                                'is_suggestion': False,
-                            }
-                        )
-                    ]
+            await send_error_info(
+                bot=message.bot,
+                user_id=user.id,
+                info=str(e),
+                hashtags=["suno"],
+            )
 
-                    await asyncio.gather(*tasks)
-                else:
-                    raise NotImplementedError('No Task Id Found in Suno Generation')
-            except aiohttp.ClientResponseError as e:
-                if e.status == 500:
-                    await send_internal_ai_model_error(
-                        user_language_code, message, Model.SUNO
-                    )
-            except Exception as e:
-                if 'too many requests' in str(e).lower() or 'you have exceeded the rate limit' in str(e).lower():
-                    await message.answer(
-                        text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
-                    )
-                elif 'prompt too long' in str(e).lower():
-                    await message.answer(
-                        text=get_localization(user_language_code).ERROR_PROMPT_TOO_LONG,
-                    )
-
-                    await handle_suno(message.bot, str(message.chat.id), state, user_id)
-                elif 'forbidden keywords' in str(e).lower():
-                    await message.answer(
-                        text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
-                    )
-
-                    await handle_suno(message.bot, str(message.chat.id), state, user_id)
-                else:
-                    await message.answer_sticker(
-                        sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
-                    )
-
-                    await message.answer(
-                        text=get_localization(user_language_code).ERROR,
-                        reply_markup=build_error_keyboard(user_language_code),
-                    )
-
-                    await send_error_info(
-                        bot=message.bot,
-                        user_id=user.id,
-                        info=str(e),
-                        hashtags=['suno'],
-                    )
-
-                request.status = RequestStatus.FINISHED
-                await update_request(request.id, {
-                    'status': request.status
-                })
-
-                generations = await get_generations_by_request_id(request.id)
-                for generation in generations:
-                    generation.status = GenerationStatus.FINISHED
-                    generation.has_error = True
-                    await update_generation(
-                        generation.id,
-                        {
-                            'status': generation.status,
-                            'has_error': generation.has_error,
-                        },
-                    )
-
-                await processing_sticker.delete()
-                await processing_message.delete()
-
-
-@suno_router.callback_query(lambda c: c.data.startswith('suno_custom_mode_lyrics:'))
+@suno_router.callback_query(lambda c: c.data.startswith("suno_custom_mode_lyrics:"))
 async def handle_suno_custom_mode_lyrics_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    action = callback_query.data.split(':')[1]
+    action = callback_query.data.split(":")[1]
 
-    if action == 'skip':
+    if action == "skip":
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).SUNO_CUSTOM_MODE_GENRES,
             reply_markup=build_suno_custom_mode_genres_keyboard(user_language_code),
         )
 
-        await state.update_data(suno_lyrics='')
+        await state.update_data(suno_lyrics="")
         await state.set_state(Suno.waiting_for_genres)
-    elif action == 'back':
+    elif action == "back":
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).SUNO_INFO,
             reply_markup=build_suno_keyboard(user_language_code),
@@ -326,7 +285,7 @@ async def handle_suno_custom_mode_lyrics_selection(callback_query: CallbackQuery
         await state.clear()
 
 
-@suno_router.message(Suno.waiting_for_lyrics, ~F.text.startswith('/'))
+@suno_router.message(Suno.waiting_for_lyrics, ~F.text.startswith("/"))
 async def suno_lyrics_sent(message: Message, state: FSMContext):
     user_id = str(message.from_user.id)
     user_language_code = await get_user_language(str(user_id), state.storage)
@@ -349,16 +308,16 @@ async def suno_lyrics_sent(message: Message, state: FSMContext):
     await state.set_state(Suno.waiting_for_genres)
 
 
-@suno_router.callback_query(lambda c: c.data.startswith('suno_custom_mode_genres:'))
+@suno_router.callback_query(lambda c: c.data.startswith("suno_custom_mode_genres:"))
 async def handle_suno_custom_mode_genres_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
     user_id = str(callback_query.from_user.id)
     user_language_code = await get_user_language(user_id, state.storage)
 
-    action = callback_query.data.split(':')[1]
+    action = callback_query.data.split(":")[1]
 
-    if action == 'start_again':
+    if action == "start_again":
         await callback_query.message.edit_text(
             text=get_localization(user_language_code).SUNO_INFO,
             reply_markup=build_suno_keyboard(user_language_code),
@@ -367,15 +326,19 @@ async def handle_suno_custom_mode_genres_selection(callback_query: CallbackQuery
         await state.clear()
 
 
-@suno_router.message(Suno.waiting_for_genres, ~F.text.startswith('/'))
+@suno_router.message(Suno.waiting_for_genres, ~F.text.startswith("/"))
 async def suno_genres_sent(message: Message, state: FSMContext):
+    # Params
+    user_data = await state.get_data()
+    await state.clear()
+
     user_id = str(message.from_user.id)
     user = await get_user(str(user_id))
-    user_data = await state.get_data()
     user_language_code = await get_user_language(str(user_id), state.storage)
-
-    lyrics = user_data.get('suno_lyrics', '')
+    lyrics = user_data.get("suno_lyrics", "")
     genres = message.text
+
+    # Validation
     if genres is None:
         await message.reply(
             text=get_localization(user_language_code).SUNO_VALUE_ERROR,
@@ -383,159 +346,106 @@ async def suno_genres_sent(message: Message, state: FSMContext):
         )
         return
 
-    processing_sticker = await message.answer_sticker(
-        sticker=config.MESSAGE_STICKERS.get(MessageSticker.MUSIC_GENERATION),
-    )
-    processing_message = await message.reply(
-        text=get_localization(user_language_code).model_music_processing_request(),
-        allow_sending_without_reply=True,
-    )
+    quota = user.daily_limits[Quota.SUNO] + user.additional_usage_quota[Quota.SUNO]
+    if quota < 2:
+        await message.answer_sticker(sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD))
+        await message.answer(
+            text=get_localization(user_language_code).model_reached_usage_limit(),
+            reply_markup=build_model_limit_exceeded_keyboard(user_language_code, user.had_subscription),
+        )
+        return
 
-    async with ChatActionSender.upload_voice(bot=message.bot, chat_id=message.chat.id):
-        quota = user.daily_limits[Quota.SUNO] + user.additional_usage_quota[Quota.SUNO]
+    product = await get_product_by_quota(Quota.SUNO)
+    user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
+    if len(user_not_finished_requests):
+        await message.reply(
+            text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
+            allow_sending_without_reply=True,
+        )
+        return
 
-        if quota < 2:
-            await message.answer_sticker(
-                sticker=config.MESSAGE_STICKERS.get(MessageSticker.SAD),
+    # Translate
+    if user_language_code != LanguageCode.EN:
+        genres = await translate_text(genres, user_language_code, LanguageCode.EN)
+
+    if len(genres) > 120:
+        await message.reply(
+            text=get_localization(user_language_code).SUNO_TOO_MANY_WORDS_ERROR, allow_sending_without_reply=True,
+        )
+        return
+
+    # Generation
+    try:
+        async with AsyncExitStack() as stack:
+            # prepare ctxs
+            await stack.enter_async_context(ChatActionSender.upload_voice(bot=message.bot, chat_id=message.chat.id))
+            processing_msgs_ctx = await stack.enter_async_context(
+                ProcessingMsgsCtx(
+                    message,
+                    config.MESSAGE_STICKERS.get(MessageSticker.MUSIC_GENERATION),
+                    get_localization(user_language_code).model_music_processing_request(),
+                ),
             )
-
-            await message.answer(
-                text=get_localization(user_language_code).model_reached_usage_limit(),
-                reply_markup=build_model_limit_exceeded_keyboard(user_language_code, user.had_subscription),
-            )
-
-            await processing_sticker.delete()
-            await processing_message.delete()
-        else:
-            product = await get_product_by_quota(Quota.SUNO)
-
-            user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
-
-            if len(user_not_finished_requests):
-                await message.reply(
-                    text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
-                    allow_sending_without_reply=True,
-                )
-
-                await processing_sticker.delete()
-                await processing_message.delete()
-                return
-
-            try:
-                if user_language_code != LanguageCode.EN:
-                    genres = await translate_text(genres, user_language_code, LanguageCode.EN)
-
-                if len(genres) > 120:
-                    await message.reply(
-                        text=get_localization(user_language_code).SUNO_TOO_MANY_WORDS_ERROR,
-                        allow_sending_without_reply=True,
-                    )
-
-                    await processing_sticker.delete()
-                    await processing_message.delete()
-                    return
-
-                request = await write_request(
+            request_record_ctx = await stack.enter_async_context(
+                RequestRecordCtx(
                     user_id=user.id,
-                    processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
+                    processing_message_ids=processing_msgs_ctx.ids,
                     product_id=product.id,
                     requested=2,
                     details={
-                        'mode': SunoMode.CUSTOM,
-                        'lyrics': lyrics,
-                        'genres': genres,
-                        'is_suggestion': False,
+                        "mode": SunoMode.CUSTOM,
+                        "lyrics": lyrics,
+                        "genres": genres,
+                        "is_suggestion": False,
+                    },
+                ),
+            )
+
+            gen_ctx = await stack.enter_async_context(GenerationRecordCtx())
+
+            # Send generation
+            task_id = await generate_song(
+                user.settings[Model.SUNO][UserSettings.VERSION],
+                lyrics,
+                False,
+                True,
+                genres,
+            )
+
+            tasks = [
+                write_generation(
+                    id=f"{task_id}-{i}",
+                    request_id=request_record_ctx.request.id,
+                    product_id=product.id,
+                    has_error=False,
+                    details={
+                        "mode": SunoMode.CUSTOM,
+                        "lyrics": lyrics,
+                        "genres": genres,
+                        "is_suggestion": False,
                     },
                 )
+                for i in range(1, 3)
+            ]
 
-                task_id = await generate_song(
-                    user.settings[Model.SUNO][UserSettings.VERSION],
-                    lyrics,
-                    False,
-                    True,
-                    genres,
-                )
-                if task_id:
-                    tasks = [
-                        write_generation(
-                            id=f'{task_id}-1',
-                            request_id=request.id,
-                            product_id=product.id,
-                            has_error=False,
-                            details={
-                                'mode': SunoMode.CUSTOM,
-                                'lyrics': lyrics,
-                                'genres': genres,
-                                'is_suggestion': False,
-                            }
-                        ),
-                        write_generation(
-                            id=f'{task_id}-2',
-                            request_id=request.id,
-                            product_id=product.id,
-                            has_error=False,
-                            details={
-                                'mode': SunoMode.CUSTOM,
-                                'lyrics': lyrics,
-                                'genres': genres,
-                                'is_suggestion': False,
-                            }
-                        )
-                    ]
+            [gen_ctx.add(generation) for generation in await asyncio.gather(*tasks)]
+    except Exception as e:
+        logging.exception("")
 
-                    await asyncio.gather(*tasks)
-                else:
-                    raise NotImplementedError('No Task Id Found in Suno Generation')
-            except Exception as e:
-                if 'too many requests' in str(e).lower() or 'you have exceeded the rate limit' in str(e).lower():
-                    await message.answer(
-                        text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
-                    )
-                elif 'tags too long' in str(e).lower():
-                    await message.answer(
-                        text=get_localization(user_language_code).SUNO_TOO_MANY_WORDS_ERROR,
-                    )
-                elif 'tags contained artist name' in str(e).lower():
-                    await message.answer(
-                        text=get_localization(user_language_code).SUNO_ARTIST_NAME_ERROR,
-                    )
-                elif 'forbidden keywords' in str(e).lower():
-                    await message.answer(
-                        text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
-                    )
-                else:
-                    await message.answer_sticker(
-                        sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
-                    )
+        if "too many requests" in str(e).lower() or "you have exceeded the rate limit" in str(e).lower():
+            await message.answer(text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED)
+        elif "tags too long" in str(e).lower():
+            await message.answer(text=get_localization(user_language_code).SUNO_TOO_MANY_WORDS_ERROR)
+        elif "tags contained artist name" in str(e).lower():
+            await message.answer(text=get_localization(user_language_code).SUNO_ARTIST_NAME_ERROR)
+        elif "forbidden keywords" in str(e).lower():
+            await message.answer(text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN)
+        else:
+            await message.answer_sticker(sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR))
 
-                    await message.answer(
-                        text=get_localization(user_language_code).ERROR,
-                        reply_markup=build_error_keyboard(user_language_code),
-                    )
+            await message.answer(
+                text=get_localization(user_language_code).ERROR,
+                reply_markup=build_error_keyboard(user_language_code),
+            )
 
-                    await send_error_info(
-                        bot=message.bot,
-                        user_id=user.id,
-                        info=str(e),
-                        hashtags=['suno'],
-                    )
-
-                request.status = RequestStatus.FINISHED
-                await update_request(request.id, {
-                    'status': request.status
-                })
-
-                generations = await get_generations_by_request_id(request.id)
-                for generation in generations:
-                    generation.status = GenerationStatus.FINISHED
-                    generation.has_error = True
-                    await update_generation(
-                        generation.id,
-                        {
-                            'status': generation.status,
-                            'has_error': generation.has_error,
-                        },
-                    )
-
-                await processing_sticker.delete()
-                await processing_message.delete()
+            await send_error_info(bot=message.bot, user_id=user.id, info=str(e), hashtags=["suno"])
