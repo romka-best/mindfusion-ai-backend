@@ -2718,3 +2718,9 @@ Por ahora, no tienes acceso para trabajar con fotos y documentos.
 
 Puedes obtener acceso haciendo clic en el botón de abajo:
 """
+
+    ASK_EXTEND_VIDEO = "🎥 ¿Quieres extender el video?"
+
+    EXTEND_AUDIO = "Extender"
+
+    CONCAT_AUDIO = "Combinar"

@@ -4133,3 +4133,8 @@ class Russian(Texts):
 
 @roman_danilov, посмотришь? 🤨
 """
+    ASK_EXTEND_VIDEO = "🎥 Хотите продлить видео?"
+
+    EXTEND_AUDIO = "Продлить"
+
+    CONCAT_AUDIO = "Объединить"
