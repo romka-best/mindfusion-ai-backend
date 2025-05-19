@@ -342,3 +342,5 @@ async def handle_stable_diffusion_example(
                         'has_error': generation.has_error,
                     },
                 )
+
+
