@@ -1,15 +1,16 @@
 import asyncio
+from contextlib import AsyncExitStack
 
 import aiohttp
-from aiogram import Router, Bot, F
+from aiogram import Bot, F, Router
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from aiogram.utils.chat_action import ChatActionSender
 
-from bot.config import config, MessageEffect, MessageSticker
-from bot.database.models.common import Model, SunoMode, Quota
+from bot.config import MessageEffect, MessageSticker, config
+from bot.database.models.common import Model, Quota, SunoMode
 from bot.database.models.generation import GenerationStatus
 from bot.database.models.request import RequestStatus
 from bot.database.models.user import UserSettings
@@ -24,22 +25,24 @@ from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 from bot.helpers.senders.send_error_info import send_error_info
-from bot.integrations.suno import extend_song, concat_song, generate_song
-from bot.keyboards.ai.model import build_switched_to_ai_keyboard, build_model_limit_exceeded_keyboard
+from bot.integrations.suno import concat_song, extend_song, generate_song
+from bot.keyboards.ai.model import build_model_limit_exceeded_keyboard, build_switched_to_ai_keyboard
 from bot.keyboards.ai.suno import (
+    build_suno_custom_mode_genres_keyboard,
+    build_suno_custom_mode_lyrics_keyboard,
     build_suno_keyboard,
     build_suno_simple_mode_keyboard,
-    build_suno_custom_mode_lyrics_keyboard,
-    build_suno_custom_mode_genres_keyboard,
 )
 from bot.keyboards.common.common import build_error_keyboard
-from bot.locales.main import get_user_language, get_localization
+from bot.locales.main import get_localization, get_user_language
 from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
 from bot.states.ai.suno import Suno
-from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
-from bot.utils.process_generation_context import ProcessGenerationContext
+from bot.utils.ctx_managers.generation_record_ctx import GenerationRecordCtx
+from bot.utils.ctx_managers.processing_msgs_ctx import ProcessingMsgsCtx
+from bot.utils.ctx_managers.request_record_ctx import RequestRecordCtx
 
 suno_router = Router()
 
@@ -574,13 +577,30 @@ async def suno_extend(callback_query, state):
 
     # Generation
     try:
-        async with ProcessGenerationContext(
-            message,
-            sticker=MessageSticker.MUSIC_GENERATION,
-            text=get_localization(user_language_code).model_music_processing_request(),
-            user_id=user.id,
-            product_id=product.id,
-        ) as ctx:
+        async with AsyncExitStack() as stack:
+            # Prepare ctxs
+            await stack.enter_async_context(ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id))
+            processing_msgs_ctx = await stack.enter_async_context(
+                ProcessingMsgsCtx(
+                    message,
+                    config.MESSAGE_STICKERS.get(MessageSticker.MUSIC_GENERATION),
+                    get_localization(user_language_code).model_music_processing_request(),
+                ),
+            )
+            request_record_ctx = await stack.enter_async_context(
+                RequestRecordCtx(
+                    user_id=user.id,
+                    processing_message_ids=processing_msgs_ctx.ids,
+                    product_id=product.id,
+                    requested=2,
+                    details={
+                        "is_suggestion": False,
+                    },
+                ),
+            )
+            gen_ctx = await stack.enter_async_context(GenerationRecordCtx())
+
+            # Send generation
             task_id = await extend_song(
                 user.settings[Model.SUNO][UserSettings.VERSION],
                 style=generation.details["style"],
@@ -592,7 +612,7 @@ async def suno_extend(callback_query, state):
             tasks = [
                 write_generation(
                     id=f"{task_id}-{i}",
-                    request_id=ctx.request.id,
+                    request_id=request_record_ctx.request.id,
                     product_id=product.id,
                     has_error=False,
                     details={"action": "extend"},
@@ -600,22 +620,17 @@ async def suno_extend(callback_query, state):
                 for i in range(1, 3)
             ]
 
-            ctx.generation.extend(await asyncio.gather(*tasks))
+            [gen_ctx.add(generation) for generation in await asyncio.gather(*tasks)]
     except aiohttp.ClientResponseError as e:
         if e.status == 500:
             await send_internal_ai_model_error(user_language_code, message, Model.SUNO)
+        else:
+            raise
     except Exception as e:
         if "too many requests" in str(e).lower() or "you have exceeded the rate limit" in str(e).lower():
-            return await message.answer(
-                text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
-            )
-        else:
-            await send_error_info(
-                bot=message.bot,
-                user_id=user.id,
-                info=str(e),
-                hashtags=["suno"],
-            )
+            return await message.answer(text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED)
+
+        await send_error_info(bot=message.bot, user_id=user.id, info=str(e), hashtags=["suno"])
 
         raise
 
@@ -651,18 +666,35 @@ async def suno_concat(callback_query, state):
 
     # Generation
     try:
-        async with ProcessGenerationContext(
-            message,
-            sticker=MessageSticker.MUSIC_GENERATION,
-            text=get_localization(user_language_code).model_music_processing_request(),
-            user_id=user.id,
-            product_id=product.id,
-        ) as ctx:
+        async with AsyncExitStack() as stack:
+            # Prepare ctxs
+            await stack.enter_async_context(ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id))
+            processing_msgs_ctx = await stack.enter_async_context(
+                ProcessingMsgsCtx(
+                    message,
+                    config.MESSAGE_STICKERS.get(MessageSticker.MUSIC_GENERATION),
+                    get_localization(user_language_code).model_music_processing_request(),
+                ),
+            )
+            request_record_ctx = await stack.enter_async_context(
+                RequestRecordCtx(
+                    user_id=user.id,
+                    processing_message_ids=processing_msgs_ctx.ids,
+                    product_id=product.id,
+                    requested=1,
+                    details={
+                        "is_suggestion": False,
+                    },
+                ),
+            )
+            gen_ctx = await stack.enter_async_context(GenerationRecordCtx())
+
+            # Send generation
             task_id = await concat_song(audio_id=audio_id)
 
-            ctx.generation.append(await write_generation(
+            gen_ctx.add(await write_generation(
                 id=task_id + "-1",
-                request_id=ctx.request.id,
+                request_id=request_record_ctx.request.id,
                 product_id=product.id,
                 has_error=False,
                 details={"action": "concat"},
@@ -670,17 +702,19 @@ async def suno_concat(callback_query, state):
     except aiohttp.ClientResponseError as e:
         if e.status == 500:
             await send_internal_ai_model_error(user_language_code, message, Model.SUNO)
+        else:
+            raise
     except Exception as e:
         if "too many requests" in str(e).lower() or "you have exceeded the rate limit" in str(e).lower():
             return await message.answer(
                 text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
             )
-        else:
-            await send_error_info(
-                bot=message.bot,
-                user_id=user.id,
-                info=str(e),
-                hashtags=["suno"],
-            )
+
+        await send_error_info(
+            bot=message.bot,
+            user_id=user.id,
+            info=str(e),
+            hashtags=["suno"],
+        )
 
         raise
