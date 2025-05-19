@@ -365,3 +365,5 @@ async def handle_luma_ray(
 
             await processing_sticker.delete()
             await processing_message.delete()
+
+

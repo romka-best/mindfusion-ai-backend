@@ -472,9 +472,11 @@ The image's width-to-height ratio must be between {min_ratio} and {max_ratio}.
     @staticmethod
     def error_internal_ai_model(ai_model_name) -> str:
         return f"⚠️ An error occurred on the {ai_model_name} side. Please try again later."
+
+    @staticmethod
     def error_photo_bundle_empty():
         return "⚠️ There are no photos in your profile. Please upload at least one photo and try again."
- 
+
     @staticmethod
     def error_internal_ai_model(ai_model_name) -> str:
         return f"⚠️ An error occurred on the {ai_model_name} side. Please try again later."
@@ -3191,6 +3193,7 @@ So, once more: when exactly did this financial miracle occur? 🗓️
     def menu_photo_bundle_edit():
         return "📥 Send a new photo for replacement."
 
+    @staticmethod
     def generation_setting_image_size(value):
         value = value.lower()
         match value:

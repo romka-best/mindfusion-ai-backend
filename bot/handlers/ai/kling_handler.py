@@ -1,5 +1,6 @@
 import re
 from contextlib import AsyncExitStack
+import traceback
 from typing import Optional
 
 import aiohttp
@@ -25,7 +26,6 @@ from bot.database.operations.user.updaters import update_user
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.integrations.kling import extend_video, generate_video
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_error_keyboard
@@ -36,6 +36,8 @@ from bot.utils.ctx_managers.generation_record_ctx import GenerationRecordCtx
 from bot.utils.ctx_managers.processing_msgs_ctx import ProcessingMsgsCtx
 from bot.utils.ctx_managers.request_record_ctx import RequestRecordCtx
 from bot.utils.is_messages_limit_exceeded import is_messages_limit_exceeded
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
+
 
 kling_router = Router()
 
@@ -273,12 +275,15 @@ async def kling_extend_video(callback_query, state):
                 text=get_localization(user_language_code).ERROR,
                 reply_markup=build_error_keyboard(user_language_code),
             )
-            await send_error_info(
+
+            await notify_error_channel(
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
+                stack_trace=traceback.format_exc(),
                 hashtags=["kling"],
             )
+
             raise
 
 
