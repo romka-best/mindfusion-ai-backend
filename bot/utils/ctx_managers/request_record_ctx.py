@@ -20,5 +20,3 @@ class RequestRecordCtx(AsyncContextDecorator):
             self.request.status = RequestStatus.FINISHED
 
             await update_request(self.request.id, {"status": self.request.status})
-            print(f"!!!!!DELETED {self.request}")
-
