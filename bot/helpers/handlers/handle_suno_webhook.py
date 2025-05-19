@@ -235,7 +235,7 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
                 details={
                     'mode': request.details.get('mode'),
                     'is_suggestion': request.details.get('is_suggestion', False),
-                    'has_error': first_generation.has_error or getattr(second_generation.has_error, 'has_error', None),
+                    'has_error': first_generation.has_error or getattr(second_generation, "has_error", None),
                 }
             ),
             update_user(user.id, {
