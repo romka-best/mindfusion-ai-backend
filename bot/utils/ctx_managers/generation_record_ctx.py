@@ -26,6 +26,3 @@ class GenerationRecordCtx(AsyncContextDecorator):
                         "has_error": generation.has_error,
                     },
                 )
-                print(f"!!!!!DELETED {generation}")
-
-
