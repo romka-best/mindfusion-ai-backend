@@ -489,7 +489,7 @@ class Hindi(Texts):
         return f"⚠️ मॉडल {ai_model_name} में एक त्रुटि हुई है। कृपया बाद में पुनः प्रयास करें।"
     def error_photo_bundle_empty():
         return "⚠️ आपकी प्रोफ़ाइल में कोई फ़ोटो नहीं है। कृपया कम से कम एक फ़ोटो अपलोड करें और पुनः प्रयास करें।"
-    
+
     @staticmethod
     def error_internal_ai_model(ai_model_name) -> str:
         return f"⚠️ मॉडल {ai_model_name} में एक त्रुटि हुई है। कृपया बाद में पुनः प्रयास करें।"
@@ -2800,6 +2800,8 @@ class Hindi(Texts):
     @staticmethod
     def menu_photo_bundle_edit():
         return "📥 बदलने के लिए एक नई फ़ोटो भेजें।"
+
+    @staticmethod
     def generation_setting_image_size(value):
         value = value.lower()
         match value:

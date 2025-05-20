@@ -507,7 +507,7 @@ class Russian(Texts):
         return f"⚠️ Ошибка на стороне модели {ai_model_name}. Попробуйте снова чуть позже."
     def error_photo_bundle_empty():
         return "⚠️ В вашем профиле отсутствуют фотографии, загрузите хотя бы одну фотографию и повторите запрос."
-    
+
     @staticmethod
     def error_internal_ai_model(ai_model_name) -> str:
         return f"⚠️ Ошибка на стороне модели {ai_model_name}. Попробуйте снова чуть позже."
@@ -4209,6 +4209,8 @@ class Russian(Texts):
     @staticmethod
     def menu_photo_bundle_edit():
         return "📥 Отправьте новую фотографию для замены."
+
+    @staticmethod
     def generation_setting_image_size(value):
         value = value.lower()
         match value:
