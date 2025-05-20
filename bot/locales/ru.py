@@ -505,6 +505,8 @@ class Russian(Texts):
     @staticmethod
     def error_internal_ai_model(ai_model_name) -> str:
         return f"⚠️ Ошибка на стороне модели {ai_model_name}. Попробуйте снова чуть позже."
+
+    @staticmethod
     def error_photo_bundle_empty():
         return "⚠️ В вашем профиле отсутствуют фотографии, загрузите хотя бы одну фотографию и повторите запрос."
 
