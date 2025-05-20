@@ -12,7 +12,7 @@ from .settings.message_sticker import MessageSticker
 from .settings.message_effect import MessageEffect
 
 
-env = os.getenv("ENV", "dev") # dev | dev_test | prod
+env = os.getenv("ENV", "dev") # dev | dev_test | production
 _config = importlib.import_module(f"bot.settings.config_{env}")
 
 class Settings(BaseSettings):
