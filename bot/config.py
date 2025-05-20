@@ -96,7 +96,7 @@ class Settings(BaseSettings):
     PIKA_API_KEY: SecretStr
 
     model_config = SettingsConfigDict(
-        env_file=str(BASE_DIR / f'.env.{os.getenv("ENV", "dev")}'),
+        env_file=str(BASE_DIR / f'.env.{os.getenv("ENVIRONMENT", "dev")}'),
         env_file_encoding='utf-8',
     )
 
