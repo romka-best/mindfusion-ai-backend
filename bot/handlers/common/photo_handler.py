@@ -367,75 +367,73 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
         elif user.current_model == Model.LUMA_PHOTON:
             await handle_luma_photon(message, state, user, photo_vision_filename)
     elif user.current_model == Model.FACE_SWAP:
+        # Params
         quota = user.daily_limits[Quota.FACE_SWAP] + user.additional_usage_quota[Quota.FACE_SWAP]
         quantity = 1
+        product = await get_product_by_quota(Quota.FACE_SWAP)
+
+        # Validation
         if quota < quantity:
-            await message.answer(text=get_localization(user_language_code).face_swap_package_forbidden_error(quota))
-        else:
-            processing_sticker = await message.answer_sticker(
-                sticker=config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),
-            )
-            processing_message = await message.reply(
-                text=get_localization(user_language_code).model_face_swap_processing_request(),
-                allow_sending_without_reply=True,
-            )
+            return await message.answer(text=get_localization(user_language_code).face_swap_package_forbidden_error(quota))
 
-            async with ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id):
-                try:
-                    photo_bundle = await PhotoBundleGateway().get_by_user_id(user_id)
+        photo_bundle = await PhotoBundleGateway().get_by_user_id(user_id)
+        if photo_bundle.is_empty():
+            await state.clear()
+            return await send_photo_bundle_empty(message, user_language_code)
 
-                    if photo_bundle.is_empty():
-                        await state.clear()
-                        await processing_message.delete()
-                        await processing_sticker.delete()
-                        return await send_photo_bundle_empty(message, user_language_code)
+        # bg_photo where face changed
+        # user_photo for face to change
+        bg_photo_tg_file = await message.bot.get_file(message.photo[-1].file_id)
+        bg_photo_tg_file_extension = Path(bg_photo_tg_file.file_path).suffix.lstrip(".")
+        bg_photo_tg_file_io = await message.bot.download_file(bg_photo_tg_file.file_path)
 
-                    # bg_photo where face changed
-                    # user_photo for face to change
-                    bg_photo_tg_file = await message.bot.get_file(message.photo[-1].file_id)
-                    bg_photo_tg_file_extension = Path(bg_photo_tg_file.file_path).suffix.lstrip(".")
-                    bg_photo_tg_file_io = await message.bot.download_file(bg_photo_tg_file.file_path)
+        bg_path = f'users/backgrounds/{user_id}/{uuid.uuid4()}.{bg_photo_tg_file_extension}'
+        await firebase.storage.upload(firebase.bucket.name, bg_path, bg_photo_tg_file_io)
 
-                    bg_path = f'users/backgrounds/{user_id}/{uuid.uuid4()}.{bg_photo_tg_file_extension}'
-                    await firebase.storage.upload(firebase.bucket.name, bg_path, bg_photo_tg_file_io)
+        bg_photo_link = firebase.get_public_url(bg_path)
+        user_photo_link = firebase.get_public_url(f"users/avatars/{user_id}/{photo_bundle.photos[0].file_name}")
 
-                    bg_photo_link = firebase.get_public_url(bg_path)
-                    user_photo_link = firebase.get_public_url(f"users/avatars/{user_id}/{photo_bundle.photos[0].file_name}")
-
-                    # Make request
-                    result = await create_face_swap_image(bg_photo_link, user_photo_link)
-
-                    product = await get_product_by_quota(Quota.FACE_SWAP)
-                    request = await write_request(
+        # Generation
+        try:
+            async with AsyncExitStack() as stack:
+                # Prepare ctxs
+                await stack.enter_async_context(ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id))
+                processing_msgs_ctx = await stack.enter_async_context(
+                    ProcessingMsgsCtx(
+                        message,
+                        config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),
+                        get_localization(user_language_code).model_face_swap_processing_request(),
+                    ),
+                )
+                request_record_ctx = await stack.enter_async_context(
+                    RequestRecordCtx(
                         user_id=user_id,
-                        processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
+                        processing_message_ids=processing_msgs_ctx.ids,
                         product_id=product.id,
                         requested=1,
                         details={
-                            'is_test': False,
-                        }
-                    )
-                    await write_generation(
-                        id=result,
-                        request_id=request.id,
-                        product_id=product.id,
-                        has_error=result is None
-                    )
+                            "is_test": False,
+                        },
+                    ),
+                )
+                gen_ctx = await stack.enter_async_context(GenerationRecordCtx())
 
-                    await state.clear()
-                except aiohttp.ClientResponseError:
-                    photo_path = 'users/avatars/example.png'
-                    example_photo = await firebase.bucket.get_blob(photo_path)
-                    photo_link = firebase.get_public_url(example_photo.name)
+                # Make request
+                result = await create_face_swap_image(bg_photo_link, user_photo_link)
 
-                    await message.answer_photo(
-                    )
-                    await state.set_state(Profile.waiting_for_photo)
-                except ReplicateError as e:
-                    if e.status == 500:
-                        await send_internal_ai_model_error(
-                            user_language_code, message, Model.FACE_SWAP
-                        )
+                gen_ctx.add(await write_generation(
+                    id=result,
+                    request_id=request_record_ctx.request.id,
+                    product_id=product.id,
+                    has_error=result is None,
+                ))
+
+                await state.clear()
+        except ReplicateError as e:
+            if e.status == 500:
+                await send_internal_ai_model_error(user_language_code, message, Model.FACE_SWAP)
+            else:
+                raise
     elif (
         user.current_model == Model.KLING or
         user.current_model == Model.RUNWAY or
