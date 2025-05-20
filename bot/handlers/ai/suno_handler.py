@@ -1,6 +1,7 @@
 import asyncio
 from contextlib import AsyncExitStack
 import logging
+import traceback
 
 import aiohttp
 from aiogram import Bot, F, Router
@@ -25,7 +26,6 @@ from bot.database.operations.user.updaters import update_user
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.integrations.suno import concat_song, extend_song, generate_song
 from bot.keyboards.ai.model import build_model_limit_exceeded_keyboard, build_switched_to_ai_keyboard
 from bot.keyboards.ai.suno import (
@@ -42,6 +42,8 @@ from bot.states.ai.suno import Suno
 from bot.utils.ctx_managers.generation_record_ctx import GenerationRecordCtx
 from bot.utils.ctx_managers.processing_msgs_ctx import ProcessingMsgsCtx
 from bot.utils.ctx_managers.request_record_ctx import RequestRecordCtx
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
+
 
 suno_router = Router()
 
@@ -256,10 +258,12 @@ async def suno_prompt_sent(message: Message, state: FSMContext):
                 reply_markup=build_error_keyboard(user_language_code),
             )
 
-            await send_error_info(
+            await notify_error_channel(
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
+                stack_trace=traceback.format_exc(),
+                context={"prompt": prompt},
                 hashtags=["suno"],
             )
 
@@ -452,13 +456,13 @@ async def suno_genres_sent(message: Message, state: FSMContext):
                 reply_markup=build_error_keyboard(user_language_code),
             )
 
-            await send_error_info(
+            await notify_error_channel(
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
-                hashtags=['suno'],
+                stack_trace=traceback.format_exc(),
+                hashtags=["suno"],
             )
-
 
 @suno_router.callback_query(lambda c: c.data.startswith("action:suno:extend"))
 async def suno_extend(callback_query, state):
@@ -546,7 +550,13 @@ async def suno_extend(callback_query, state):
         if "too many requests" in str(e).lower() or "you have exceeded the rate limit" in str(e).lower():
             return await message.answer(text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED)
 
-        await send_error_info(bot=message.bot, user_id=user.id, info=str(e), hashtags=["suno"])
+        await notify_error_channel(
+            bot=message.bot,
+            user_id=user.id,
+            info=str(e),
+            stack_trace=traceback.format_exc(),
+            hashtags=["suno"],
+        )
 
         raise
 
@@ -626,10 +636,11 @@ async def suno_concat(callback_query, state):
                 text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
             )
 
-        await send_error_info(
+        await notify_error_channel(
             bot=message.bot,
             user_id=user.id,
             info=str(e),
+            stack_trace=traceback.format_exc(),
             hashtags=["suno"],
         )
 

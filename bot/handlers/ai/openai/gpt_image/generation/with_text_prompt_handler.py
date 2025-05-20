@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import traceback
 
 import openai
 from aiogram import Router
@@ -16,8 +17,8 @@ from bot.database.models.user import UserSettings
 from bot.database.operations.product.getters import get_product_by_quota
 from bot.database.operations.transaction.writers import write_transaction
 from bot.helpers.gpt_image.generation.pricing import Pricing
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
 from bot.integrations.open_ai import get_response_image
 from bot.keyboards.ai.openai.gpt_image.generation.with_text_prompt import AskTextPrompt
@@ -87,10 +88,13 @@ class WithTextPromptHandler:
                     text=get_localization(lang_code).ERROR,
                     reply_markup=build_error_keyboard(lang_code),
                 )
-                await send_error_info(
+
+                await notify_error_channel(
                     bot=message.bot,
                     user_id=user.id,
-                    info=str(e) + " " + str(settings) + f" prompt: {prompt}",
+                    info=str(e),
+                    context={"prompt": prompt},
+                    stack_trace=traceback.format_exc(),
                     hashtags=[Model.GPT_IMAGE],
                 )
                 return
@@ -135,10 +139,13 @@ class WithTextPromptHandler:
                 text=get_localization(lang_code).ERROR,
                 reply_markup=build_error_keyboard(lang_code),
             )
-            await send_error_info(
+
+            await notify_error_channel(
                 bot=message.bot,
                 user_id=user.id,
-                info=str(e) + " " + str(settings) + f" prompt: {prompt}",
+                info=str(e),
+                context={"prompt": prompt},
+                stack_trace=traceback.format_exc(),
                 hashtags=[Model.GPT_IMAGE],
             )
         finally:
