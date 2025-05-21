@@ -408,8 +408,7 @@ Please review the text/photo for prohibited content and try again 😌
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 1.5 Flash 🏎
     ┣ Gemini 2.5 Pro 💼
-    ┣ Gemini 1.0 Ultra 🛡️
-    ┗ Grok 3.0 🐦
+    ┗ Gemini 1.0 Ultra 🛡️
 
 🖼 <b>Image Models</b>:
     ┣ 🎨 Midjourney

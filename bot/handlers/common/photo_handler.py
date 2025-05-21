@@ -258,8 +258,7 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
         user.current_model == Model.CHAT_GPT or
         user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Sonnet or
         user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Opus or
-        user.current_model == Model.GEMINI or
-        user.current_model == Model.GROK
+        user.current_model == Model.GEMINI
     ):
         if not (user.daily_limits[Quota.WORK_WITH_FILES] or user.additional_usage_quota[Quota.WORK_WITH_FILES]):
             await message.answer(
@@ -291,7 +290,7 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
         elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Ultra:
             quota = Quota.GEMINI_1_ULTRA
         elif user.settings[user.current_model][UserSettings.VERSION] == GrokGPTVersion.V2:
-            quota = Quota.GROK_2
+            quota = Quota.GROK_3
         else:
             raise NotImplementedError(
                 f'User quota is not implemented: {user.settings[user.current_model][UserSettings.VERSION]}'
@@ -438,7 +437,7 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
         user.current_model == Model.CHAT_GPT
         or user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Sonnet
         or user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Opus
-        or user.current_model in (Model.GEMINI, Model.GROK)
+        or user.current_model in (Model.GEMINI)
     ):
         current_time = time.time()
 
@@ -490,7 +489,7 @@ async def handle_album(message: Message, state: FSMContext, album: list[Message]
         user.current_model == Model.CHAT_GPT
         or user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Sonnet
         or user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Opus
-        or user.current_model in (Model.GEMINI, Model.GROK, Model.GPT_IMAGE)
+        or user.current_model in (Model.GEMINI, Model.GPT_IMAGE)
     ):
         if not (user.daily_limits[Quota.WORK_WITH_FILES] or user.additional_usage_quota[Quota.WORK_WITH_FILES]):
             await message.answer(
@@ -522,7 +521,7 @@ async def handle_album(message: Message, state: FSMContext, album: list[Message]
         elif user.settings[user.current_model][UserSettings.VERSION] == GeminiGPTVersion.V1_Ultra:
             quota = Quota.GEMINI_1_ULTRA
         elif user.settings[user.current_model][UserSettings.VERSION] == GrokGPTVersion.V2:
-            quota = Quota.GROK_2
+            quota = Quota.GROK_3
         elif user.settings[user.current_model][UserSettings.VERSION] == helpers.gpt_image.Version.V1:
             quota = Quota.GPT_IMAGE
         else:

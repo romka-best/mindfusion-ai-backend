@@ -1,3 +1,4 @@
+import traceback
 import openai
 from aiogram import Router
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
@@ -6,9 +7,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram.utils.chat_action import ChatActionSender
 
-from bot.config import config, MessageEffect, MessageSticker
+from bot.config import MessageEffect, MessageSticker, config
 from bot.database.main import firebase
-from bot.database.models.common import Model, Quota, Currency
+from bot.database.models.common import Currency, Model, Quota
 from bot.database.models.transaction import TransactionType
 from bot.database.models.user import User, UserSettings
 from bot.database.operations.chat.getters import get_chat
@@ -22,25 +23,23 @@ from bot.database.operations.user.updaters import update_user
 from bot.helpers.creaters.create_new_message_and_update_user import create_new_message_and_update_user
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 from bot.helpers.reply_with_voice import reply_with_voice
 from bot.helpers.senders.send_ai_message import send_ai_message
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
 from bot.integrations.grok import get_response_message
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_continue_generating_keyboard, build_error_keyboard
-from bot.locales.main import get_user_language, get_localization
+from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
-from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
-from bot.helpers.notifiers.notify_error_channel import notify_error_channel
-import traceback
-
 
 grok_router = Router()
 
-PRICE_GROK_2_INPUT = 0.000002
-PRICE_GROK_2_OUTPUT = 0.00001
+PRICE_GROK_3_INPUT = 0.000003
+PRICE_GROK_3_OUTPUT = 0.000015
 
 
-@grok_router.message(Command('grok'))
+@grok_router.message(Command("grok"))
 async def grok(message: Message, state: FSMContext):
     await state.clear()
 
@@ -157,11 +156,11 @@ async def handle_grok(message: Message, state: FSMContext, user: User, photo_fil
     async with chat_action_sender(bot=message.bot, chat_id=message.chat.id):
         try:
             response = await get_response_message(user.settings[user.current_model][UserSettings.VERSION], history)
-            response_message = response['message']
-            input_price = response['input_tokens'] * PRICE_GROK_2_INPUT
-            output_price = response['output_tokens'] * PRICE_GROK_2_OUTPUT
+            response_message = response["message"]
+            input_price = response["input_tokens"] * PRICE_GROK_3_INPUT
+            output_price = response["output_tokens"] * PRICE_GROK_3_OUTPUT
 
-            product = await get_product_by_quota(Quota.GROK_2)
+            product = await get_product_by_quota(Quota.GROK_3)
 
             total_price = round(input_price + output_price, 6)
             message_role, message_content = response_message.role, response_message.content
@@ -184,7 +183,7 @@ async def handle_grok(message: Message, state: FSMContext, user: User, photo_fil
             )
 
             transaction = firebase.db.transaction()
-            await create_new_message_and_update_user(transaction, message_role, message_content, user, Quota.GROK_2)
+            await create_new_message_and_update_user(transaction, message_role, message_content, user, Quota.GROK_3)
 
             if user.settings[user.current_model][UserSettings.TURN_ON_VOICE_MESSAGES]:
                 reply_markup = build_continue_generating_keyboard(user_language_code)
@@ -203,9 +202,9 @@ async def handle_grok(message: Message, state: FSMContext, user: User, photo_fil
                     user.settings[user.current_model][UserSettings.SHOW_THE_NAME_OF_THE_ROLES]
                 ) else ''
                 header_text = f'{chat_info}{role_info}\n' if chat_info or role_info else ''
-                footer_text = f'\n\n✉️ {user.daily_limits[Quota.GROK_2] + user.additional_usage_quota[Quota.GROK_2] + 1}' \
+                footer_text = f'\n\n✉️ {user.daily_limits[Quota.GROK_3] + user.additional_usage_quota[Quota.GROK_3] + 1}' \
                     if user.settings[user.current_model][UserSettings.SHOW_USAGE_QUOTA] and \
-                       user.daily_limits[Quota.GROK_2] != float('inf') else ''
+                       user.daily_limits[Quota.GROK_3] != float('inf') else ''
                 reply_markup = build_continue_generating_keyboard(user_language_code)
                 full_text = f"{header_text}{message_content}{footer_text}"
                 await send_ai_message(
@@ -238,9 +237,8 @@ async def handle_grok(message: Message, state: FSMContext, user: User, photo_fil
                     info=str(e),
                     stack_trace=traceback.format_exc(),
                     context={"prompt": text},
-                    hashtags=["grok"]
+                    hashtags=["grok"],
                 )
-
         except openai.InternalServerError:
             await send_internal_ai_model_error(user_language_code, message, Model.GROK)
         except Exception as e:
@@ -259,12 +257,9 @@ async def handle_grok(message: Message, state: FSMContext, user: User, photo_fil
                 info=str(e),
                 stack_trace=traceback.format_exc(),
                 context={"prompt": text},
-                hashtags=["grok"]
+                hashtags=["grok"],
             )
-
         finally:
             await processing_sticker.delete()
             await processing_message.delete()
             await state.update_data(is_processing=False)
-
-
