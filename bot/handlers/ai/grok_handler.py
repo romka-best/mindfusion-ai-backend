@@ -27,7 +27,6 @@ from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 from bot.helpers.reply_with_voice import reply_with_voice
 from bot.helpers.senders.send_ai_message import send_ai_message
 from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.integrations.grok import get_response_message
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_continue_generating_keyboard, build_error_keyboard
