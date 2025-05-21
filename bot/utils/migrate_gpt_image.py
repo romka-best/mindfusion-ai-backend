@@ -1,3 +1,4 @@
+from itertools import product
 import re
 
 from aiogram import Bot
@@ -13,7 +14,8 @@ from bot.locales.texts import Texts
 
 async def up(product_data, user_settings_gpt_image, limits):
     # Create product
-    await write_product(**product_data)
+    product = await write_product(**product_data)
+    print(f"ADD product {product.id}")
 
     # Users
     async for user_doc in firebase.db.collection("users").stream():
@@ -33,10 +35,12 @@ async def up(product_data, user_settings_gpt_image, limits):
         updates["settings"] = settings
 
         if updates:
+            print(f"ADD user settings daily_limits additional_quota {user_doc.id}")
             await firebase.db.collection("users").document(user_doc.id).update(updates)
 
     query = firebase.db.collection("products").where("type", "==", "SUBSCRIPTION")
     async for sub_doc in query.stream():
+        print(f"ADD products limits {sub_doc.id}")
         await sub_doc.reference.update({f"details.limits.{Quota.GPT_IMAGE}": 1}) # TODO Manually change limits for each subsc in db
 
 
@@ -45,6 +49,7 @@ async def down():
     # Delete product
     query = firebase.db.collection("products").where("details.quota", "==", Quota.GPT_IMAGE)
     async for doc in query.stream():
+        print(f"DELETE product {doc.id}")
         await doc.reference.delete()
 
     # Delete field in limits
@@ -58,6 +63,7 @@ async def down():
             updates["details"] = prod_data["details"]
 
         if updates:
+            print(f"DELETE product limits {prod_doc.id}")
             await firebase.db.collection("products").document(prod_doc.id).update(updates)
 
 
@@ -82,19 +88,31 @@ async def down():
             updates["settings"] = settings
 
         if updates:
+            print(f"DELETE users daily_limits and add_quote {user_doc.id}")
             await firebase.db.collection("users").document(user_doc.id).update(updates)
 
 async def delete_old_product_id_transactions(product_id):
-    query = firebase.db.collection("transactions").where("product_id", "==", product_id)
-    async for doc in query.stream():
-        await doc.reference.delete()
+    docs = firebase.db.collection("products").where("details.quota", "==", Quota.GPT_IMAGE).stream()
+
+    try:
+        product_doc = (await anext(docs)).to_dict()
+
+        query = firebase.db.collection("transactions").where("product_id", "==", product_doc["id"])
+
+        async for doc in query.stream():
+            print(f"DELETE transaction {doc.id}")
+            await doc.reference.delete()
+
+    except StopAsyncIteration:
+        print("Product not founded, transaction not deleted")
+
 
 
 async def migrate(bot: Bot):
     # TODO change values
     product_data = {
         "stripe_id": "prod_S8obyQgyW9WfRa",  # this
-        "is_active": True,  # this
+        "is_active": True,
         "type": ProductType.PACKAGE,
         "category": ProductCategory.IMAGE,
         "names": {
@@ -134,10 +152,10 @@ async def migrate(bot: Bot):
 
     limits = {Quota.GPT_IMAGE: 0}
 
-    #await delete_old_product_id_transactions("kcdOV4M5jU9Ozt8lOpXH")
+    await delete_old_product_id_transactions("kcdOV4M5jU9Ozt8lOpXH")
 
-    #await down()
-    #await up(product_data, user_settings_gpt_image, limits)
+    await down()
+    await up(product_data, user_settings_gpt_image, limits)
 
     await send_message_to_admins_and_developers(bot, "<b>Database Migration Was Successful!</b> 🎉")
 

@@ -11,6 +11,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, URLInputFile, File, ReactionTypeEmoji
 from aiogram.utils.chat_action import ChatActionSender
 
+from bot import handlers, helpers
 from bot.config import config, MessageSticker
 from bot.database.main import firebase
 from bot.database.models.common import (
@@ -322,12 +323,7 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
             await handle_gemini(message, state, user, quota, [photo_vision_filename])
         elif user.current_model == Model.GROK:
             await handle_grok(message, state, user, [photo_vision_filename])
-    elif (
-        user.current_model == Model.MIDJOURNEY or
-        user.current_model == Model.STABLE_DIFFUSION or
-        user.current_model == Model.FLUX or
-        user.current_model == Model.LUMA_PHOTON
-    ):
+    elif (user.current_model in (Model.MIDJOURNEY, Model.STABLE_DIFFUSION, Model.FLUX, Model.LUMA_PHOTON, Model.GPT_IMAGE)):
         current_time = time.time()
 
         user_quota = get_quota_by_model(user.current_model, user.settings[user.current_model][UserSettings.VERSION])
@@ -366,6 +362,10 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
             await handle_flux(message, state, user, user_quota, photo_vision_filename)
         elif user.current_model == Model.LUMA_PHOTON:
             await handle_luma_photon(message, state, user, photo_vision_filename)
+        elif user.current_model == Model.GPT_IMAGE:
+            await handlers.ai.openai.gpt_image.generation.WithRefImagesHandler().process_with_ref_photos(
+                message, state, user, [message]
+            )
     elif user.current_model == Model.FACE_SWAP:
         # Params
         quota = user.daily_limits[Quota.FACE_SWAP] + user.additional_usage_quota[Quota.FACE_SWAP]
@@ -435,10 +435,10 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
             else:
                 raise
     elif (
-        user.current_model == Model.KLING or
-        user.current_model == Model.RUNWAY or
-        user.current_model == Model.PIKA or
-        user.current_model == Model.LUMA_RAY
+        user.current_model == Model.CHAT_GPT
+        or user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Sonnet
+        or user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Opus
+        or user.current_model in (Model.GEMINI, Model.GROK)
     ):
         current_time = time.time()
 
@@ -469,6 +469,10 @@ async def handle_photo(message: Message, state: FSMContext, photo_file: File):
             await handle_pika(message, state, user, video_frame_photo_link)
         elif user.current_model == Model.LUMA_RAY:
             await handle_luma_ray(message, state, user, video_frame_photo_link)
+        elif user.current_model == Model.GPT_IMAGE:
+            await handlers.ai.openai.gpt_image.generation.WithRefImagesHandler().process_with_ref_photos(
+                message, state, user, [message],
+            )
     else:
         await message.reply(
             text=get_localization(user_language_code).ERROR_PHOTO_FORBIDDEN,
@@ -483,11 +487,10 @@ async def handle_album(message: Message, state: FSMContext, album: list[Message]
     user_language_code = await get_user_language(user_id, state.storage)
 
     if (
-        user.current_model == Model.CHAT_GPT or
-        user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Sonnet or
-        user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Opus or
-        user.current_model == Model.GEMINI or
-        user.current_model == Model.GROK
+        user.current_model == Model.CHAT_GPT
+        or user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Sonnet
+        or user.settings[user.current_model][UserSettings.VERSION] == ClaudeGPTVersion.V3_Opus
+        or user.current_model in (Model.GEMINI, Model.GROK, Model.GPT_IMAGE)
     ):
         if not (user.daily_limits[Quota.WORK_WITH_FILES] or user.additional_usage_quota[Quota.WORK_WITH_FILES]):
             await message.answer(
@@ -520,6 +523,8 @@ async def handle_album(message: Message, state: FSMContext, album: list[Message]
             quota = Quota.GEMINI_1_ULTRA
         elif user.settings[user.current_model][UserSettings.VERSION] == GrokGPTVersion.V2:
             quota = Quota.GROK_2
+        elif user.settings[user.current_model][UserSettings.VERSION] == helpers.gpt_image.Version.V1:
+            quota = Quota.GPT_IMAGE
         else:
             raise NotImplementedError(
                 f'User quota is not implemented: {user.settings[user.current_model][UserSettings.VERSION]}'
@@ -562,6 +567,10 @@ async def handle_album(message: Message, state: FSMContext, album: list[Message]
             await handle_gemini(message, state, user, quota, photo_vision_filenames)
         elif user.current_model == Model.GROK:
             await handle_grok(message, state, user, photo_vision_filenames)
+        elif user.current_model == Model.GPT_IMAGE:
+            await handlers.ai.openai.gpt_image.generation.WithRefImagesHandler().process_with_ref_photos(
+                message, state, user, album,
+            )
     elif (
         user.current_model == Model.MIDJOURNEY or
         user.current_model == Model.STABLE_DIFFUSION or

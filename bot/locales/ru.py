@@ -4236,3 +4236,55 @@ class Russian(Texts):
 ⚠️ Ошибка в параметрах midjourney {error_params}
 https://docs.midjourney.com/hc/en-us/articles/32859204029709-Parameter-List
 """
+
+    SETTINGS = "⚙️ Настройки"
+
+    ACTION_GENERATION_WITH_TEXT_PROMPT = "📝 Генерация по тексту"
+    ACTION_GENERATION_WITH_REF_IMAGES = "🖼 Генерация на основе картинок"
+    ASK_TEXT_PROMPT = "✍️ Отправьте промпт"
+
+    @classmethod
+    def ask_ref_images(cls, n):
+        return f"Отправьте до {n} референсных картинок 📸 в одном сообщении\n\nПромпт отправьте отдельным текстовым сообщением ✍️"
+
+    WAITING_YOUR_NEXT_IDEA = "✨ Ждем вашей следующей идеи!"
+
+    GENERATION_SETTING_BACKGROUND = "🖼️ Фон изображения"
+
+    # As TG documnt or photo
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT = "📷 Формат изображения"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_ORIGINAL = "Оригинал"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_COMPRESSED = "Сжатый"
+
+    @staticmethod
+    def generation_setting_image_bg(value):
+        value = value.lower()
+        match value:
+            case "auto":
+                return "Авто"
+            case "opaque":
+                return "Непрозрачный"
+            case "transparent":
+                return "Прозрачный"
+
+    @staticmethod
+    def generation_setting_image_quality(value):
+        value = value.lower()
+        match value:
+            case "low":
+                return "Низкое"
+            case "medium":
+                return "Среднее"
+            case "high":
+                return "Высокое"
+
+    @staticmethod
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "Квадрат"
+            case "landscape":
+                return "Пейзаж"
+            case "portrait":
+                return "Портрет"

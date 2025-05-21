@@ -41,6 +41,7 @@ IMAGE_ADVANCED_QUOTA = [
     Quota.RECRAFT,
     Quota.FACE_SWAP,
     Quota.PHOTOSHOP_AI,
+    Quota.GPT_IMAGE,
 ]
 MUSIC_QUOTA = [
     Quota.MUSIC_GEN,
