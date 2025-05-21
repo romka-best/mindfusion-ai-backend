@@ -9,3 +9,4 @@ async def migrate(bot):
 
     # STEP 2
     # await migrate_photos(bot)
+    pass
