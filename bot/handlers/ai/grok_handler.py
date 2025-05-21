@@ -1,3 +1,4 @@
+import traceback
 import openai
 from aiogram import Router
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
@@ -22,6 +23,7 @@ from bot.database.operations.user.updaters import update_user
 from bot.helpers.creaters.create_new_message_and_update_user import create_new_message_and_update_user
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 from bot.helpers.reply_with_voice import reply_with_voice
 from bot.helpers.senders.send_ai_message import send_ai_message
 from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
@@ -230,10 +232,12 @@ async def handle_grok(message: Message, state: FSMContext, user: User, photo_fil
                     reply_markup=build_error_keyboard(user_language_code),
                 )
 
-                await send_error_info(
+                await notify_error_channel(
                     bot=message.bot,
                     user_id=user.id,
                     info=str(e),
+                    stack_trace=traceback.format_exc(),
+                    context={"prompt": text},
                     hashtags=["grok"],
                 )
         except openai.InternalServerError:
@@ -247,10 +251,13 @@ async def handle_grok(message: Message, state: FSMContext, user: User, photo_fil
                 text=get_localization(user_language_code).ERROR,
                 reply_markup=build_error_keyboard(user_language_code),
             )
-            await send_error_info(
+
+            await notify_error_channel(
                 bot=message.bot,
                 user_id=user.id,
                 info=str(e),
+                stack_trace=traceback.format_exc(),
+                context={"prompt": text},
                 hashtags=["grok"],
             )
         finally:
