@@ -15,13 +15,15 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=config.BOT_TOKEN.get_secret_value())
 dp = Dispatcher()
 
-@dp.message(Command("start"))
-async def cmd_start(message: types.Message):
-    await message.answer("Привет! Напиши любой текст.")
 
 @dp.message()
 async def handle_all_messages(message: types.Message):
     user_id = message.from_user.id
+
+    if str(user_id) != "616315442": # TODO Поменяй меня
+        await message.reply("The bot is being updated, come back with your request a little later.")
+        return
+
     await message.reply(f"user id {user_id}")
 
     if message.effect_id:

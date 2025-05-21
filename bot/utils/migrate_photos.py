@@ -2,6 +2,8 @@ import io
 import os
 import asyncio
 from aiogram import Bot
+from google.cloud import firestore
+from google.cloud.firestore_v1.field_path import FieldPath
 from bot.database.main import firebase
 from bot.database.models.user import User
 from aiogram.types import BufferedInputFile
@@ -13,30 +15,27 @@ MAX_RETRIES = 10
 RETRY_DELAY = 2
 
 # FIELD
-async def user_field_lora():
+async def user_field_lora_up():
     users_ref = firebase.db.collection("users")
-
-    batch = firebase.db.batch()
-    count = 0
-    batch_size = 500
+    bulk_writer = firebase.db.bulk_writer()
 
     async for user in users_ref.stream():
         doc_ref = users_ref.document(user.id)
-        batch.update(doc_ref, {"face_swap_lora_version": ""})
-        count += 1
+        bulk_writer.update(doc_ref, {"face_swap_lora_version": ""})
+        print(f"ADD face_swap_lora_version {user.id}")
 
-        if count % batch_size == 0:
-            batch.commit()
-            print(f"Committed {count}")
-            batch = firebase.db.batch()
+    bulk_writer.flush()
 
-    if count % batch_size != 0:
-        await batch.commit()
-        print(f"Committed {count % batch_size}")
+async def user_field_lora_down():
+    users_ref = firebase.db.collection("users")
+    bulk_writer = firebase.db.bulk_writer()
 
-    print(f"DONE {count}")
+    async for user in users_ref.stream():
+        doc_ref = users_ref.document(user.id)
+        bulk_writer.update(doc_ref, {"face_swap_lora_version": firestore.DELETE_FIELD})
+        print(f"DELETE face_swap_lora_version {user.id}")
 
-
+    bulk_writer.flush()
 
 # PHOTOS
 async def send_photo_with_retry(bot, chat_id, buffer, filename):
@@ -141,7 +140,17 @@ async def migrate_user_avatars(bot: Bot):
         current_migrated += 1
 
 
+async def up():
+    await user_field_lora_up()
+
+async def down():
+    await user_field_lora_down()
 
 async def migrate(bot):
-    await user_field_lora()
+    #await down()
+    await up()
+
     await migrate_user_avatars(bot)
+    print("END OF PHOTO MIGRATION")
+    print("-----------------------")
+
