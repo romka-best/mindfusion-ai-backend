@@ -20,7 +20,8 @@ dp = Dispatcher()
 async def handle_all_messages(message: types.Message):
     user_id = message.from_user.id
 
-    if user_id != "616315442": # TODO Поменяй меня
+    if str(user_id) != "616315442": # TODO Поменяй меня
+        await message.reply("The bot is being updated, come back with your request a little later.")
         return
 
     await message.reply(f"user id {user_id}")
