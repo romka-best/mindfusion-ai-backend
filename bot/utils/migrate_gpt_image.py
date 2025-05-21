@@ -12,7 +12,7 @@ from bot.helpers.senders.send_message_to_admins_and_developers import send_messa
 from bot.locales.texts import Texts
 
 
-async def up(product_data, user_settings_gpt_image, limits):
+async def up(bulk_writer, product_data, user_settings_gpt_image, limits):
     # Create product
     product = await write_product(**product_data)
     print(f"ADD product {product.id}")
@@ -36,36 +36,23 @@ async def up(product_data, user_settings_gpt_image, limits):
 
         if updates:
             print(f"ADD user settings daily_limits additional_quota {user_doc.id}")
-            await firebase.db.collection("users").document(user_doc.id).update(updates)
+            bulk_writer.update(user_doc.reference, updates)
 
     query = firebase.db.collection("products").where("type", "==", "SUBSCRIPTION")
     async for sub_doc in query.stream():
         print(f"ADD products limits {sub_doc.id}")
-        await sub_doc.reference.update({f"details.limits.{Quota.GPT_IMAGE}": 0}) # TODO Manually change limits for each subsc in db
+        bulk_writer.update(sub_doc.reference, {f"details.limits.{Quota.GPT_IMAGE}": 0}) # TODO Manually change limits for each subsc in db
+
+    bulk_writer.flush()
 
 
 
-async def down():
+async def down(bulk_writer):
     # Delete product
     query = firebase.db.collection("products").where("details.quota", "==", Quota.GPT_IMAGE)
     async for doc in query.stream():
         print(f"DELETE product {doc.id}")
         await doc.reference.delete()
-
-    # Delete field in limits
-    query = firebase.db.collection("products").where("type", "==", "SUBSCRIPTION")
-    async for prod_doc in query.stream():
-        prod_data = prod_doc.to_dict()
-        updates = {}
-
-        if Quota.GPT_IMAGE in prod_data["details"]["limits"]:
-            del prod_data["details"]["limits"][Quota.GPT_IMAGE]
-            updates["details"] = prod_data["details"]
-
-        if updates:
-            print(f"DELETE product limits {prod_doc.id}")
-            await firebase.db.collection("products").document(prod_doc.id).update(updates)
-
 
     # Delete user settigns
     async for user_doc in firebase.db.collection("users").stream():
@@ -89,7 +76,24 @@ async def down():
 
         if updates:
             print(f"DELETE users daily_limits and add_quote {user_doc.id}")
-            await firebase.db.collection("users").document(user_doc.id).update(updates)
+            bulk_writer.update(user_doc.reference, updates)
+
+    # Delete field in limits
+    query = firebase.db.collection("products").where("type", "==", "SUBSCRIPTION")
+    async for prod_doc in query.stream():
+        prod_data = prod_doc.to_dict()
+        updates = {}
+
+        if Quota.GPT_IMAGE in prod_data["details"]["limits"]:
+            del prod_data["details"]["limits"][Quota.GPT_IMAGE]
+            updates["details"] = prod_data["details"]
+
+        if updates:
+            print(f"DELETE product limits {prod_doc.id}")
+            bulk_writer.update(prod_doc.reference, updates)
+
+
+    bulk_writer.flush()
 
 async def delete_old_product_id_transactions():
     docs = firebase.db.collection("products").where("details.quota", "==", Quota.GPT_IMAGE).stream()
@@ -152,10 +156,14 @@ async def migrate(bot: Bot):
 
     limits = {Quota.GPT_IMAGE: 0}
 
-    await delete_old_product_id_transactions() # Usefull on dev, when migration runs multiple times
+    # await delete_old_product_id_transactions() # Usefull on dev, when migration runs multiple times
 
-    await down()
-    await up(product_data, user_settings_gpt_image, limits)
+    bulk_writer = firebase.db.bulk_writer()
+    #await down(bulk_writer)
+    await up(bulk_writer, product_data, user_settings_gpt_image, limits)
+
+    print("END OF GPT_IMAGE MIGRATION")
+    print("-----------------------")
 
     await send_message_to_admins_and_developers(bot, "<b>Database Migration Was Successful!</b> 🎉")
 

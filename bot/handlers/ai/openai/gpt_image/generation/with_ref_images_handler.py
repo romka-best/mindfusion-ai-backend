@@ -75,7 +75,6 @@ class WithRefImagesHandler:
             tg_file_ids = (
                 (await state.get_data())["file_ids"] if not album else [msg.photo[-1].file_id for msg in album]
             )
-            breakpoint()
             tg_files = await asyncio.gather(*[self._tg_get_file(message.bot, file_id) for file_id in tg_file_ids])
             tg_file_ios = await asyncio.gather(*[
                 self._tg_get_file_io(message.bot, file.file_path) for file in tg_files

@@ -15,7 +15,7 @@ def replace_grok_2(text):
 def replace_grok_3(text):
     return re.sub(r"Grok 3", "Grok 2", text)
 
-async def migrate_users():
+async def migrate_users(bulk_writer):
     async for user_doc in firebase.db.collection("users").stream():
         user_data = user_doc.to_dict()
         updates = {}
@@ -43,10 +43,11 @@ async def migrate_users():
 
         if updates:
             print(f"ADD users settings daily, additional_quota {user_doc.id}")
-            await firebase.db.collection("users").document(user_doc.id).update(updates)
+            bulk_writer.update(user_doc.reference, updates)
+    bulk_writer.flush()
 
 
-async def migrate_products():
+async def migrate_products(bulk_writer):
     async for product_doc in firebase.db.collection("products").stream():
         product = product_doc.to_dict()
         updates = {}
@@ -88,9 +89,11 @@ async def migrate_products():
 
         if updates:
             print(f"UPDATE product grok_2 -> grok_3 {product_doc.id}")
-            await firebase.db.collection("products").document(product_doc.id).update(updates)
+            bulk_writer.update(product_doc.reference, updates)
+    bulk_writer.flush()
 
-async def down():
+
+async def down(bulk_writer):
     async for user_doc in firebase.db.collection("users").stream():
         user_data = user_doc.to_dict()
         updates = {}
@@ -118,7 +121,7 @@ async def down():
 
         if updates:
             print(f"DELETE users settings daily, additional_quota {user_doc.id}")
-            await firebase.db.collection("users").document(user_doc.id).update(updates)
+            bulk_writer.update(user_doc.reference, updates)
 
 
 
@@ -163,15 +166,22 @@ async def down():
 
         if updates:
             print(f"DELETE grok_3 -> grok_2 product {product_doc.id}")
-            await firebase.db.collection("products").document(product_doc.id).update(updates)
+            bulk_writer.update(product_doc.reference, updates)
+
+    bulk_writer.flush()
 
 
-async def up():
-    await migrate_users()
-    await migrate_products()
+async def up(bulk_writer):
+    await migrate_users(bulk_writer)
+    await migrate_products(bulk_writer)
 
 async def migrate(bot: Bot):
-    await down()
-    await up()
+    bulk_writer = firebase.db.bulk_writer()
+    #await down(bulk_writer)
+    await up(bulk_writer)
+
+    print("END OF GROK MIGRATION")
+    print("-----------------------")
+
 
     await send_message_to_admins_and_developers(bot, "<b>Database Migration Was Successful!</b> 🎉")
