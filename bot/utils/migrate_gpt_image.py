@@ -41,7 +41,7 @@ async def up(product_data, user_settings_gpt_image, limits):
     query = firebase.db.collection("products").where("type", "==", "SUBSCRIPTION")
     async for sub_doc in query.stream():
         print(f"ADD products limits {sub_doc.id}")
-        await sub_doc.reference.update({f"details.limits.{Quota.GPT_IMAGE}": 1}) # TODO Manually change limits for each subsc in db
+        await sub_doc.reference.update({f"details.limits.{Quota.GPT_IMAGE}": 0}) # TODO Manually change limits for each subsc in db
 
 
 
@@ -91,7 +91,7 @@ async def down():
             print(f"DELETE users daily_limits and add_quote {user_doc.id}")
             await firebase.db.collection("users").document(user_doc.id).update(updates)
 
-async def delete_old_product_id_transactions(product_id):
+async def delete_old_product_id_transactions():
     docs = firebase.db.collection("products").where("details.quota", "==", Quota.GPT_IMAGE).stream()
 
     try:
@@ -152,7 +152,7 @@ async def migrate(bot: Bot):
 
     limits = {Quota.GPT_IMAGE: 0}
 
-    await delete_old_product_id_transactions("kcdOV4M5jU9Ozt8lOpXH")
+    await delete_old_product_id_transactions() # Usefull on dev, when migration runs multiple times
 
     await down()
     await up(product_data, user_settings_gpt_image, limits)
