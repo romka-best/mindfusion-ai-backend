@@ -47,7 +47,6 @@ from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.getters.get_user_discount import get_user_discount
 from bot.helpers.handlers.handle_model_info import handle_model_info
-from bot.helpers.senders.send_message_to_admins import send_message_to_admins
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.payment.payment import (
     build_buy_keyboard,
@@ -69,6 +68,8 @@ from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
 from bot.states.payment.payment import Payment
 from bot.helpers.getters.get_model_by_quota import get_model_by_quota
+from bot.helpers.notifiers.notify_payment_channel import notify_payment_channel
+
 
 payment_router = Router()
 
@@ -1316,7 +1317,7 @@ async def handle_successful_payment(message: Message, state: FSMContext):
             text=get_localization(user_language_code).SUBSCRIPTION_SUCCESS,
         )
 
-        await send_message_to_admins(
+        await notify_payment_channel(
             bot=message.bot,
             message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
                 status=SubscriptionStatus.ACTIVE,
@@ -1424,9 +1425,9 @@ async def handle_successful_payment(message: Message, state: FSMContext):
             text=get_localization(user_language_code).PACKAGE_SUCCESS,
         )
 
-        await send_message_to_admins(
-            bot=message.bot,
-            message=get_localization(LanguageCode.RU).admin_payment_package_changed_status(
+        await notify_payment_channel(
+            message.bot,
+            get_localization(LanguageCode.RU).admin_payment_package_changed_status(
                 status=PackageStatus.SUCCESS,
                 package=package,
                 product=product,
@@ -1493,9 +1494,9 @@ async def handle_successful_payment(message: Message, state: FSMContext):
             text=get_localization(user_language_code).PACKAGES_SUCCESS,
         )
 
-        await send_message_to_admins(
-            bot=message.bot,
-            message=get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
+        await notify_payment_channel(
+            message.bot,
+            get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
                 status=PackageStatus.SUCCESS,
                 user_id=user.id,
                 payment_method=PaymentMethod.TELEGRAM_STARS,

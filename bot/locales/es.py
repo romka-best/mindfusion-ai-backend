@@ -382,6 +382,14 @@ Intenta acortar el texto; de lo contrario, el modelo se tomará unas vacaciones 
 
 Espero un nuevo y más compacto prompt ✨
 """
+    ERROR_PROMPT_IS_EMPTY = """
+🤔 <b>¿Dónde está el prompt?</b>
+
+No enviaste nada.
+Sin eso, no puedo generar nada 😢
+
+¡Inténtalo de nuevo, estoy esperando inspiración! ✨
+"""
     ERROR_REQUEST_FORBIDDEN = """
 🚨 <b>¡Ups! Tu solicitud no pasó la verificación</b>
 
@@ -403,8 +411,7 @@ Revisa el texto/la foto en busca de contenido prohibido e inténtalo de nuevo �
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 2.0 Flash 🏎
     ┣ Gemini 2.5 Pro 💼
-    ┣ Gemini 1.0 Ultra 🛡️
-    ┗ Grok 2.0 🐦
+    ┗ Gemini 1.0 Ultra 🛡️
 
 🖼 <b>Modelos gráficos:</b>
     ┣ 🎨 Midjourney
@@ -581,6 +588,14 @@ Solo te quedan <b>{available_images} generaciones</b> en tu arsenal
 
 💡 <b>Consejo:</b> Prueba con un número menor o utiliza /buy para obtener posibilidades ilimitadas
 """
+
+    @staticmethod
+    def wait_for_lora_train():
+        return "🤖 Estoy entrenando mi red neuronal para darte mejores respuestas — esto solo necesita hacerse una vez. Normalmente toma 10 minutos."
+
+    @staticmethod
+    def error_photo_bundle_empty():
+        return "⚠️ No hay fotos en tu perfil. Sube al menos una foto e intenta de nuevo."
 
     # Feedback
     FEEDBACK_INFO = """
@@ -2072,7 +2087,7 @@ Seleccione una acción 👇
     ┣ 🧩 ChatGPT o4-mini{f': adicional {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ''}
     ┣ 💫 Claude 3.7 Sonnet{f': adicional {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 2.5 Pro{f': adicional {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
-    ┣ 🐦 Grok 2.0{f': adicional {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
+    ┣ 🐦 Grok 3.0{f': adicional {additional_usage_quota[Quota.GROK_3]}' if additional_usage_quota[Quota.GROK_3] > 0 else ''}
     ┣ 🌐 Perplexity{f': adicional {additional_usage_quota[Quota.PERPLEXITY]}' if additional_usage_quota[Quota.PERPLEXITY] > 0 else ''}
     ┗ Límite diario: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}
 
@@ -2099,6 +2114,7 @@ Seleccione una acción 👇
     ┗ Límite diario: {format_number(daily_limits[Quota.STABLE_DIFFUSION_XL])}/{format_number(subscription_limits[Quota.STABLE_DIFFUSION_XL])}
 
 <b>Avanzados</b>:
+    ┣ {Texts.GPT_IMAGE}{f': adicional {additional_usage_quota[Quota.GPT_IMAGE]}' if additional_usage_quota[Quota.GPT_IMAGE] > 0 else ''}
     ┣ 👨‍🎨 DALL-E 3{f': adicional {additional_usage_quota[Quota.DALL_E]}' if additional_usage_quota[Quota.DALL_E] > 0 else ''}
     ┣ 🎨 Midjourney 7{f': adicional {additional_usage_quota[Quota.MIDJOURNEY]}' if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ''}
     ┣ 🧑‍🚀 Stable Diffusion 3.5{f': adicional {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ''}
@@ -2560,7 +2576,7 @@ Selecciona tu opción y presiona el botón de abajo para suscribirte:
                 Quota.CHAT_GPT_O_4_MINI,
                 Quota.CLAUDE_3_SONNET,
                 Quota.GEMINI_2_PRO,
-                Quota.GROK_2,
+                Quota.GROK_3,
                 Quota.DEEP_SEEK_R1,
                 Quota.PERPLEXITY
         ]
@@ -2718,3 +2734,134 @@ Por ahora, no tienes acceso para trabajar con fotos y documentos.
 
 Puedes obtener acceso haciendo clic en el botón de abajo:
 """
+
+    @staticmethod
+    def menu_bundle_photo_managment():
+        return "🖼 Gestión de fotos"
+
+    @staticmethod
+    def photo_bundle_delete_all_confirm():
+        return "⚠️ ¿Estás seguro de que quieres eliminar TODAS las fotos?"
+
+    @staticmethod
+    def menu_photo_bundle_show():
+        return "🖼 Aquí puedes subir hasta 10 fotos para usarlas en la función de intercambio de rostro (Face Swap).\
+ Usa los botones de abajo para agregar, eliminar o reemplazar fotos."
+
+    @staticmethod
+    def menu_photo_bundle_show_upload():
+        return "⬆️ Subir"
+
+    @staticmethod
+    def menu_photo_bundle_show_edit():
+        return "🔁 Reemplazar una"
+
+    @staticmethod
+    def menu_photo_bundle_delete_one():
+        return "❌ Eliminar una"
+
+    @staticmethod
+    def menu_photo_bundle_delete_all():
+        return "🗑 Eliminar todas"
+
+    @staticmethod
+    def menu_photo_bundle_back_to_profile():
+        return "👤 Volver al perfil"
+
+    @staticmethod
+    def menu_photo_bundle_delete_mode():
+        return "🔢 Selecciona el número de la foto que deseas eliminar."
+
+    @staticmethod
+    def menu_photo_bundle_back_to_photos():
+        return "📂 Volver a las fotos"
+
+    @staticmethod
+    def menu_photo_bundle_edit_mode():
+        return "🔢 Selecciona el número de la foto que deseas reemplazar."
+
+    @staticmethod
+    def menu_photo_bundle_upload_limit_reached():
+        return "🚫 Se alcanzó el límite de fotos, estas fotos no se han subido. Puedes eliminar o reemplazar las existentes."
+
+    @staticmethod
+    def menu_photo_bundle_new():
+        return "📥 Envía una o varias fotos."
+
+    @staticmethod
+    def menu_photo_bundle_edit():
+        return "📥 Envía una nueva foto para reemplazar."
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "Cuadrado"
+            case "landscape":
+                return "Paisaje"
+            case "portrait":
+                return "Retrato"
+    ASK_EXTEND_VIDEO = "🎥 ¿Quieres extender el video?"
+
+    EXTEND_AUDIO = "Extender"
+
+    CONCAT_AUDIO = "Combinar"
+    @staticmethod
+    def midjourney_params_error(prompt, error_params):
+        return f"""
+{prompt}
+
+⚠️ Error en los parámetros de midjourney {error_params}
+https://docs.midjourney.com/hc/en-us/articles/32859204029709-Parameter-List
+"""
+
+    SETTINGS = "⚙️ Configuraciones"
+
+    ACTION_GENERATION_WITH_TEXT_PROMPT = "📝 Generación basada en texto"
+    ACTION_GENERATION_WITH_REF_IMAGES = "🖼 Generación basada en imágenes"
+    ASK_TEXT_PROMPT = "✍️ Envía el prompt"
+
+    @classmethod
+    def ask_ref_images(cls, n):
+        return f"Envía hasta {n} imágenes de referencia 📸 en un solo mensaje\n\nEnvía el prompt en un mensaje de texto separado ✍️"
+
+    WAITING_YOUR_NEXT_IDEA = "✨ ¡Esperamos tu próxima idea!"
+
+    GENERATION_SETTING_BACKGROUND = "🖼️ Fondo de la imagen"
+
+    # As TG documnt or photo
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT = "📷 Formato de imagen"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_ORIGINAL = "Original"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_COMPRESSED = "Comprimido"
+
+    @staticmethod
+    def generation_setting_image_bg(value):
+        value = value.lower()
+        match value:
+            case "auto":
+                return "Automático"
+            case "opaque":
+                return "Opaco"
+            case "transparent":
+                return "Transparente"
+
+    @staticmethod
+    def generation_setting_image_quality(value):
+        value = value.lower()
+        match value:
+            case "low":
+                return "Baja"
+            case "medium":
+                return "Media"
+            case "high":
+                return "Alta"
+
+    @staticmethod
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "Cuadrado"
+            case "landscape":
+                return "Paisaje"
+            case "portrait":
+                return "Retrato"

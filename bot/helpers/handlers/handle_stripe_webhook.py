@@ -44,6 +44,7 @@ from bot.keyboards.common.common import build_buy_motivation_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.types import LanguageCode
 from bot.helpers.getters.get_model_by_quota import get_model_by_quota
+from bot.helpers.notifiers.notify_payment_channel import notify_payment_channel
 
 
 def get_net(amount: float):
@@ -164,9 +165,9 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     language_code=user_language_code,
                 )
 
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                await notify_payment_channel(
+                    bot,
+                    get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
                         status=SubscriptionStatus.ACTIVE,
                         subscription=subscription,
                         product=product,
@@ -183,9 +184,9 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                 )
             else:
                 logging.exception(f'Error in handle_stripe_webhook: {request_type}')
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                await notify_payment_channel(
+                    bot,
+                    get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
                         status=SubscriptionStatus.ERROR,
                         subscription=subscription,
                         product=product,
@@ -224,9 +225,9 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                             },
                         )
 
-                        await send_message_to_admins(
-                            bot=bot,
-                            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                        await notify_payment_channel(
+                            bot,
+                            get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
                                 status=SubscriptionStatus.ACTIVE,
                                 subscription=old_subscription,
                                 product=product,
@@ -289,9 +290,9 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                             disable_notification=True,
                         )
 
-                        await send_message_to_admins(
-                            bot=bot,
-                            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                        await notify_payment_channel(
+                            bot,
+                            get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
                                 status=SubscriptionStatus.ACTIVE,
                                 subscription=new_subscription,
                                 product=product,
@@ -334,9 +335,9 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                         disable_notification=True,
                     )
 
-                    await send_message_to_admins(
-                        bot=bot,
-                        message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                    await notify_payment_channel(
+                        bot,
+                        get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
                             status=SubscriptionStatus.DECLINED,
                             subscription=old_subscription,
                             product=product,
@@ -346,9 +347,9 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     )
                 else:
                     logging.exception(f'Error in handle_stripe_webhook: {request_type}')
-                    await send_message_to_admins(
-                        bot=bot,
-                        message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                    await notify_payment_channel(
+                        bot,
+                        get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
                             status=SubscriptionStatus.ERROR,
                             subscription=old_subscription,
                             product=product,
@@ -506,12 +507,12 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     language_code=user_language_code,
                 )
 
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_package_changed_status(
+                await notify_payment_channel(
+                    bot,
+                    get_localization(LanguageCode.RU).admin_payment_package_changed_status(
                         status=PackageStatus.SUCCESS,
                         package=package,
-                        product=product,
+                        product=product
                     )
                 )
             elif request_type == 'payment_intent.payment_failed' or request_type == 'payment_intent.canceled':
@@ -524,9 +525,9 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                 )
             else:
                 logging.exception(f'Error in handle_stripe_webhook: {request_type}')
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_package_changed_status(
+                await notify_payment_channel(
+                    bot,
+                    get_localization(LanguageCode.RU).admin_payment_package_changed_status(
                         status=PackageStatus.ERROR,
                         package=package,
                         product=product,
@@ -632,9 +633,9 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     language_code=user_language_code,
                 )
 
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
+                await notify_payment_channel(
+                    bot,
+                    get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
                         status=PackageStatus.SUCCESS,
                         user_id=user.id,
                         payment_method=PaymentMethod.STRIPE,
@@ -656,9 +657,9 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
             else:
                 logging.exception(f'Error in handle_stripe_webhook: {request_type}')
 
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
+                await notify_payment_channel(
+                    bot,
+                    get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
                         status=PackageStatus.ERROR,
                         user_id=user.id,
                         payment_method=PaymentMethod.STRIPE,
@@ -666,6 +667,7 @@ async def handle_stripe_webhook(request: dict, bot: Bot, dp: Dispatcher):
                         income_amount=0,
                         currency=packages[0].currency,
                     )
+
                 )
     except Exception as e:
         logging.exception(f'Error in stripe_webhook in package section: {e}')

@@ -10,7 +10,7 @@ from aiohttp import ClientOSError
 from redis.exceptions import ConnectionError
 
 from bot.database.operations.user.updaters import update_user
-from bot.helpers.senders.send_error_info import send_error_info
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 
 
 async def delayed_send_audio(
@@ -82,12 +82,15 @@ async def delayed_send_audio(
             allow_sending_without_reply=True,
         )
 
-        await send_error_info(
+        await notify_error_channel(
             bot=bot,
             user_id=chat_id,
             info=str(e),
-            hashtags=['audio']
+            stack_trace=traceback.format_exc(),
+            context={"prompt": f"caption {caption} filename {filename} duration {duration}"},
+            hashtags=["audio"]
         )
+
 
     return answered_message
 
@@ -158,11 +161,13 @@ async def send_audio(
             allow_sending_without_reply=True,
         )
 
-        await send_error_info(
+        await notify_error_channel(
             bot=bot,
             user_id=chat_id,
             info=str(e),
-            hashtags=['audio']
+            stack_trace=traceback.format_exc(),
+            context={"prompt": f"caption {caption} filename {filename} duration {duration}"},
+            hashtags=["audio"]
         )
 
     return answered_message

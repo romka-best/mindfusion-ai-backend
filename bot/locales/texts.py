@@ -155,6 +155,9 @@ class Texts(Protocol):
     # DALL-E
     DALL_E = '👨‍🎨 DALL-E'
 
+    # Gpt Image
+    GPT_IMAGE  = "✨ Gpt image"
+
     # DeepSeek
     DEEP_SEEK = '🐳 DeepSeek'
     DEEP_SEEK_V3 = '🐬 DeepSeek V3'
@@ -270,7 +273,7 @@ class Texts(Protocol):
     GENERATION_VIDEO_SUCCESS: str
 
     # Grok
-    GROK = '🐦 Grok 2.0'
+    GROK = "🐦 Grok 3.0"
 
     # Help
     HELP_INFO: str

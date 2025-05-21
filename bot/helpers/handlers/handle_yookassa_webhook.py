@@ -40,12 +40,13 @@ from bot.helpers.creaters.create_subscription import create_subscription
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
 from bot.helpers.handlers.handle_model_info import handle_model_info
-from bot.helpers.senders.send_message_to_admins import send_message_to_admins
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_buy_motivation_keyboard
 from bot.locales.main import get_localization, get_user_language
 from bot.locales.types import LanguageCode
 from bot.helpers.getters.get_model_by_quota import get_model_by_quota
+from bot.helpers.notifiers.notify_payment_channel import notify_payment_channel
+
 
 
 async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
@@ -141,9 +142,9 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     language_code=user_language_code,
                 )
 
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                await notify_payment_channel(
+                    bot,
+                    get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
                         status=SubscriptionStatus.ACTIVE,
                         subscription=subscription,
                         product=product,
@@ -160,13 +161,13 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                 )
             else:
                 logging.exception(f'Error in handle_yookassa_webhook: {payment.status}')
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                await notify_payment_channel(
+                    bot,
+                    get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
                         status=SubscriptionStatus.ERROR,
                         subscription=subscription,
                         product=product,
-                    ),
+                    )
                 )
         elif payment.payment_method and payment.payment_method.id:
             old_subscription = await get_subscription_by_provider_auto_payment_charge_id(payment.payment_method.id)
@@ -200,9 +201,9 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                             },
                         )
 
-                        await send_message_to_admins(
-                            bot=bot,
-                            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                        await notify_payment_channel(
+                            bot,
+                            get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
                                 status=SubscriptionStatus.ACTIVE,
                                 subscription=old_subscription,
                                 product=product,
@@ -264,15 +265,16 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                             disable_notification=True,
                         )
 
-                        await send_message_to_admins(
-                            bot=bot,
-                            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                        await notify_payment_channel(
+                            bot,
+                            get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
                                 status=SubscriptionStatus.ACTIVE,
                                 subscription=new_subscription,
                                 product=product,
                                 is_trial=False,
                                 is_renew=True,
                             )
+
                         )
                 elif payment.status == 'canceled':
                     current_date = datetime.now(timezone.utc)
@@ -329,26 +331,28 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                         disable_notification=True,
                     )
 
-                    await send_message_to_admins(
-                        bot=bot,
-                        message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                    await notify_payment_channel(
+                        bot,
+                        get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
                             status=SubscriptionStatus.DECLINED,
                             subscription=old_subscription,
                             product=product,
                             is_trial=old_subscription.status == SubscriptionStatus.TRIAL,
                             is_renew=True,
                         )
+
                     )
                 else:
                     logging.exception(f'Error in handle_yookassa_webhook: {payment.status}')
-                    await send_message_to_admins(
-                        bot=bot,
-                        message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+                    await notify_payment_channel(
+                        bot,
+                        get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
                             status=SubscriptionStatus.ERROR,
                             subscription=old_subscription,
                             product=product,
                             is_renew=True,
                         )
+
                     )
     except Exception as e:
         logging.exception(f'Error in yookassa_webhook in subscription section: {e}')
@@ -498,13 +502,14 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     language_code=user_language_code,
                 )
 
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_package_changed_status(
+                await notify_payment_channel(
+                    bot,
+                    get_localization(LanguageCode.RU).admin_payment_package_changed_status(
                         status=PackageStatus.SUCCESS,
                         package=package,
                         product=product,
                     )
+
                 )
             elif payment.status == 'canceled':
                 package.status = PackageStatus.DECLINED
@@ -516,9 +521,9 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                 )
             else:
                 logging.exception(f'Error in handle_yookassa_webhook: {payment.status}')
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_package_changed_status(
+                await notify_payment_channel(
+                    bot,
+                    get_localization(LanguageCode.RU).admin_payment_package_changed_status(
                         status=PackageStatus.ERROR,
                         package=package,
                         product=product,
@@ -623,9 +628,9 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                     language_code=user_language_code,
                 )
 
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
+                await notify_payment_channel(
+                    bot,
+                    get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
                         status=PackageStatus.SUCCESS,
                         user_id=user.id,
                         payment_method=PaymentMethod.YOOKASSA,
@@ -633,6 +638,7 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                         income_amount=float(payment.income_amount.value),
                         currency=packages[0].currency,
                     )
+
                 )
             elif payment.status == 'canceled':
                 for package in packages:
@@ -646,9 +652,9 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
             else:
                 logging.exception(f'Error in handle_yookassa_webhook: {payment.status}')
 
-                await send_message_to_admins(
-                    bot=bot,
-                    message=get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
+                await notify_payment_channel(
+                    bot,
+                    get_localization(LanguageCode.RU).admin_payment_packages_changed_status(
                         status=PackageStatus.ERROR,
                         user_id=user.id,
                         payment_method=PaymentMethod.YOOKASSA,
@@ -656,6 +662,7 @@ async def handle_yookassa_webhook(request: dict, bot: Bot, dp: Dispatcher):
                         income_amount=0,
                         currency=packages[0].currency,
                     )
+
                 )
     except Exception as e:
         logging.exception(f'Error in yookassa_webhook in package section: {e}')

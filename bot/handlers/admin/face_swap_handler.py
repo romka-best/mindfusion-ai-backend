@@ -1,44 +1,47 @@
 import asyncio
+from contextlib import AsyncExitStack
 from typing import cast
 
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery, URLInputFile, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message, URLInputFile
 from aiogram.utils.chat_action import ChatActionSender
 
-from bot.config import config, MessageSticker
+from bot.config import MessageSticker, config
 from bot.database.main import firebase
 from bot.database.models.common import Quota
-from bot.database.models.face_swap_package import FaceSwapPackageStatus, FaceSwapPackage
+from bot.database.models.face_swap_package import FaceSwapPackage, FaceSwapPackageStatus
 from bot.database.models.user import UserGender
 from bot.database.operations.face_swap_package.getters import (
     get_face_swap_package,
-    get_face_swap_packages_by_gender,
     get_face_swap_package_by_name_and_gender,
+    get_face_swap_packages_by_gender,
 )
 from bot.database.operations.face_swap_package.updaters import update_face_swap_package
 from bot.database.operations.face_swap_package.writers import write_face_swap_package
 from bot.database.operations.generation.writers import write_generation
 from bot.database.operations.product.getters import get_product_by_quota
-from bot.database.operations.request.writers import write_request
-from bot.keyboards.admin.admin import build_admin_keyboard
-from bot.locales.translate_text import translate_text
 from bot.integrations.replicate_ai import create_face_swap_image
+from bot.keyboards.admin.admin import build_admin_keyboard
 from bot.keyboards.admin.face_swap import (
-    build_manage_face_swap_keyboard,
-    build_manage_face_swap_create_keyboard,
     build_manage_face_swap_create_confirmation_keyboard,
+    build_manage_face_swap_create_keyboard,
+    build_manage_face_swap_edit_choose_gender_keyboard,
+    build_manage_face_swap_edit_choose_package_keyboard,
     build_manage_face_swap_edit_keyboard,
     build_manage_face_swap_edit_package_change_status_keyboard,
-    build_manage_face_swap_edit_choose_gender_keyboard,
-    build_manage_face_swap_edit_picture_keyboard,
     build_manage_face_swap_edit_picture_change_status_keyboard,
-    build_manage_face_swap_edit_choose_package_keyboard,
+    build_manage_face_swap_edit_picture_keyboard,
+    build_manage_face_swap_keyboard,
 )
 from bot.keyboards.common.common import build_cancel_keyboard
-from bot.locales.main import get_localization, localization_classes, get_user_language
+from bot.locales.main import get_localization, get_user_language, localization_classes
+from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
 from bot.states.ai.face_swap import FaceSwap
+from bot.utils.ctx_managers.generation_record_ctx import GenerationRecordCtx
+from bot.utils.ctx_managers.processing_msgs_ctx import ProcessingMsgsCtx
+from bot.utils.ctx_managers.request_record_ctx import RequestRecordCtx
 
 admin_face_swap_router = Router()
 
@@ -365,47 +368,52 @@ async def handle_face_swap_manage_edit_picture_selection(callback_query: Callbac
             reply_markup=build_manage_face_swap_edit_picture_change_status_keyboard(user_language_code, file_status),
         )
         await state.update_data(file_name=file_name)
-    elif action == 'example_picture':
-        processing_sticker = await callback_query.message.answer_sticker(
-            sticker=config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),
-        )
-        processing_message = await callback_query.message.reply(
-            text=get_localization(user_language_code).model_face_swap_processing_request(),
-            allow_sending_without_reply=True,
-        )
+    elif action == "example_picture":
+        product = await get_product_by_quota(Quota.FACE_SWAP)
+        async with AsyncExitStack() as stack:
+            # Prepare ctxs
+            await stack.enter_async_context(
+                ChatActionSender.upload_photo(bot=callback_query.message.bot, chat_id=callback_query.message.chat.id),
+            )
+            processing_msgs_ctx = await stack.enter_async_context(
+                ProcessingMsgsCtx(
+                    callback_query.message,
+                    config.MESSAGE_STICKERS.get(MessageSticker.IMAGE_GENERATION),
+                    get_localization(user_language_code).model_face_swap_processing_request(),
+                ),
+            )
+            request_record_ctx = await stack.enter_async_context(
+                RequestRecordCtx(
+                    user_id=user_id,
+                    processing_message_ids=processing_msgs_ctx.ids,
+                    product_id=product.id,
+                    requested=1,
+                    details={
+                        "is_test": True,
+                        "face_swap_package_id": face_swap_package.id,
+                        "face_swap_package_name": face_swap_package.name,
+                    },
+                ),
+            )
+            gen_ctx = await stack.enter_async_context(GenerationRecordCtx())
 
-        async with ChatActionSender.upload_photo(
-            bot=callback_query.message.bot,
-            chat_id=callback_query.message.chat.id,
-        ):
-            user_photo_blobs = await firebase.bucket.list_blobs(prefix=f'users/avatars/{user_id}.')
+            user_photo_blobs = await firebase.bucket.list_blobs(prefix=f"users/avatars/{user_id}.")
             user_photo = await firebase.bucket.get_blob(user_photo_blobs[-1])
             user_photo_link = firebase.get_public_url(user_photo.name)
 
-            image_path = f'face_swap/{face_swap_package.gender.lower()}/{face_swap_package.name.lower()}/{file_name}'
+            image_path = f"face_swap/{face_swap_package.gender.lower()}/{face_swap_package.name.lower()}/{file_name}"
             image = await firebase.bucket.get_blob(image_path)
             image_link = firebase.get_public_url(image.name)
 
-            product = await get_product_by_quota(Quota.FACE_SWAP)
-
-            request = await write_request(
-                user_id=user_id,
-                processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
-                product_id=product.id,
-                requested=1,
-                details={
-                    'is_test': True,
-                    'face_swap_package_id': face_swap_package.id,
-                    'face_swap_package_name': face_swap_package.name,
-                },
-            )
-
             face_swap_response = await create_face_swap_image(image_link, user_photo_link)
-            await write_generation(
-                id=face_swap_response,
-                request_id=request.id,
-                product_id=product.id,
-                has_error=face_swap_response is None,
+
+            gen_ctx.add(
+                await write_generation(
+                    id=face_swap_response,
+                    request_id=request_record_ctx.request.id,
+                    product_id=product.id,
+                    has_error=face_swap_response is None,
+                ),
             )
 
 

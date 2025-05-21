@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.config import config, MessageEffect
-from bot.database.models.common import Model, ModelType
+from bot.database.models.common import GrokGPTVersion, Model, ModelType
 from bot.database.models.user import UserSettings
 from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user
@@ -37,6 +37,8 @@ from bot.locales.main import get_localization, get_user_language
 from bot.database.models.subscription import SUBSCRIPTION_FREE_LIMITS
 from bot.database.operations.subscription.getters import get_subscription
 from bot.database.operations.product.getters import get_product
+from bot import keyboards
+import contextlib
 
 model_router = Router()
 
@@ -116,62 +118,60 @@ async def handle_model(message: Message, user_id: str, state: FSMContext, is_edi
         )
 
 
-@model_router.callback_query(lambda c: c.data.startswith('model:'))
+@model_router.callback_query(lambda c: c.data.startswith("model:"))
 async def handle_model_selection(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
 
-    chosen_model = callback_query.data.split(':')[1]
-    chosen_version = ''
-    if chosen_model == 'page':
-        return
-    elif (
-        chosen_model == ModelType.TEXT or
-        chosen_model == ModelType.SUMMARY or
-        chosen_model == ModelType.IMAGE or
-        chosen_model == ModelType.MUSIC or
-        chosen_model == ModelType.VIDEO
-    ):
-        await handle_info_selection(callback_query, state, chosen_model)
-        return
-    elif chosen_model == 'next' or chosen_model == 'back':
-        page = int(callback_query.data.split(':')[2])
-        await handle_model(callback_query.message, str(callback_query.from_user.id), state, True, page)
+    chosen_model = callback_query.data.split(":")[1]
+    chosen_version = ""
 
+    # Page controls handling
+    if chosen_model == "page":
         return
-    elif (
-        chosen_model == Model.CHAT_GPT or
-        chosen_model == Model.CLAUDE or
-        chosen_model == Model.GEMINI or
-        chosen_model == Model.DEEP_SEEK or
-        chosen_model == Model.STABLE_DIFFUSION or
-        chosen_model == Model.FLUX
+    if chosen_model in (ModelType.TEXT, ModelType.SUMMARY, ModelType.IMAGE, ModelType.MUSIC, ModelType.VIDEO):
+        return await handle_info_selection(callback_query, state, chosen_model)
+    if chosen_model in {"next", "back"}:
+        page = int(callback_query.data.split(":")[2])
+        return await handle_model(
+            callback_query.message,
+            str(callback_query.from_user.id),
+            state,
+            page=page,
+            is_edit=True,
+        )
+
+    # Model version selection handling
+    if chosen_model in (
+        Model.CHAT_GPT,
+        Model.CLAUDE,
+        Model.GEMINI,
+        Model.DEEP_SEEK,
+        Model.STABLE_DIFFUSION,
+        Model.FLUX,
     ):
         page = 0 if get_model_type(chosen_model) == ModelType.TEXT else 2
-        if len(callback_query.data.split(':')) > 2:
-            action = callback_query.data.split(':')[2]
-            if action == 'back':
-                await handle_model(
+        if len(callback_query.data.split(":")) > 2:
+            action = callback_query.data.split(":")[2]
+            if action == "back":
+                return await handle_model(
                     callback_query.message,
                     str(callback_query.from_user.id),
                     state,
-                    True,
-                    page,
-                    None,
+                    page=page,
+                    is_edit=True,
                 )
-                return
-            else:
-                chosen_version = callback_query.data.split(':')[2]
+            chosen_version = callback_query.data.split(":")[2]
         else:
-            await handle_model(
+            return await handle_model(
                 callback_query.message,
                 str(callback_query.from_user.id),
                 state,
-                True,
-                page,
-                chosen_model,
+                chosen_model=chosen_model,
+                is_edit=True,
+                page=page,
             )
-            return
 
+    # Set check mark on selected model
     keyboard = callback_query.message.reply_markup.inline_keyboard
     keyboard_changed = False
 
@@ -180,26 +180,28 @@ async def handle_model_selection(callback_query: CallbackQuery, state: FSMContex
         new_row = []
         for button in row:
             text = button.text
-            callback_data = button.callback_data.split(':', 1)[1]
+            callback_data = button.callback_data.split(":", 1)[1]
 
             if (
-                (callback_data.startswith(chosen_model) and callback_data.endswith(chosen_version)) or
-                callback_data == chosen_model
-            ):
-                if '✅' not in text:
-                    text += ' ✅'
+                callback_data.startswith(chosen_model) and callback_data.endswith(chosen_version)
+            ) or callback_data == chosen_model:
+                if "✅" not in text:
+                    text += " ✅"
                     keyboard_changed = True
             else:
-                text = text.replace(' ✅', '')
+                text = text.replace(" ✅", "")
             new_row.append(InlineKeyboardButton(text=text, callback_data=button.callback_data))
         new_keyboard.append(new_row)
 
+    # Switch user model to selected
     user_id = str(callback_query.from_user.id)
     user = await get_user(user_id)
     user_language_code = await get_user_language(user_id, state.storage)
 
     user.current_model = chosen_model
+
     reply_markup = build_switched_to_ai_keyboard(user_language_code, user.current_model)
+
     if keyboard_changed:
         if chosen_model == Model.CHAT_GPT:
             user.settings[Model.CHAT_GPT][UserSettings.VERSION] = chosen_version
@@ -213,11 +215,16 @@ async def handle_model_selection(callback_query: CallbackQuery, state: FSMContex
             user.settings[Model.STABLE_DIFFUSION][UserSettings.VERSION] = chosen_version
         elif chosen_model == Model.FLUX:
             user.settings[Model.FLUX][UserSettings.VERSION] = chosen_version
+        elif chosen_model == Model.GROK:
+            user.settings[Model.GROK][UserSettings.VERSION] = GrokGPTVersion.V3
 
-        await update_user(user_id, {
-            'current_model': user.current_model,
-            'settings': user.settings,
-        })
+        await update_user(
+            user_id,
+            {
+                "current_model": user.current_model,
+                "settings": user.settings,
+            },
+        )
         await callback_query.message.edit_reply_markup(reply_markup=InlineKeyboardMarkup(inline_keyboard=new_keyboard))
 
         text = await get_switched_to_ai_model(
@@ -232,11 +239,10 @@ async def handle_model_selection(callback_query: CallbackQuery, state: FSMContex
             allow_sending_without_reply=True,
         )
 
-        try:
-            await callback_query.bot.unpin_all_chat_messages(user.telegram_chat_id)
-            await callback_query.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
-        except (TelegramBadRequest, TelegramRetryAfter):
-            pass
+        with contextlib.suppress(TelegramBadRequest, TelegramRetryAfter): # is raised if user not have any pinned msgs
+            await callback_query.bot.unpin_all_chat_messages(callback_query.message.chat.id)
+
+        await callback_query.bot.pin_chat_message(user.telegram_chat_id, answered_message.message_id)
     else:
         await callback_query.message.reply(
             text=get_localization(user_language_code).MODEL_ALREADY_SWITCHED_TO_THIS_MODEL,

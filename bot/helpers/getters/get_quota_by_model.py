@@ -1,3 +1,4 @@
+from bot import helpers
 from bot.database.models.common import (
     Model,
     Quota,
@@ -39,7 +40,7 @@ def get_quota_by_model(model: Model, version: str):
         elif version == GeminiGPTVersion.V1_Ultra:
             return Quota.GEMINI_1_ULTRA
     elif model == Model.GROK:
-        return Quota.GROK_2
+        return Quota.GROK_3
     elif model == Model.DEEP_SEEK:
         if version == DeepSeekVersion.V3:
             return Quota.DEEP_SEEK_V3
@@ -85,5 +86,8 @@ def get_quota_by_model(model: Model, version: str):
         return Quota.LUMA_RAY
     elif model == Model.PIKA:
         return Quota.PIKA
+    elif model == Model.GPT_IMAGE:
+        if version == helpers.gpt_image.Version.V1:
+            return Quota.GPT_IMAGE
     else:
         raise NotImplementedError(f'User Model is not Implemented: {model}')

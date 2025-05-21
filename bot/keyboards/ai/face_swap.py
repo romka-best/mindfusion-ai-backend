@@ -92,16 +92,3 @@ def build_face_swap_chosen_package_keyboard(language_code: LanguageCode, quantit
     ])
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
-
-
-def build_face_swap_upload_photo_keyboard(language_code: LanguageCode):
-    buttons = [
-        [
-            InlineKeyboardButton(
-                text=get_localization(language_code).PROFILE_UPLOAD_PHOTO,
-                callback_data=f'profile:change_photo'
-            ),
-        ],
-    ]
-
-    return InlineKeyboardMarkup(inline_keyboard=buttons)

@@ -1,3 +1,6 @@
+import re
+from contextlib import AsyncExitStack
+import traceback
 from typing import Optional
 
 import aiohttp
@@ -8,31 +11,33 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram.utils.chat_action import ChatActionSender
 
-from bot.config import config, MessageEffect, MessageSticker
+from bot.config import MessageEffect, MessageSticker, config
 from bot.database.models.common import Model, Quota
 from bot.database.models.generation import GenerationStatus
 from bot.database.models.request import RequestStatus
-from bot.database.models.user import UserSettings, User
+from bot.database.models.user import User, UserSettings
 from bot.database.operations.generation.getters import get_generations_by_request_id
 from bot.database.operations.generation.updaters import update_generation
 from bot.database.operations.generation.writers import write_generation
 from bot.database.operations.product.getters import get_product_by_quota
 from bot.database.operations.request.getters import get_started_requests_by_user_id_and_product_id
-from bot.database.operations.request.updaters import update_request
-from bot.database.operations.request.writers import write_request
 from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user
 from bot.helpers.getters.get_quota_by_model import get_quota_by_model
 from bot.helpers.getters.get_switched_to_ai_model import get_switched_to_ai_model
-from bot.helpers.senders.send_error_info import send_error_info
-from bot.integrations.kling import generate_video
+from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
+from bot.integrations.kling import extend_video, generate_video
 from bot.keyboards.ai.model import build_switched_to_ai_keyboard
 from bot.keyboards.common.common import build_error_keyboard
-from bot.locales.main import get_user_language, get_localization
+from bot.locales.main import get_localization, get_user_language
 from bot.locales.translate_text import translate_text
 from bot.locales.types import LanguageCode
-from replicate.exceptions import ReplicateError
-from bot.helpers.senders.send_ai_model_internal_error import send_internal_ai_model_error
+from bot.utils.ctx_managers.generation_record_ctx import GenerationRecordCtx
+from bot.utils.ctx_managers.processing_msgs_ctx import ProcessingMsgsCtx
+from bot.utils.ctx_managers.request_record_ctx import RequestRecordCtx
+from bot.utils.is_messages_limit_exceeded import is_messages_limit_exceeded
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
+
 
 kling_router = Router()
 
@@ -78,53 +83,57 @@ async def handle_kling(
     message: Message,
     state: FSMContext,
     user: User,
-    video_frame_link: Optional[str] = None
+    video_frame_link: Optional[str] = None,
 ):
+    # Params
     user_language_code = await get_user_language(user.id, state.storage)
     user_data = await state.get_data()
 
-    prompt = user_data.get('recognized_text', '')
+    prompt = user_data.get("recognized_text", "")
     if not prompt:
         if message.caption:
             prompt = message.caption
         elif message.text:
             prompt = message.text
         else:
-            prompt = ''
+            prompt = ""
 
-    processing_sticker = await message.answer_sticker(
-        sticker=config.MESSAGE_STICKERS.get(MessageSticker.VIDEO_GENERATION),
-    )
-    processing_message = await message.reply(
-        text=get_localization(user_language_code).model_video_processing_request(),
-        allow_sending_without_reply=True,
-    )
-
-    async with ChatActionSender.upload_video(bot=message.bot, chat_id=message.chat.id):
-        product = await get_product_by_quota(Quota.KLING)
-
-        user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
-
-        if len(user_not_finished_requests):
-            await message.reply(
-                text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
-                allow_sending_without_reply=True,
-            )
-
-            await processing_sticker.delete()
-            await processing_message.delete()
-            return
-
-        request = await write_request(
-            user_id=user.id,
-            processing_message_ids=[processing_sticker.message_id, processing_message.message_id],
-            product_id=product.id,
-            requested=1,
+    # Validation
+    product = await get_product_by_quota(Quota.KLING)
+    user_not_finished_requests = await get_started_requests_by_user_id_and_product_id(user.id, product.id)
+    if len(user_not_finished_requests):
+        return await message.reply(
+            text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
+            allow_sending_without_reply=True,
         )
 
-        try:
+    # Generation
+    try:
+        async with AsyncExitStack() as stack:
+            # Prepare ctxs
+            await stack.enter_async_context(ChatActionSender.upload_video(bot=message.bot, chat_id=message.chat.id))
+            processing_msgs_ctx = await stack.enter_async_context(
+                ProcessingMsgsCtx(
+                    message,
+                    config.MESSAGE_STICKERS.get(MessageSticker.VIDEO_GENERATION),
+                    get_localization(user_language_code).model_video_processing_request(),
+                ),
+            )
+            request_record_ctx = await stack.enter_async_context(
+                RequestRecordCtx(
+                    user_id=user.id,
+                    processing_message_ids=processing_msgs_ctx.ids,
+                    product_id=product.id,
+                    requested=1,
+                ),
+            )
+            gen_ctx = await stack.enter_async_context(GenerationRecordCtx())
+
+            # Translate
             if prompt and user_language_code != LanguageCode.EN:
                 prompt = await translate_text(prompt, user_language_code, LanguageCode.EN)
+
+            # Send genretaion
             result_id = await generate_video(
                 prompt,
                 user.settings[Model.KLING][UserSettings.VERSION],
@@ -134,71 +143,149 @@ async def handle_kling(
                 video_frame_link,
             )
 
-            await write_generation(
+            gen_ctx.add(
+                await write_generation(
+                    id=result_id,
+                    request_id=request_record_ctx.request.id,
+                    product_id=product.id,
+                    has_error=result_id is None,
+                    details={
+                        "prompt": prompt,
+                        "version": user.settings[Model.KLING][UserSettings.VERSION],
+                        "mode": user.settings[Model.KLING][UserSettings.MODE],
+                        "duration": user.settings[Model.KLING][UserSettings.DURATION],
+                        "aspect_ratio": user.settings[Model.KLING][UserSettings.ASPECT_RATIO],
+                        "video_first_frame_link": video_frame_link,
+                    },
+                ),
+            )
+    except aiohttp.ClientResponseError as e:
+        if e.status == 500:
+            await send_internal_ai_model_error(user_language_code, message, Model.KLING)
+        else:
+            raise
+    except Exception as e:
+        if "the prompt contains sensitive words" in str(e).lower():
+            await message.answer_sticker(
+                sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
+            )
+            await message.reply(
+                text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
+                allow_sending_without_reply=True,
+            )
+        elif "too many requests" in str(e).lower():
+            await message.answer(
+                text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
+                allow_sending_without_reply=True,
+            )
+        else:
+            await message.answer_sticker(
+                sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
+            )
+
+
+@kling_router.callback_query(lambda c: c.data.startswith("kling:extend:"))
+async def kling_extend_video(callback_query, state):
+    # Prepare params
+    _, _, task_id, duration = callback_query.data.split(":")
+    duration = int(duration)
+
+    message = callback_query.message
+    user_id = str(callback_query.from_user.id)
+    user = await get_user(user_id)
+    user_language_code = await get_user_language(user_id, state.storage)
+    product = await get_product_by_quota(Quota.KLING)
+
+    # Validation
+    is_user_has_unfinished_requests = bool(await get_started_requests_by_user_id_and_product_id(user.id, product.id))
+    is_limit_exceeded = await is_messages_limit_exceeded(callback_query.message, state, user, Quota.KLING)
+
+    if is_user_has_unfinished_requests:
+        return await message.reply(
+            text=get_localization(user_language_code).MODEL_ALREADY_MAKE_REQUEST,
+            allow_sending_without_reply=True,
+        )
+    if is_limit_exceeded:
+        return
+
+    # Generation
+    # ENCH: Error handling class
+    try:
+        async with AsyncExitStack() as stack:
+            # Prepare ctxs
+            await stack.enter_async_context(ChatActionSender.upload_photo(bot=message.bot, chat_id=message.chat.id))
+            processing_msgs_ctx = await stack.enter_async_context(
+                ProcessingMsgsCtx(
+                    message,
+                    config.MESSAGE_STICKERS.get(MessageSticker.VIDEO_GENERATION),
+                    get_localization(user_language_code).model_video_processing_request(),
+                ),
+            )
+            request_record_ctx = await stack.enter_async_context(
+                RequestRecordCtx(
+                    user_id=user.id,
+                    processing_message_ids=processing_msgs_ctx.ids,
+                    product_id=product.id,
+                    requested=1,
+                ),
+            )
+            gen_ctx = await stack.enter_async_context(GenerationRecordCtx())
+
+            result_id = await extend_video(
+                user.settings[Model.KLING][UserSettings.VERSION],
+                user.settings[Model.KLING][UserSettings.MODE],
+                duration,
+                user.settings[Model.KLING][UserSettings.ASPECT_RATIO],
+                task_id,
+            )
+
+            gen_ctx.add(await write_generation(
                 id=result_id,
-                request_id=request.id,
+                request_id=request_record_ctx.request.id,
                 product_id=product.id,
                 has_error=result_id is None,
                 details={
-                    'prompt': prompt,
-                    'version': user.settings[Model.KLING][UserSettings.VERSION],
-                    'mode': user.settings[Model.KLING][UserSettings.MODE],
-                    'duration': user.settings[Model.KLING][UserSettings.DURATION],
-                    'aspect_ratio': user.settings[Model.KLING][UserSettings.ASPECT_RATIO],
-                    'video_first_frame_link': video_frame_link,
-                }
+                    "version": user.settings[Model.KLING][UserSettings.VERSION],
+                    "mode": user.settings[Model.KLING][UserSettings.MODE],
+                    "duration": duration,
+                    "aspect_ratio": user.settings[Model.KLING][UserSettings.ASPECT_RATIO],
+                },
+            ))
+    except aiohttp.ClientResponseError as e:
+        if e.status == 500:
+            await send_internal_ai_model_error(user_language_code, message, Model.KLING)
+        else:
+            raise
+    except Exception as e:
+        if "the prompt contains sensitive words" in str(e).lower():
+            await message.answer_sticker(
+                sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
             )
-        except aiohttp.ClientResponseError as e:
-            if e.status == 500:
-                await send_internal_ai_model_error(
-                    user_language_code, message, Model.KLING
-                )
-        except Exception as e:
-            if 'the prompt contains sensitive words' in str(e).lower():
-                await message.answer_sticker(
-                    sticker=config.MESSAGE_STICKERS.get(MessageSticker.FEAR),
-                )
-                await message.reply(
-                    text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
-                    allow_sending_without_reply=True,
-                )
-            elif 'too many requests' in str(e).lower():
-                await message.answer(
-                    text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
-                    allow_sending_without_reply=True,
-                )
-            else:
-                await message.answer_sticker(
-                    sticker=config.MESSAGE_STICKERS.get(MessageSticker.ERROR),
-                )
+            await message.reply(
+                text=get_localization(user_language_code).ERROR_REQUEST_FORBIDDEN,
+                allow_sending_without_reply=True,
+            )
+        elif "too many requests" in str(e).lower():
+            await message.answer(
+                text=get_localization(user_language_code).ERROR_SERVER_OVERLOADED,
+                allow_sending_without_reply=True,
+            )
+        else:
+            await message.answer(
+                text=get_localization(user_language_code).ERROR,
+                reply_markup=build_error_keyboard(user_language_code),
+            )
 
-                await message.answer(
-                    text=get_localization(user_language_code).ERROR,
-                    reply_markup=build_error_keyboard(user_language_code),
-                )
-                await send_error_info(
-                    bot=message.bot,
-                    user_id=user.id,
-                    info=str(e),
-                    hashtags=['kling'],
-                )
+            await notify_error_channel(
+                bot=message.bot,
+                user_id=user.id,
+                info=str(e),
+                stack_trace=traceback.format_exc(),
+                hashtags=["kling"],
+            )
 
-            request.status = RequestStatus.FINISHED
-            await update_request(request.id, {
-                'status': request.status
-            })
+            raise
 
-            generations = await get_generations_by_request_id(request.id)
-            for generation in generations:
-                generation.status = GenerationStatus.FINISHED
-                generation.has_error = True
-                await update_generation(
-                    generation.id,
-                    {
-                        'status': generation.status,
-                        'has_error': generation.has_error,
-                    },
-                )
 
-            await processing_sticker.delete()
-            await processing_message.delete()
+
+

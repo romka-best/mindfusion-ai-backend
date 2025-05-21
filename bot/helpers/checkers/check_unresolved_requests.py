@@ -9,7 +9,7 @@ from bot.database.operations.request.updaters import update_request
 from bot.helpers.senders.send_message_to_admins_and_developers import send_message_to_admins_and_developers
 from bot.keyboards.ai.model import build_model_unresolved_request_keyboard
 from bot.locales.main import get_user_language, get_localization
-
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 
 async def check_unresolved_requests(bot: Bot, dp: Dispatcher):
     today_utc_day = datetime.now(timezone.utc)
@@ -50,9 +50,10 @@ async def check_unresolved_requests(bot: Bot, dp: Dispatcher):
         count_unresolved_requests += 1
 
     if count_unresolved_requests > 0:
-        await send_message_to_admins_and_developers(
+        await notify_error_channel(
             bot,
-            f'⚠️ <b>Внимание!</b>\n\nЯ нашёл генерации, которым больше 30 минут ❗️\n\nКоличество: {count_unresolved_requests}\n\nМодели: {", ".join(product_names.values())}',
+            "",
+            f"""⚠️ <b>Внимание!</b>\n\nЯ нашёл генерации, которым больше 30 минут ❗️\n\nКоличество: {count_unresolved_requests}\n\nМодели: {", ".join(product_names.values())}"""
         )
     else:
         await send_message_to_admins_and_developers(

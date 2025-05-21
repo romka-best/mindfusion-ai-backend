@@ -4,6 +4,7 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import StorageKey
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.markdown import hlink
 
 from bot.config import config, MessageSticker
@@ -22,20 +23,23 @@ from bot.database.operations.user.getters import get_user
 from bot.database.operations.user.updaters import update_user
 from bot.handlers.ai.suno_handler import PRICE_SUNO
 from bot.helpers.senders.send_audio import send_audio
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.senders.send_video import send_video
 from bot.helpers.updaters.update_user_usage_quota import get_user_with_updated_quota
 from bot.keyboards.ai.suno import build_suno_keyboard
 from bot.keyboards.common.common import build_reaction_keyboard, build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 
 
 async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
     first_generation = await get_generation(f'{body.get("task_id")}-1')
     second_generation = await get_generation(f'{body.get("task_id")}-2')
+
     if not first_generation and not second_generation:
         return False
-    elif first_generation.status == GenerationStatus.FINISHED and second_generation.status == GenerationStatus.FINISHED:
+    if first_generation.details.get("action", "") == "concat" and first_generation.status == GenerationStatus.FINISHED:
+        return { "error": "action concat, generation already finished" }
+    if first_generation.status == GenerationStatus.FINISHED and second_generation.status == GenerationStatus.FINISHED:
         return True
 
     request = await get_request(first_generation.request_id)
@@ -45,7 +49,10 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
     is_generations_success, generations_result = body.get('success', False), body.get('data', [])
 
     first_generation.status = GenerationStatus.FINISHED
-    second_generation.status = GenerationStatus.FINISHED
+
+    if second_generation: # Empty when generation return only one song
+        second_generation.status = GenerationStatus.FINISHED
+
     if not is_generations_success:
         first_generation.has_error = True
         second_generation.has_error = True
@@ -53,10 +60,12 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
             'status': first_generation.status,
             'has_error': first_generation.has_error,
         })
-        await update_generation(second_generation.id, {
-            'status': second_generation.status,
-            'has_error': second_generation.has_error,
-        })
+
+        if second_generation: # Empty when generation return only one song
+            await update_generation(second_generation.id, {
+                'status': second_generation.status,
+                'has_error': second_generation.has_error,
+            })
 
         error_message = body.get('error', {}).get('message', '')
         logging.exception(f'Error in suno_webhook', error_message)
@@ -70,14 +79,15 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
             text=get_localization(user_language_code).ERROR,
             reply_markup=build_error_keyboard(user_language_code),
         )
-        await send_error_info(
+
+        await notify_error_channel(
             bot=bot,
             user_id=user.id,
             info=str(error_message),
-            hashtags=['suno', 'webhook'],
+            hashtags=["suno", "webhook"]
         )
     else:
-        for i, current_generation in enumerate([first_generation, second_generation]):
+        for i, current_generation in enumerate(list(filter(None, [first_generation, second_generation]))):
             generation_result = generations_result[i]
             current_generation.result = generation_result.get('audio_url', '')
             current_generation_new_details = {
@@ -98,7 +108,7 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
             })
 
     if len(generations_result) > 0:
-        for i, current_generation in enumerate([first_generation, second_generation]):
+        for i, current_generation in enumerate(list(filter(None, [first_generation, second_generation]))):
             generation_result = generations_result[i]
             (
                 duration,
@@ -114,7 +124,39 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
                 format_lyrics(generation_result.get('lyric', '')),
             )
 
-            reply_markup = build_reaction_keyboard(current_generation.id)
+            # Build action btns
+            reply_markup = InlineKeyboardMarkup(inline_keyboard=[])
+
+            reply_markup.inline_keyboard.extend(build_reaction_keyboard(current_generation.id).inline_keyboard)
+
+            # Additional actions for song. The action is the previous action which used to generation the current song
+            match current_generation.details.get("action", ""):
+                case "extend":
+                    reply_markup.inline_keyboard.extend(
+                        [
+                            [
+                                InlineKeyboardButton(
+                                    text=get_localization(user_language_code).CONCAT_AUDIO,
+                                    callback_data=f"action:suno:concat:{current_generation.details['id']}",
+                                ),
+                            ],
+                        ],
+                    )
+                case "concat":
+                    pass
+                case _:  # When it's the first generation, the song isn't extended or concatenated
+                    reply_markup.inline_keyboard.extend(
+                        [
+                            [
+                                InlineKeyboardButton(
+                                    text=get_localization(user_language_code).EXTEND_AUDIO,
+                                    callback_data=f"action:suno:extend:{body.get('task_id')}-{i + 1}",
+                                ),
+                            ],
+                        ],
+                    )
+
+            # Send generation result
             if user.settings[Model.SUNO][UserSettings.SEND_TYPE] == SendType.VIDEO and video_url:
                 answered_message = await send_video(
                     bot=bot,
@@ -145,6 +187,7 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
                     duration=duration,
                     reply_markup=reply_markup,
                 )
+
 
             if answered_message:
                 await bot.send_message(
@@ -192,7 +235,7 @@ async def handle_suno_webhook(bot: Bot, dp: Dispatcher, body: dict):
                 details={
                     'mode': request.details.get('mode'),
                     'is_suggestion': request.details.get('is_suggestion', False),
-                    'has_error': first_generation.has_error or second_generation.has_error,
+                    'has_error': first_generation.has_error or getattr(second_generation, "has_error", None),
                 }
             ),
             update_user(user.id, {
