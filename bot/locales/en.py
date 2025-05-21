@@ -3224,3 +3224,55 @@ So, once more: when exactly did this financial miracle occur? 🗓️
 ⚠️ Error in midjourney parameters {error_params}
 https://docs.midjourney.com/hc/en-us/articles/32859204029709-Parameter-List
 """
+
+    SETTINGS = "⚙️ Settings"
+
+    ACTION_GENERATION_WITH_TEXT_PROMPT = "📝 Text-based generation"
+    ACTION_GENERATION_WITH_REF_IMAGES = "🖼 Image-based generation"
+    ASK_TEXT_PROMPT = "✍️ Send the prompt"
+
+    @classmethod
+    def ask_ref_images(cls, n):
+        return f"Send up to {n} reference images 📸 in one message\n\nSend the prompt in a separate text message ✍️"
+
+    WAITING_YOUR_NEXT_IDEA = "✨ Waiting for your next idea!"
+
+    GENERATION_SETTING_BACKGROUND = "🖼️ Image background"
+
+    # As TG documnt or photo
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT = "📷 Image format"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_ORIGINAL = "Original"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_COMPRESSED = "Compressed"
+
+    @staticmethod
+    def generation_setting_image_bg(value):
+        value = value.lower()
+        match value:
+            case "auto":
+                return "Auto"
+            case "opaque":
+                return "Opaque"
+            case "transparent":
+                return "Transparent"
+
+    @staticmethod
+    def generation_setting_image_quality(value):
+        value = value.lower()
+        match value:
+            case "low":
+                return "Low"
+            case "medium":
+                return "Medium"
+            case "high":
+                return "High"
+
+    @staticmethod
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "Square"
+            case "landscape":
+                return "Landscape"
+            case "portrait":
+                return "Portrait"

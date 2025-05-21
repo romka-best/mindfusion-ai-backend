@@ -2815,3 +2815,54 @@ Puedes obtener acceso haciendo clic en el botón de abajo:
 https://docs.midjourney.com/hc/en-us/articles/32859204029709-Parameter-List
 """
 
+    SETTINGS = "⚙️ Configuraciones"
+
+    ACTION_GENERATION_WITH_TEXT_PROMPT = "📝 Generación basada en texto"
+    ACTION_GENERATION_WITH_REF_IMAGES = "🖼 Generación basada en imágenes"
+    ASK_TEXT_PROMPT = "✍️ Envía el prompt"
+
+    @classmethod
+    def ask_ref_images(cls, n):
+        return f"Envía hasta {n} imágenes de referencia 📸 en un solo mensaje\n\nEnvía el prompt en un mensaje de texto separado ✍️"
+
+    WAITING_YOUR_NEXT_IDEA = "✨ ¡Esperamos tu próxima idea!"
+
+    GENERATION_SETTING_BACKGROUND = "🖼️ Fondo de la imagen"
+
+    # As TG documnt or photo
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT = "📷 Formato de imagen"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_ORIGINAL = "Original"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_COMPRESSED = "Comprimido"
+
+    @staticmethod
+    def generation_setting_image_bg(value):
+        value = value.lower()
+        match value:
+            case "auto":
+                return "Automático"
+            case "opaque":
+                return "Opaco"
+            case "transparent":
+                return "Transparente"
+
+    @staticmethod
+    def generation_setting_image_quality(value):
+        value = value.lower()
+        match value:
+            case "low":
+                return "Baja"
+            case "medium":
+                return "Media"
+            case "high":
+                return "Alta"
+
+    @staticmethod
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "Cuadrado"
+            case "landscape":
+                return "Paisaje"
+            case "portrait":
+                return "Retrato"
