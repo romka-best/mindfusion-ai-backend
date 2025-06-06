@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from enum import StrEnum
 from typing import Optional
+from bot.helpers import gpt_image
 
 from bot.database.models.common import (
     Currency,
@@ -144,6 +145,7 @@ class User:
         Quota.FAST_MESSAGES: False,
         Quota.VOICE_MESSAGES: False,
         Quota.ACCESS_TO_CATALOG: False,
+        Quota.GPT_IMAGE: 0,
     }
 
     DEFAULT_SETTINGS = {
@@ -325,6 +327,14 @@ class User:
             UserSettings.VERSION: PikaVersion.V2,
             UserSettings.ASPECT_RATIO: AspectRatio.LANDSCAPE,
             UserSettings.SHOW_EXAMPLES: False,
+        },
+        Model.GPT_IMAGE: {
+            "version": gpt_image.Version.V1,
+            "show_usage_quota": False,
+            "size": gpt_image.user.settings.Size.SQUARE.value,
+            "quality": gpt_image.user.settings.Quality.LOW.value,
+            "background": gpt_image.user.settings.Background.AUTO.value,
+            "compression": gpt_image.user.settings.Compression.NO.value,
         },
     }
 

@@ -67,6 +67,7 @@ SUBSCRIPTION_FREE_LIMITS = {
     Quota.ACCESS_TO_CATALOG: False,
     Quota.FAST_MESSAGES: False,
     Quota.VOICE_MESSAGES: False,
+    Quota.GPT_IMAGE: 0,
 }
 
 
