@@ -379,6 +379,14 @@ Try shortening the text — otherwise, the model might take a vacation 🌴
 
 Waiting for a new, more compact prompt ✨
 """
+    ERROR_PROMPT_IS_EMPTY = """
+🤔 <b>Where’s the prompt?</b>
+
+You didn’t send anything.
+Without that, I can’t generate anything 😢
+
+Try again — I’m waiting for inspiration! ✨
+"""
     ERROR_REQUEST_FORBIDDEN = """
 🚨 <b>Oops! Your Request Didn’t Pass the Check</b>
 
@@ -400,8 +408,7 @@ Please review the text/photo for prohibited content and try again 😌
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 1.5 Flash 🏎
     ┣ Gemini 2.5 Pro 💼
-    ┣ Gemini 1.0 Ultra 🛡️
-    ┗ Grok 2.0 🐦
+    ┗ Gemini 1.0 Ultra 🛡️
 
 🖼 <b>Image Models</b>:
     ┣ 🎨 Midjourney
@@ -468,6 +475,14 @@ The image's width-to-height ratio must be between {min_ratio} and {max_ratio}.
 
         text += "\n\n Please try again with a different image 😉"
         return text
+
+    @staticmethod
+    def error_internal_ai_model(ai_model_name) -> str:
+        return f"⚠️ An error occurred on the {ai_model_name} side. Please try again later."
+
+    @staticmethod
+    def error_photo_bundle_empty():
+        return "⚠️ There are no photos in your profile. Please upload at least one photo and try again."
 
     @staticmethod
     def error_internal_ai_model(ai_model_name) -> str:
@@ -578,6 +593,10 @@ You only have <b>{available_images} generations</b> left in your arsenal
 
 💡 <b>Tip:</b> Try a smaller number, or use /buy for unlimited possibilities!
 """
+
+    @staticmethod
+    def wait_for_lora_train():
+        return "🤖 Training my neural network to provide you with better answers — this only needs to be done once. It usually takes 10 minutes."
 
     # Feedback
     FEEDBACK_INFO = """
@@ -2069,7 +2088,7 @@ Choose action 👇
     ┣ 🧩 ChatGPT o4-mini{f': extra {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ''}
     ┣ 💫 Claude 3.7 Sonnet{f': extra {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 2.5 Pro{f': extra {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
-    ┣ 🐦 Grok 2.0{f': extra {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
+    ┣ 🐦 Grok 3.0{f': extra {additional_usage_quota[Quota.GROK_3]}' if additional_usage_quota[Quota.GROK_3] > 0 else ''}
     ┣ 🌐 Perplexity{f': extra {additional_usage_quota[Quota.PERPLEXITY]}' if additional_usage_quota[Quota.PERPLEXITY] > 0 else ''}
     ┗ Daily Limits: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}
 
@@ -2096,6 +2115,7 @@ Choose action 👇
     ┗ Daily Limits: {format_number(daily_limits[Quota.STABLE_DIFFUSION_XL])}/{format_number(subscription_limits[Quota.STABLE_DIFFUSION_XL])}
 
 <b>Advanced</b>:
+    ┣ {Texts.GPT_IMAGE}{f': extra {additional_usage_quota[Quota.GPT_IMAGE]}' if additional_usage_quota[Quota.GPT_IMAGE] > 0 else ''}
     ┣ 👨‍🎨 DALL-E 3{f': extra {additional_usage_quota[Quota.DALL_E]}' if additional_usage_quota[Quota.DALL_E] > 0 else ''}
     ┣ 🎨 Midjourney 7{f': extra {additional_usage_quota[Quota.MIDJOURNEY]}' if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ''}
     ┣ 🧑‍🚀 Stable Diffusion 3.5{f': extra {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ''}
@@ -2556,7 +2576,7 @@ To subscribe, pick your potion and hit the button below:
                 Quota.CHAT_GPT_O_4_MINI,
                 Quota.CLAUDE_3_SONNET,
                 Quota.GEMINI_2_PRO,
-                Quota.GROK_2,
+                Quota.GROK_3,
                 Quota.DEEP_SEEK_R1,
                 Quota.PERPLEXITY
         ]
@@ -3122,3 +3142,136 @@ So, once more: when exactly did this financial miracle occur? 🗓️
         ]
 
         return random.choice(texts)
+
+    @staticmethod
+    def menu_bundle_photo_managment():
+        return "🖼 Photo Management"
+
+    @staticmethod
+    def photo_bundle_delete_all_confirm():
+        return "⚠️ Are you sure you want to delete ALL photos?"
+
+    @staticmethod
+    def menu_photo_bundle_show():
+        return "🖼 You can upload up to 10 photos here to use them for face swap.\
+ Use the buttons below to add, delete, or replace photos."
+
+    @staticmethod
+    def menu_photo_bundle_show_upload():
+        return "⬆️ Upload"
+
+    @staticmethod
+    def menu_photo_bundle_show_edit():
+        return "🔁 Replace one"
+
+    @staticmethod
+    def menu_photo_bundle_delete_one():
+        return "❌ Delete one"
+
+    @staticmethod
+    def menu_photo_bundle_delete_all():
+        return "🗑 Delete all"
+
+    @staticmethod
+    def menu_photo_bundle_back_to_profile():
+        return "👤 Back to profile"
+
+    @staticmethod
+    def menu_photo_bundle_delete_mode():
+        return "🔢 Select the photo number you want to delete."
+
+    @staticmethod
+    def menu_photo_bundle_back_to_photos():
+        return "📂 Back to photos"
+
+    @staticmethod
+    def menu_photo_bundle_edit_mode():
+        return "🔢 Select the photo number you want to replace."
+
+    @staticmethod
+    def menu_photo_bundle_upload_limit_reached():
+        return "🚫 Photo limit reached, these photos were not uploaded. You can delete or replace existing ones."
+
+    @staticmethod
+    def menu_photo_bundle_new():
+        return "📥 Send one or more photos."
+
+    @staticmethod
+    def menu_photo_bundle_edit():
+        return "📥 Send a new photo for replacement."
+
+    @staticmethod
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "Square"
+            case "landscape":
+                return "Landscape"
+            case "portrait":
+                return "Portrait"
+    ASK_EXTEND_VIDEO = "🎥 Want to extend the video?"
+
+    EXTEND_AUDIO = "Extend"
+
+    CONCAT_AUDIO = "Combine"
+    @staticmethod
+    def midjourney_params_error(prompt, error_params):
+        return f"""
+{prompt}
+
+⚠️ Error in midjourney parameters {error_params}
+https://docs.midjourney.com/hc/en-us/articles/32859204029709-Parameter-List
+"""
+
+    SETTINGS = "⚙️ Settings"
+
+    ACTION_GENERATION_WITH_TEXT_PROMPT = "📝 Text-based generation"
+    ACTION_GENERATION_WITH_REF_IMAGES = "🖼 Image-based generation"
+    ASK_TEXT_PROMPT = "✍️ Send the prompt"
+
+    @classmethod
+    def ask_ref_images(cls, n):
+        return f"Send up to {n} reference images 📸 in one message\n\nSend the prompt in a separate text message ✍️"
+
+    WAITING_YOUR_NEXT_IDEA = "✨ Waiting for your next idea!"
+
+    GENERATION_SETTING_BACKGROUND = "🖼️ Image background"
+
+    # As TG documnt or photo
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT = "📷 Image format"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_ORIGINAL = "Original"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_COMPRESSED = "Compressed"
+
+    @staticmethod
+    def generation_setting_image_bg(value):
+        value = value.lower()
+        match value:
+            case "auto":
+                return "Auto"
+            case "opaque":
+                return "Opaque"
+            case "transparent":
+                return "Transparent"
+
+    @staticmethod
+    def generation_setting_image_quality(value):
+        value = value.lower()
+        match value:
+            case "low":
+                return "Low"
+            case "medium":
+                return "Medium"
+            case "high":
+                return "High"
+
+    @staticmethod
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "Square"
+            case "landscape":
+                return "Landscape"
+            case "portrait":
+                return "Portrait"

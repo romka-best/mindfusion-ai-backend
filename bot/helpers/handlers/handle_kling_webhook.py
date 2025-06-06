@@ -1,14 +1,16 @@
 import re
 import asyncio
 import logging
+from subprocess import call
 import uuid
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import StorageKey
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.config import config, MessageSticker
-from bot.database.models.common import Quota, Model, SendType, Currency
+from bot.database.models.common import KlingVersion, Quota, Model, SendType, Currency
 from bot.database.models.generation import GenerationStatus, Generation
 from bot.database.models.request import Request, RequestStatus
 from bot.database.models.transaction import TransactionType
@@ -20,13 +22,13 @@ from bot.database.operations.request.updaters import update_request
 from bot.database.operations.transaction.writers import write_transaction
 from bot.database.operations.user.getters import get_user
 from bot.helpers.senders.send_document import send_document
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.senders.send_video import send_video
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
 from bot.integrations.kling import Kling
 from bot.keyboards.common.common import build_reaction_keyboard, build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.types import LanguageCode
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 
 
 async def handle_kling_webhook(bot: Bot, dp: Dispatcher, body: dict):
@@ -82,8 +84,8 @@ async def handle_kling_webhook(bot: Bot, dp: Dispatcher, body: dict):
 
             min_ratio, max_ratio = matches.groupdict().values()
 
-            min_width, min_height = map(float, min_ratio.split(":"))
-            max_width, max_height = map(float, max_ratio.split(":"))
+            min_width, min_height = map(float, min_ratio.split(':'))
+            max_width, max_height = map(float, max_ratio.split(':'))
 
             min_ratio = round(min_width / min_height, 2)
             max_ratio = round(max_width / max_height, 2)
@@ -104,12 +106,13 @@ async def handle_kling_webhook(bot: Bot, dp: Dispatcher, body: dict):
 
             generation.has_error = False
         else:
-            await send_error_info(
+            await notify_error_channel(
                 bot=bot,
                 user_id=user.id,
-                info=generation_error,
-                hashtags=['kling', 'webhook'],
+                info=str(generation_error),
+                hashtags=["kling", "webhook"]
             )
+
             logging.exception(f'Error in kling_webhook: {generation_error}')
     else:
         generation.result = generation_result
@@ -159,6 +162,20 @@ async def handle_kling(
                 height=generation.details.get('height'),
                 reply_markup=build_reaction_keyboard(generation.id),
             )
+
+        # # Currently not working
+        # await bot.send_message(
+        #     chat_id=user.telegram_chat_id,
+        #     text=get_localization(user_language_code).ASK_EXTEND_VIDEO,
+        #     reply_markup=InlineKeyboardMarkup(
+        #         inline_keyboard=[
+        #             [
+        #                 InlineKeyboardButton(text="5", callback_data=f"kling:extend:{generation.id}:5"),
+        #                 InlineKeyboardButton(text="10", callback_data=f"kling:extend:{generation.id}:10"),
+        #             ],
+        #         ],
+        #     ),
+        # )
     elif generation.has_error:
         await bot.send_sticker(
             chat_id=user.telegram_chat_id,

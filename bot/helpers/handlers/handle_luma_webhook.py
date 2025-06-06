@@ -20,7 +20,6 @@ from bot.database.operations.transaction.writers import write_transaction
 from bot.database.operations.user.getters import get_user
 from bot.handlers.ai.luma_handler import PRICE_LUMA_PHOTON, PRICE_LUMA_RAY
 from bot.helpers.senders.send_document import send_document
-from bot.helpers.senders.send_error_info import send_error_info
 from bot.helpers.senders.send_images import send_image
 from bot.helpers.senders.send_video import send_video
 from bot.helpers.updaters.update_user_usage_quota import update_user_usage_quota
@@ -28,6 +27,7 @@ from bot.integrations.luma import get_cost_for_video
 from bot.keyboards.common.common import build_reaction_keyboard, build_error_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.locales.types import LanguageCode
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 
 
 async def handle_luma_webhook(bot: Bot, dp: Dispatcher, body: dict):
@@ -63,12 +63,13 @@ async def handle_luma_webhook(bot: Bot, dp: Dispatcher, body: dict):
             'has_error': generation.has_error,
         })
 
-        await send_error_info(
+        await notify_error_channel(
             bot=bot,
             user_id=user.id,
             info=generation_error,
-            hashtags=['luma', 'webhook'],
+            hashtags=["luma", "webhook"]
         )
+
         logging.exception(f'Error in luma_webhook: {generation_error}')
     else:
         generation.result = generation_result

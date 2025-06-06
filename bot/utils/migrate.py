@@ -1,10 +1,12 @@
-from aiogram import Bot
+from .migrate_gpt_image import migrate as migrate_gpt_image
+from .migrate_grok import migrate as migrate_grok
+from .migrate_photos import migrate as migrate_photos
 
+async def migrate(bot):
+    # STEP 1
+    #await migrate_gpt_image(bot)
+    #await migrate_grok(bot)
 
-# from bot.helpers.senders.send_message_to_admins_and_developers import send_message_to_admins_and_developers
-
-
-async def migrate(bot: Bot):
+    # STEP 2
+    # await migrate_photos(bot)
     pass
-
-    # await send_message_to_admins_and_developers(bot, '<b>Database Migration Was Successful!</b> 🎉')

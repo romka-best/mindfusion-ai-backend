@@ -10,9 +10,9 @@ from bot.database.models.common import PaymentMethod
 from bot.database.models.subscription import Subscription, SubscriptionStatus
 from bot.database.operations.product.getters import get_product
 from bot.database.operations.subscription.updaters import update_subscription_in_transaction
-from bot.helpers.senders.send_message_to_admins import send_message_to_admins
 from bot.locales.main import get_localization
 from bot.locales.types import LanguageCode
+from bot.helpers.notifiers.notify_payment_channel import notify_payment_channel
 
 
 @firestore.async_transactional
@@ -46,9 +46,9 @@ async def unsubscribe(transaction, old_subscription: Subscription, bot: Bot):
     product = await get_product(old_subscription.product_id)
 
     if old_subscription.status == SubscriptionStatus.TRIAL:
-        await send_message_to_admins(
-            bot=bot,
-            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+        await notify_payment_channel(
+            bot,
+            get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
                 status=SubscriptionStatus.CANCELED,
                 subscription=old_subscription,
                 product=product,
@@ -56,9 +56,9 @@ async def unsubscribe(transaction, old_subscription: Subscription, bot: Bot):
             )
         )
     else:
-        await send_message_to_admins(
-            bot=bot,
-            message=get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
+        await notify_payment_channel(
+            bot,
+            get_localization(LanguageCode.RU).admin_payment_subscription_changed_status(
                 status=SubscriptionStatus.CANCELED,
                 subscription=old_subscription,
                 product=product,

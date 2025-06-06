@@ -379,6 +379,14 @@ class Hindi(Texts):
 
 कुछ लिखें — और जादू शुरू होगा 🪄
 """
+    ERROR_PROMPT_IS_EMPTY = """
+🤔 <b>प्रॉम्प्ट कहाँ है?</b>
+
+आपने कुछ नहीं भेजा।
+इसके बिना मैं कुछ जनरेट नहीं कर सकता 😢
+
+फिर से कोशिश करें — मैं प्रेरणा का इंतज़ार कर रहा हूँ! ✨
+"""
     ERROR_PROMPT_TOO_LONG = """
 🚨 <b>ओह! यह प्रॉम्प्ट नहीं, यह तो एक उपन्यास है!</b>
 
@@ -407,8 +415,7 @@ class Hindi(Texts):
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 2.0 Flash 🏎
     ┣ Gemini 2.5 Pro 💼
-    ┣ Gemini 1.0 Ultra 🛡️
-    ┗ Grok 2.0 🐦
+    ┗ Gemini 1.0 Ultra 🛡️
 
 🖼 <b>ग्राफिक मॉडल्स</b>:
     ┣ 🎨 Midjourney
@@ -475,6 +482,14 @@ class Hindi(Texts):
 
         text += "\n\nकृपया किसी अन्य चित्र के साथ पुनः प्रयास करें 😉"
         return text
+
+    @staticmethod
+    def error_internal_ai_model(ai_model_name) -> str:
+        return f"⚠️ मॉडल {ai_model_name} में एक त्रुटि हुई है। कृपया बाद में पुनः प्रयास करें।"
+
+    @staticmethod
+    def error_photo_bundle_empty():
+        return "⚠️ आपकी प्रोफ़ाइल में कोई फ़ोटो नहीं है। कृपया कम से कम एक फ़ोटो अपलोड करें और पुनः प्रयास करें।"
 
     @staticmethod
     def error_internal_ai_model(ai_model_name) -> str:
@@ -585,6 +600,10 @@ class Hindi(Texts):
 
 💡 <b>सुझाव:</b> एक छोटा नंबर आज़माएं, या असीमित संभावनाओं के लिए /buy का उपयोग करें!
 """
+
+    @staticmethod
+    def wait_for_lora_train():
+        return "🤖 मैं अपने न्यूरल नेटवर्क को बेहतर उत्तर देने के लिए प्रशिक्षित कर रहा हूँ — यह केवल एक बार करना होता है। आमतौर पर इसमें 10 मिनट लगते हैं।"
 
     # Feedback
     FEEDBACK_INFO = """
@@ -2076,7 +2095,7 @@ class Hindi(Texts):
     ┣ 🧩 ChatGPT o4-mini{f': अतिरिक्त {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ''}
     ┣ 💫 Claude 3.7 Sonnet{f': अतिरिक्त {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 2.5 Pro{f': अतिरिक्त {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
-    ┣ 🐦 Grok 2.0{f': अतिरिक्त {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
+    ┣ 🐦 Grok 3.0{f': अतिरिक्त {additional_usage_quota[Quota.GROK_3]}' if additional_usage_quota[Quota.GROK_3] > 0 else ''}
     ┣ 🌐 Perplexity{f': अतिरिक्त {additional_usage_quota[Quota.PERPLEXITY]}' if additional_usage_quota[Quota.PERPLEXITY] > 0 else ''}
     ┗ दैनिक सीमा: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}
 
@@ -2103,6 +2122,7 @@ class Hindi(Texts):
     ┗ दैनिक सीमा: {format_number(daily_limits[Quota.STABLE_DIFFUSION_XL])}/{format_number(subscription_limits[Quota.STABLE_DIFFUSION_XL])}
 
 <b>उन्नत</b>:
+    ┣ {Texts.GPT_IMAGE}{f': अतिरिक्त {additional_usage_quota[Quota.GPT_IMAGE]}' if additional_usage_quota[Quota.GPT_IMAGE] > 0 else ''}
     ┣ 👨‍🎨 DALL-E 3{f': अतिरिक्त {additional_usage_quota[Quota.DALL_E]}' if additional_usage_quota[Quota.DALL_E] > 0 else ''}
     ┣ 🎨 Midjourney 7{f': अतिरिक्त {additional_usage_quota[Quota.MIDJOURNEY]}' if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ''}
     ┣ 🧑‍🚀 Stable Diffusion 3.5{f': अतिरिक्त {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ''}
@@ -2565,7 +2585,7 @@ class Hindi(Texts):
                 Quota.CHAT_GPT_O_4_MINI,
                 Quota.CLAUDE_3_SONNET,
                 Quota.GEMINI_2_PRO,
-                Quota.GROK_2,
+                Quota.GROK_3,
                 Quota.DEEP_SEEK_R1,
                 Quota.PERPLEXITY
         ]
@@ -2724,3 +2744,137 @@ class Hindi(Texts):
 
 आप नीचे दिए गए बटन पर क्लिक करके पहुंच प्राप्त कर सकते हैं:
 """
+
+    @staticmethod
+    def menu_bundle_photo_managment():
+        return "🖼 फ़ोटो प्रबंधन"
+
+    @staticmethod
+    def photo_bundle_delete_all_confirm():
+        return "⚠️ क्या आप वाकई में सभी फ़ोटो हटाना चाहते हैं?"
+
+    @staticmethod
+    def menu_photo_bundle_show():
+        return "🖼 आप यहां Face Swap के लिए इस्तेमाल करने हेतु अधिकतम 10 फ़ोटो अपलोड कर सकते हैं।\
+ नीचे दिए गए बटन का उपयोग करके फ़ोटो जोड़ें, हटाएं या बदलें।"
+
+    @staticmethod
+    def menu_photo_bundle_show_upload():
+        return "⬆️ अपलोड करें"
+
+    @staticmethod
+    def menu_photo_bundle_show_edit():
+        return "🔁 एक को बदलें"
+
+    @staticmethod
+    def menu_photo_bundle_delete_one():
+        return "❌ एक को हटाएं"
+
+    @staticmethod
+    def menu_photo_bundle_delete_all():
+        return "🗑 सभी हटाएं"
+
+    @staticmethod
+    def menu_photo_bundle_back_to_profile():
+        return "👤 प्रोफ़ाइल पर वापस जाएं"
+
+    @staticmethod
+    def menu_photo_bundle_delete_mode():
+        return "🔢 जिस फ़ोटो को हटाना है, उसका क्रमांक चुनें।"
+
+    @staticmethod
+    def menu_photo_bundle_back_to_photos():
+        return "📂 फ़ोटो पर वापस जाएं"
+
+    @staticmethod
+    def menu_photo_bundle_edit_mode():
+        return "🔢 जिस फ़ोटो को बदलना है, उसका क्रमांक चुनें।"
+
+    @staticmethod
+    def menu_photo_bundle_upload_limit_reached():
+        return "🚫 फ़ोटो की सीमा पूरी हो गई है, ये फ़ोटो अपलोड नहीं की गईं। आप मौजूदा फ़ोटो को हटा या बदल सकते हैं।"
+
+    @staticmethod
+    def menu_photo_bundle_new():
+        return "📥 एक या एक से अधिक फ़ोटो भेजें।"
+
+    @staticmethod
+    def menu_photo_bundle_edit():
+        return "📥 बदलने के लिए एक नई फ़ोटो भेजें।"
+
+    @staticmethod
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "वर्ग"
+            case "landscape":
+                return "लैंडस्केप"
+            case "portrait":
+                return "पोर्ट्रेट"
+
+    ASK_EXTEND_VIDEO = "🎥 क्या आप वीडियो को बढ़ाना चाहते हैं?"
+
+    EXTEND_AUDIO = "विस्तार करना"
+
+    CONCAT_AUDIO = "जोड़ना"
+    @staticmethod
+    def midjourney_params_error(prompt, error_params):
+        return f"""
+{prompt}
+
+⚠️ Midjourney पैरामीटर्स में त्रुटि  {error_params}
+https://docs.midjourney.com/hc/en-us/articles/32859204029709-Parameter-List
+"""
+
+    SETTINGS = "⚙️ सेटिंग्स"
+
+    ACTION_GENERATION_WITH_TEXT_PROMPT = "📝 टेक्स्ट-आधारित जनरेशन"
+    ACTION_GENERATION_WITH_REF_IMAGES = "🖼 चित्र-आधारित जनरेशन"
+    ASK_TEXT_PROMPT = "✍️ प्रॉम्प्ट भेजें"
+
+    @classmethod
+    def ask_ref_images(cls, n):
+        return f"एक संदेश में {n} तक संदर्भ चित्र 📸 भेजें\n\nप्रॉम्प्ट को अलग टेक्स्ट संदेश में भेजें ✍️"
+
+    WAITING_YOUR_NEXT_IDEA = "✨ आपके अगले विचार की प्रतीक्षा कर रहे हैं!"
+
+    GENERATION_SETTING_BACKGROUND = "🖼️ छवि पृष्ठभूमि"
+
+    # As TG documnt or photo
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT = "📷 छवि प्रारूप"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_ORIGINAL = "मूल"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_COMPRESSED = "संपीड़ित"
+
+    @staticmethod
+    def generation_setting_image_bg(value):
+        value = value.lower()
+        match value:
+            case "auto":
+                return "स्वचालित"
+            case "opaque":
+                return "अपारदर्शी"
+            case "transparent":
+                return "पारदर्शी"
+
+    @staticmethod
+    def generation_setting_image_quality(value):
+        value = value.lower()
+        match value:
+            case "low":
+                return "निम्न"
+            case "medium":
+                return "मध्यम"
+            case "high":
+                return "उच्च"
+
+    @staticmethod
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "वर्ग"
+            case "landscape":
+                return "लैंडस्केप"
+            case "portrait":
+                return "पोर्ट्रेट"

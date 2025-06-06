@@ -13,9 +13,12 @@ from bot.handlers.admin.statistics_handler import handle_statistics
 from bot.keyboards.admin.admin import build_admin_keyboard
 from bot.locales.main import get_user_language, get_localization
 from bot.utils.is_admin import is_admin
+from .products.products_router import products_router, admin_products_resolver
+from bot.utils.with_user_language import with_user_language
+
 
 admin_router = Router()
-
+admin_router.include_router(products_router)
 
 @admin_router.message(Command('admin'))
 async def admin(message: Message, state: FSMContext):
@@ -31,7 +34,8 @@ async def admin(message: Message, state: FSMContext):
 
 
 @admin_router.callback_query(lambda c: c.data.startswith('admin:'))
-async def handle_admin_selection(callback_query: CallbackQuery, state: FSMContext):
+@with_user_language
+async def handle_admin_selection(callback_query: CallbackQuery, state: FSMContext, lang_code, user_id, delete_prev_msgs_num=0):
     await callback_query.answer()
 
     action = callback_query.data.split(':')[1]
@@ -49,6 +53,9 @@ async def handle_admin_selection(callback_query: CallbackQuery, state: FSMContex
         await handle_blast(callback_query.message, str(callback_query.from_user.id), state)
     elif action == 'ban':
         await handle_ban(callback_query.message, str(callback_query.from_user.id), state)
+    elif action in ("products", "packages", "subscriptions"):
+        await admin_products_resolver(callback_query, state, lang_code, user_id, delete_prev_msgs_num)
+
 
 
 @admin_router.callback_query(lambda c: c.data.startswith('developer:'))

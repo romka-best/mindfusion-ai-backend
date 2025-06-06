@@ -154,3 +154,25 @@ async def get_subscriptions_by_status(
     return [
         Subscription(**subscription.to_dict()) async for subscription in subscriptions
     ]
+
+async def get_user_refaundable_subscriptions_by_user_id(user_id: str):
+    subscriptions = (
+        firebase.db.collection(Subscription.COLLECTION_NAME)
+        .where(filter=FieldFilter("user_id", "==", user_id))
+        .where(
+            filter=FieldFilter(
+                "status",
+                "not-in",
+                [
+                    SubscriptionStatus.WAITING,
+                    SubscriptionStatus.ERROR,
+                    SubscriptionStatus.DECLINED,
+                ],
+            ),
+        )
+        .order_by("created_at", direction=Query.DESCENDING)
+        .stream()
+    )
+
+    return [Subscription(**subscription.to_dict()) async for subscription in subscriptions]
+

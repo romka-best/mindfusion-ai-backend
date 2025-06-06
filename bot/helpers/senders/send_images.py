@@ -10,7 +10,7 @@ from aiohttp import ClientOSError
 from redis.exceptions import ConnectionError
 
 from bot.database.operations.user.updaters import update_user
-from bot.helpers.senders.send_error_info import send_error_info
+from bot.helpers.notifiers.notify_error_channel import notify_error_channel
 
 
 async def delayed_send_image(
@@ -86,11 +86,13 @@ async def send_image(bot: Bot, chat_id: str, image: str, reply_markup=None, capt
             allow_sending_without_reply=True,
         )
 
-        await send_error_info(
+        await notify_error_channel(
             bot=bot,
             user_id=chat_id,
             info=str(e),
-            hashtags=['image'],
+            stack_trace=traceback.format_exc(),
+            context={"image": image},
+            hashtags=["image"]
         )
 
 
@@ -154,9 +156,12 @@ async def send_images(bot: Bot, chat_id: str, images: list[str]):
                 except Exception as e:
                     error_trace = traceback.format_exc()
                     logging.exception(f'Error in send_images with second try: {error_trace}')
-                    await send_error_info(
+
+                    await notify_error_channel(
                         bot=bot,
                         user_id=chat_id,
                         info=str(e),
-                        hashtags=['image'],
+                        stack_trace=traceback.format_exc(),
+                        hashtags=["image"]
                     )
+

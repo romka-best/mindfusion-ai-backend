@@ -101,7 +101,14 @@ from bot.helpers.updaters.update_daily_limits import update_daily_limits
 from bot.locales.main import get_localization
 from bot.middlewares.AuthMiddleware import AuthMessageMiddleware, AuthCallbackQueryMiddleware
 from bot.middlewares.LoggingMiddleware import LoggingMessageMiddleware, LoggingCallbackQueryMiddleware
+from bot.middlewares.DeletePrevMsgsMiddleware import DeletePrevMsgsMiddleware
 from bot.utils.migrate import migrate
+from bot.handlers.common.photo_bundles.photo_bundles_router import photo_bundles_router
+
+from bot.handlers.ai.openai.gpt_image.gpt_image_handler import gpt_image_router
+from bot.middlewares.DeletePrevMsgsMiddleware import DeletePrevMsgsMiddleware
+
+
 WEBHOOK_BOT_PATH = f'/bot/{config.BOT_TOKEN.get_secret_value()}'
 WEBHOOK_YOOKASSA_PATH = '/payment/yookassa'
 WEBHOOK_STRIPE_PATH = '/payment/stripe'
@@ -153,14 +160,31 @@ additional_bots = [
     ) for additional_bot_token in config.ADDITIONAL_BOT_TOKENS
 ]
 
+@dp.my_chat_member()
+async def handle_added_to_channel(update):
+    if str(update.chat.id) in config.ALERT_CHANELS.values() or update.new_chat_member.status == "left":
+        return
+
+    await bot.send_message(
+        update.chat.id,
+    """
+🇺🇸 Sorry, I don't support working in channels yet 😅
+🇷🇺 Извините, я пока не умею работать в каналах 😅
+🇪🇸 Lo siento, todavía no puedo trabajar en canales 😅
+🇮🇳 माफ़ कीजिए, मैं अभी चैनलों में काम नहीं कर सकता 😅
+""")
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    webhook_info = await bot.get_webhook_info()
-    if webhook_info.url != WEBHOOK_BOT_URL:
-        await bot.set_webhook(url=WEBHOOK_BOT_URL)
+    await bot.set_webhook(url=WEBHOOK_BOT_URL, allowed_updates=[
+        "my_chat_member",
+        "pre_checkout_query",
+        "callback_query",
+        "message"
+    ])
 
     dp.include_routers(
+        photo_bundles_router,
         maintenance_router,
         common_router,
         info_router,
@@ -208,8 +232,10 @@ async def lifespan(_: FastAPI):
         sticker_router,
         voice_router,
         text_router,
+        gpt_image_router,
     )
 
+    dp.update.middleware(DeletePrevMsgsMiddleware())
     dp.message.middleware(LoggingMessageMiddleware())
     dp.callback_query.middleware(LoggingCallbackQueryMiddleware())
     dp.message.middleware(AuthMessageMiddleware())
@@ -465,4 +491,4 @@ for path, additional_bot in zip(WEBHOOK_ADDITIONAL_BOTS_PATHS, additional_bots):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    uvicorn.run(app, host='0.0.0.0', port=os.getenv('PORT', 8080), timeout_keep_alive=600)
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", "8080")), timeout_keep_alive=600)

@@ -405,6 +405,14 @@ class Russian(Texts):
 
 Жду новый, более компактный промпт ✨
 """
+    ERROR_PROMPT_IS_EMPTY = """
+🤔 <b>А где же промпт?</b>
+
+Вы ничего не отправили.
+Без этого я не смогу ничего сгенерировать 😢
+
+Попробуйте ещё раз, я жду вдохновения! ✨
+"""
     ERROR_REQUEST_FORBIDDEN = """
 🚨 <b>Ой-ой! Ваш запрос не прошёл проверку</b>
 
@@ -426,8 +434,7 @@ class Russian(Texts):
     ┣ Claude 3.0 Opus 🚀
     ┣ Gemini 2.0 Flash 🏎
     ┣ Gemini 2.5 Pro 💼
-    ┣ Gemini 1.0 Ultra 🛡️
-    ┗ Grok 2.0 🐦
+    ┗ Gemini 1.0 Ultra 🛡️
 
 🖼 <b>Графические Модели</b>:
     ┣ 🎨 Midjourney
@@ -493,6 +500,14 @@ class Russian(Texts):
 
         text += "\n\nПовторите, пожалуйста, запрос с другим изображением 😉"
         return text
+
+    @staticmethod
+    def error_internal_ai_model(ai_model_name) -> str:
+        return f"⚠️ Ошибка на стороне модели {ai_model_name}. Попробуйте снова чуть позже."
+
+    @staticmethod
+    def error_photo_bundle_empty():
+        return "⚠️ В вашем профиле отсутствуют фотографии, загрузите хотя бы одну фотографию и повторите запрос."
 
     @staticmethod
     def error_internal_ai_model(ai_model_name) -> str:
@@ -608,6 +623,10 @@ class Russian(Texts):
 
 💡 <b>Совет</b>: Попробуйте число поменьше, или воспользуйтесь /buy для неограниченных возможностей!
 """
+
+    @staticmethod
+    def wait_for_lora_train():
+        return "🤖 Обучаю свою нейросеть, чтобы предоставлять вам лучшие ответы — это нужно сделать только один раз. Обычно это занимает 10 минут."
 
     # Feedback
     FEEDBACK_INFO = """
@@ -2112,7 +2131,7 @@ class Russian(Texts):
     ┣ 🧩 ChatGPT o4-mini{f': доп. {additional_usage_quota[Quota.CHAT_GPT_O_4_MINI]}' if additional_usage_quota[Quota.CHAT_GPT_O_4_MINI] > 0 else ''}
     ┣ 💫 Claude 3.7 Sonnet{f': доп. {additional_usage_quota[Quota.CLAUDE_3_SONNET]}' if additional_usage_quota[Quota.CLAUDE_3_SONNET] > 0 else ''}
     ┣ 💼 Gemini 2.5 Pro{f': доп. {additional_usage_quota[Quota.GEMINI_2_PRO]}' if additional_usage_quota[Quota.GEMINI_2_PRO] > 0 else ''}
-    ┣ 🐦 Grok 2.0{f': доп. {additional_usage_quota[Quota.GROK_2]}' if additional_usage_quota[Quota.GROK_2] > 0 else ''}
+    ┣ 🐦 Grok 3.0{f': доп. {additional_usage_quota[Quota.GROK_3]}' if additional_usage_quota[Quota.GROK_3] > 0 else ''}
     ┣ 🐋 DeepSeek R1{f': доп. {additional_usage_quota[Quota.DEEP_SEEK_R1]}' if additional_usage_quota[Quota.DEEP_SEEK_R1] > 0 else ''}
     ┣ 🌐 Perplexity{f': доп. {additional_usage_quota[Quota.PERPLEXITY]}' if additional_usage_quota[Quota.PERPLEXITY] > 0 else ''}
     ┗ Дневной лимит: {format_number(daily_limits[Quota.CHAT_GPT4_OMNI])}/{format_number(subscription_limits[Quota.CHAT_GPT4_OMNI])}
@@ -2140,6 +2159,7 @@ class Russian(Texts):
     ┗ Дневной лимит: {format_number(daily_limits[Quota.STABLE_DIFFUSION_XL])}/{format_number(subscription_limits[Quota.STABLE_DIFFUSION_XL])}
 
 <b>Продвинутые</b>:
+    ┣ {Texts.GPT_IMAGE}{f': доп. {additional_usage_quota[Quota.GPT_IMAGE]}' if additional_usage_quota[Quota.GPT_IMAGE] > 0 else ''}
     ┣ 👨‍🎨 DALL-E 3{f': доп. {additional_usage_quota[Quota.DALL_E]}' if additional_usage_quota[Quota.DALL_E] > 0 else ''}
     ┣ 🎨 Midjourney 7{f': доп. {additional_usage_quota[Quota.MIDJOURNEY]}' if additional_usage_quota[Quota.MIDJOURNEY] > 0 else ''}
     ┣ 🧑‍🚀 Stable Diffusion 3.5{f': доп. {additional_usage_quota[Quota.STABLE_DIFFUSION_3]}' if additional_usage_quota[Quota.STABLE_DIFFUSION_3] > 0 else ''}
@@ -2605,7 +2625,7 @@ class Russian(Texts):
                 Quota.CHAT_GPT_O_4_MINI,
                 Quota.CLAUDE_3_SONNET,
                 Quota.GEMINI_2_PRO,
-                Quota.GROK_2,
+                Quota.GROK_3,
                 Quota.DEEP_SEEK_R1,
                 Quota.PERPLEXITY
         ]
@@ -4133,3 +4153,137 @@ class Russian(Texts):
 
 @roman_danilov, посмотришь? 🤨
 """
+
+    @staticmethod
+    def menu_bundle_photo_managment():
+        return "🖼 Управление фотографиями"
+
+    @staticmethod
+    def photo_bundle_delete_all_confirm():
+        return "⚠️ Вы уверены, что хотите удалить ВСЕ фотографии?"
+
+    @staticmethod
+    def menu_photo_bundle_show():
+        return "🖼 Здесь вы можете загрузить до 10 фотографий, которые будут использоваться для замены лица (Face Swap).\
+ Ниже — кнопки для добавления, удаления и замены фото."
+
+    @staticmethod
+    def menu_photo_bundle_show_upload():
+        return "⬆️ Загрузить"
+
+    @staticmethod
+    def menu_photo_bundle_show_edit():
+        return "🔁 Заменить одну"
+
+    @staticmethod
+    def menu_photo_bundle_delete_one():
+        return "❌ Удалить одну"
+
+    @staticmethod
+    def menu_photo_bundle_delete_all():
+        return "🗑 Удалить все"
+
+    @staticmethod
+    def menu_photo_bundle_back_to_profile():
+        return "👤 Назад в профиль"
+
+    @staticmethod
+    def menu_photo_bundle_delete_mode():
+        return "🔢 Выберите порядковый номер фотографии, которую хотите удалить."
+
+    @staticmethod
+    def menu_photo_bundle_back_to_photos():
+        return "📂 Назад к фотографиям"
+
+    @staticmethod
+    def menu_photo_bundle_edit_mode():
+        return "🔢 Выберите порядковый номер фотографии, которую хотите заменить."
+
+    @staticmethod
+    def menu_photo_bundle_upload_limit_reached():
+        return "🚫 Лимит фотографий достигнут, данные фото не загружены. Вы можете удалить или заменить существующие."
+
+    @staticmethod
+    def menu_photo_bundle_new():
+        return "📥 Отправьте одну или несколько фотографий."
+
+    @staticmethod
+    def menu_photo_bundle_edit():
+        return "📥 Отправьте новую фотографию для замены."
+
+    @staticmethod
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "Квадрат"
+            case "landscape":
+                return "Пейзаж"
+            case "portrait":
+                return "Портрет"
+    ASK_EXTEND_VIDEO = "🎥 Хотите продлить видео?"
+
+    EXTEND_AUDIO = "Продлить"
+
+    CONCAT_AUDIO = "Объединить"
+
+    @staticmethod
+    def midjourney_params_error(prompt, error_params):
+        return f"""
+{prompt}
+
+⚠️ Ошибка в параметрах midjourney {error_params}
+https://docs.midjourney.com/hc/en-us/articles/32859204029709-Parameter-List
+"""
+
+    SETTINGS = "⚙️ Настройки"
+
+    ACTION_GENERATION_WITH_TEXT_PROMPT = "📝 Генерация по тексту"
+    ACTION_GENERATION_WITH_REF_IMAGES = "🖼 Генерация на основе картинок"
+    ASK_TEXT_PROMPT = "✍️ Отправьте промпт"
+
+    @classmethod
+    def ask_ref_images(cls, n):
+        return f"Отправьте до {n} референсных картинок 📸 в одном сообщении\n\nПромпт отправьте отдельным текстовым сообщением ✍️"
+
+    WAITING_YOUR_NEXT_IDEA = "✨ Ждем вашей следующей идеи!"
+
+    GENERATION_SETTING_BACKGROUND = "🖼️ Фон изображения"
+
+    # As TG documnt or photo
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT = "📷 Формат изображения"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_ORIGINAL = "Оригинал"
+    GENERATION_SETTING_OUTPUT_IMAGE_FORMAT_COMPRESSED = "Сжатый"
+
+    @staticmethod
+    def generation_setting_image_bg(value):
+        value = value.lower()
+        match value:
+            case "auto":
+                return "Авто"
+            case "opaque":
+                return "Непрозрачный"
+            case "transparent":
+                return "Прозрачный"
+
+    @staticmethod
+    def generation_setting_image_quality(value):
+        value = value.lower()
+        match value:
+            case "low":
+                return "Низкое"
+            case "medium":
+                return "Среднее"
+            case "high":
+                return "Высокое"
+
+    @staticmethod
+    def generation_setting_image_size(value):
+        value = value.lower()
+        match value:
+            case "square":
+                return "Квадрат"
+            case "landscape":
+                return "Пейзаж"
+            case "portrait":
+                return "Портрет"

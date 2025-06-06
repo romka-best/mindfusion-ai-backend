@@ -2,34 +2,30 @@ from bot.database.models.common import Model, ModelType
 
 
 def get_model_type(model: Model):
-    if (
-        model == Model.CHAT_GPT or
-        model == Model.CLAUDE or
-        model == Model.GEMINI or
-        model == Model.GROK or
-        model == Model.DEEP_SEEK or
-        model == Model.PERPLEXITY
+    if model in (
+        Model.CHAT_GPT,
+        Model.CLAUDE,
+        Model.GEMINI,
+        Model.GROK,
+        Model.DEEP_SEEK,
+        Model.PERPLEXITY,
+        Model.GPT_IMAGE,
     ):
         return ModelType.TEXT
-    elif model == Model.EIGHTIFY or model == Model.GEMINI_VIDEO:
+    if model in (Model.EIGHTIFY, Model.GEMINI_VIDEO):
         return ModelType.SUMMARY
-    elif (
-        model == Model.DALL_E or
-        model == Model.MIDJOURNEY or
-        model == Model.STABLE_DIFFUSION or
-        model == Model.FLUX or
-        model == Model.LUMA_PHOTON or
-        model == Model.RECRAFT or
-        model == Model.FACE_SWAP or
-        model == Model.PHOTOSHOP_AI
+    if model in (
+        Model.DALL_E,
+        Model.MIDJOURNEY,
+        Model.STABLE_DIFFUSION,
+        Model.FLUX,
+        Model.LUMA_PHOTON,
+        Model.RECRAFT,
+        Model.FACE_SWAP,
+        Model.PHOTOSHOP_AI,
     ):
         return ModelType.IMAGE
-    elif model == Model.MUSIC_GEN or model == Model.SUNO:
+    if model in (Model.MUSIC_GEN, Model.SUNO):
         return ModelType.MUSIC
-    elif (
-        model == Model.KLING or
-        model == Model.RUNWAY or
-        model == Model.LUMA_RAY or
-        model == Model.PIKA
-    ):
+    if model in (Model.KLING, Model.RUNWAY, Model.LUMA_RAY, Model.PIKA):
         return ModelType.VIDEO

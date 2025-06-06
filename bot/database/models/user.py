@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from enum import StrEnum
 from typing import Optional
+from bot.helpers import gpt_image
 
 from bot.database.models.common import (
     Currency,
@@ -103,6 +104,7 @@ class User:
     utm: dict
     created_at: datetime
     edited_at: datetime
+    face_swap_lora_version: str
 
     DEFAULT_ADDITIONAL_USAGE_QUOTA = {
         Quota.CHAT_GPT4_OMNI_MINI: 0,
@@ -119,7 +121,7 @@ class User:
         Quota.GEMINI_1_ULTRA: 0,
         Quota.DEEP_SEEK_V3: 0,
         Quota.DEEP_SEEK_R1: 0,
-        Quota.GROK_2: 0,
+        Quota.GROK_3: 0,
         Quota.PERPLEXITY: 0,
         Quota.EIGHTIFY: 0,
         Quota.GEMINI_VIDEO: 0,
@@ -143,6 +145,7 @@ class User:
         Quota.FAST_MESSAGES: False,
         Quota.VOICE_MESSAGES: False,
         Quota.ACCESS_TO_CATALOG: False,
+        Quota.GPT_IMAGE: 0,
     }
 
     DEFAULT_SETTINGS = {
@@ -325,6 +328,14 @@ class User:
             UserSettings.ASPECT_RATIO: AspectRatio.LANDSCAPE,
             UserSettings.SHOW_EXAMPLES: False,
         },
+        Model.GPT_IMAGE: {
+            "version": gpt_image.Version.V1,
+            "show_usage_quota": False,
+            "size": gpt_image.user.settings.Size.SQUARE.value,
+            "quality": gpt_image.user.settings.Quality.LOW.value,
+            "background": gpt_image.user.settings.Background.AUTO.value,
+            "compression": gpt_image.user.settings.Compression.NO.value,
+        },
     }
 
     def __init__(
@@ -355,6 +366,7 @@ class User:
         utm=None,
         created_at=None,
         edited_at=None,
+        face_swap_lora_version="",
         **kwargs,
     ):
         self.id = str(id)
@@ -387,6 +399,10 @@ class User:
             if last_subscription_limit_update is not None else current_time
         self.created_at = created_at if created_at is not None else current_time
         self.edited_at = edited_at if edited_at is not None else current_time
+        self.face_swap_lora_version = face_swap_lora_version
 
     def to_dict(self):
         return vars(self)
+
+    def is_face_swap_lora_trained(self):
+        return self.face_swap_lora_version != ""
